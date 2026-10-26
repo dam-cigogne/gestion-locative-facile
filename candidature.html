@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0E6B5C">
+<title>Candidature de location</title>
+<style>
+:root{--bg:#F3F6F5;--surface:#FFFFFF;--ink:#17231F;--muted:#5C6B66;--line:#DDE5E1;--accent:#0E6B5C;--accent-ink:#FFFFFF;--soft:#D8EEE8;--warn:#9A5B00}
+@media (prefers-color-scheme: dark){:root{--bg:#0E1715;--surface:#16231F;--ink:#E8F0ED;--muted:#9DB0A9;--line:#27382F;--accent:#3CC2A6;--accent-ink:#06211B;--soft:#17332C;--warn:#F0B35C}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 16px calc(32px + env(safe-area-inset-bottom,0px))}
+main{max-width:560px;margin:0 auto;padding-top:calc(18px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:14px}
+h1{font-size:23px;line-height:1.2;margin:4px 0 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h2{font-size:15px;margin:0;color:var(--accent)}
+.muted{color:var(--muted);font-size:13.5px}
+.info{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--muted)}
+label.f input,label.f select,label.f textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+label.f textarea{min-height:110px;resize:vertical}
+label.f input[type=date]{-webkit-appearance:none;appearance:none;min-height:46px;max-width:100%;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.two{grid-template-columns:1fr}}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.chk input{margin-top:4px}
+button{font:inherit;font-weight:600;border:0;border-radius:12px;padding:13px 16px;background:var(--accent);color:var(--accent-ink);width:100%}
+a.btn{display:block;text-align:center;text-decoration:none;font-weight:600;border-radius:12px;padding:13px 16px;background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.files{font-size:13px;color:var(--muted)}
+.err{color:#C0392B;font-size:14px;font-weight:600}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/1.4 ui-monospace,Menlo,monospace;margin:0;max-height:260px;overflow:auto}
+</style>
+</head>
+<body>
+<main>
+  <div><div class="muted" id="kicker">Demande de location</div><h1 id="titre">Candidature</h1><div class="muted" id="loy"></div></div>
+  <div class="err" id="top" role="alert"></div>
+  <div class="info">Remplis ce formulaire : il prépare un e-mail adressé directement au propriétaire. Rien n'est enregistré sur un serveur. Tu pourras le relire avant de l'envoyer.</div>
+  <form id="f" class="card" novalidate>
+    <h2>Tes coordonnées</h2>
+    <label class="f">Nom et prénom<input id="nom" autocomplete="name" required></label>
+    <div class="two"><label class="f">Téléphone<input id="tel" type="tel" autocomplete="tel" inputmode="tel"></label><label class="f">E-mail<input id="mail" type="email" autocomplete="email" autocapitalize="off" required></label></div>
+    <h2>Ta situation</h2>
+    <div class="two"><label class="f">Situation professionnelle<select id="ct"><option value="">Choisis…</option><option>CDI</option><option>CDI en période d'essai</option><option>CDD / intérim</option><option>Fonctionnaire</option><option>Indépendant / entreprise</option><option>Étudiant</option><option>Retraité</option><option>Autre</option></select></label>
+    <label class="f">Revenus nets par mois (€)<input id="rev" inputmode="decimal"></label></div>
+    <div class="two"><label class="f">Nombre d'occupants<input id="occ" inputmode="numeric"></label><label class="f">Emménagement souhaité<input id="ent" type="date"></label></div>
+    <div class="two"><label class="f">Garant<select id="gar"><option value="">Aucun garant</option><option value="proche">Un garant (parent, proche)</option><option value="visale">Garantie Visale</option><option value="autre">Autre garantie</option></select></label>
+    <label class="f">Revenus nets du garant (€)<input id="grev" inputmode="decimal"></label></div>
+    <label class="f">Message (facultatif)<textarea id="msg" placeholder="Présente-toi en quelques mots"></textarea></label>
+    <h2>Pièces justificatives (facultatif)</h2>
+    <div class="muted">Tu peux les joindre maintenant (photos ou PDF) ou les apporter à la visite : pièce d'identité, justificatif de domicile, situation professionnelle, justificatifs de ressources. Le propriétaire ne peut pas t'en demander d'autres.</div>
+    <label class="f">Joindre des fichiers<input id="fil" type="file" accept="image/*,.pdf" multiple></label>
+    <div class="files" id="fl"></div>
+    <label class="chk"><input id="ok" type="checkbox"><span>J'accepte que ces informations soient transmises au propriétaire pour étudier ma candidature. Elles ne servent qu'à cela et sont supprimées si ma candidature n'est pas retenue.</span></label>
+    <div class="err" id="err" role="alert"></div>
+    <button type="submit" id="go">Préparer mon e-mail</button>
+    <button type="button" class="ghost" id="cp">Copier le texte</button>
+    <div class="muted" id="how"></div>
+  </form>
+  <div class="card" id="prev" hidden><h2>Texte de ta candidature</h2><pre id="pre"></pre><div class="muted">Envoie ce texte à <b id="dest"></b>.</div><a id="ml" class="btn" href="#">Ouvrir mon e-mail</a><button type="button" id="sh">Partager avec mes pièces</button><button type="button" class="ghost" id="cp2">Copier le texte</button></div>
+</main>
+<script>
+(function(){
+  "use strict";
+  const q = new URLSearchParams(location.search), $ = id => document.getElementById(id);
+  const to = (q.get("m") || "").trim(), ref = (q.get("r") || "").slice(0, 60), titre = (q.get("t") || "Logement à louer").slice(0, 140), loyer = (q.get("l") || "").slice(0, 12);
+  const mailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to);
+  $("titre").textContent = titre; if (loyer) $("loy").textContent = "Loyer : " + loyer + " € par mois charges comprises";
+  document.title = "Candidature · " + titre;
+  $("how").textContent = mailOk ? "Ta candidature sera adressée à " + to + "." : "Le lien est incomplet : l'adresse du propriétaire manque. Demande-lui de t'envoyer un nouveau lien.";
+  if (!mailOk) $("top").textContent = "Le lien est incomplet : l'adresse du propriétaire manque. Demande-lui de t'envoyer un nouveau lien.";
+  $("fil").addEventListener("change", () => { const n = [...$("fil").files].map(f => f.name); $("fl").textContent = n.length ? n.length + " fichier(s) : " + n.join(", ") : ""; });
+  const clean = s => String(s || "").replace(/\s*\n+\s*/g, " ").trim();
+  function build(){
+    const gar = $("gar").options[$("gar").selectedIndex].text, files = [...$("fil").files].map(f => f.name);
+    return ["CANDIDATURE – " + titre, "Réf. : " + ref, "Nom : " + clean($("nom").value), "Téléphone : " + clean($("tel").value), "E-mail : " + clean($("mail").value), "Situation : " + clean($("ct").value),
+      "Revenus mensuels nets : " + clean($("rev").value), "Occupants : " + clean($("occ").value), "Emménagement souhaité : " + clean($("ent").value), "Garant : " + gar, "Revenus du garant : " + clean($("grev").value),
+      "Pièces jointes : " + (files.length ? files.join(", ") : "aucune"), "Message : " + ($("msg").value || "").trim()].join("\n");
+  }
+  function check(){
+    if (!clean($("nom").value)) return "Indique ton nom et prénom.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean($("mail").value)) && !clean($("tel").value)) return "Indique au moins un e-mail ou un téléphone valide.";
+    if (!$("ok").checked) return "Coche la case d'accord pour envoyer ta candidature.";
+    if (!mailOk) return "Le lien est incomplet : l'adresse du propriétaire manque.";
+    return "";
+  }
+  window.__build = build;
+  $("cp").addEventListener("click", async () => { const t = build(); try { await navigator.clipboard.writeText(t); $("err").textContent = ""; $("how").textContent = "Texte copié : colle-le dans un e-mail ou un message au propriétaire."; } catch(e){ $("pre").textContent = t; $("prev").hidden = false; } });
+  function mailto(text, subject){ return "mailto:" + to + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text); }
+  async function doShare(text, subject, files){
+    const txtFile = new File([text], "candidature.txt", {type:"text/plain"}), all = [txtFile].concat(files);
+    if (!(navigator.canShare && navigator.share && navigator.canShare({files:all}))) throw new Error("nosupport");
+    await navigator.share({title:subject, text, files:all});
+  }
+  $("f").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    try {
+      const e = check(); $("err").textContent = e; if (e) return;
+      const text = build(), subject = "Candidature – " + titre, files = [...$("fil").files]; window.__last = text;
+      $("pre").textContent = text; $("dest").textContent = to; $("prev").hidden = false;
+      $("ml").href = mailto(text, subject); $("sh").hidden = !(navigator.share);
+      $("how").textContent = "Préparation de ton e-mail…";
+      try { $("prev").scrollIntoView({behavior:"smooth", block:"start"}); } catch(_){}
+      if (files.length){
+        try { await doShare(text, subject, files); $("how").textContent = "Dans la fenêtre de partage, choisis Mail et vérifie que le destinataire est " + to + ". Ta candidature et tes " + files.length + " pièce(s) sont jointes."; return; }
+        catch(err){ if (err && err.name === "AbortError"){ $("how").textContent = "Envoi annulé. Utilise les boutons ci-dessous pour réessayer."; return; }
+          $("how").textContent = "Les pièces n'ont pas pu être jointes automatiquement. Utilise « Ouvrir mon e-mail » (sans pièces) puis ajoute-les, ou apporte-les à la visite."; return; }
+      }
+      $("how").textContent = "Appuie sur « Ouvrir mon e-mail » ci-dessous, puis sur Envoyer.";
+      location.href = mailto(text, subject);
+    } catch(err){ $("err").textContent = "Erreur : " + ((err && err.message) || err) + ". Utilise « Copier le texte »."; }
+  });
+  $("sh").addEventListener("click", async () => {
+    const text = window.__last || build(), subject = "Candidature – " + titre, files = [...$("fil").files];
+    try { await doShare(text, subject, files); } catch(err){ if (!err || err.name !== "AbortError") $("how").textContent = "Le partage n'est pas disponible sur ce téléphone : utilise « Ouvrir mon e-mail » ou « Copier le texte »."; }
+  });
+  $("cp2").addEventListener("click", () => $("cp").click());
+})();
+</script>
+</body>
+</html>
