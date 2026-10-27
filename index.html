@@ -1164,8 +1164,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.1.0";
 const CHANGELOG = [
+  {v:"1.1.0", date:"2026-10-27", titre:"Compta pour la location vide", items:["Compta « revenus fonciers » pour les logements loués vides : comparaison micro-foncier (abattement 30 %) et régime réel, forfait de gestion, charges déductibles, déficit foncier et récapitulatif PDF pour la déclaration 2044.","Si tu as des logements meublés et vides, un sélecteur Meublé (LMNP) / Location vide apparaît dans Compta.","Guide du bailleur : nouvelle section « Textes de loi et sources » avec la date de dernière vérification.","Les chiffres et règles fiscales sont indicatifs : l'appli indique la source officielle et la date de vérification."]},
   {v:"1.0.0", date:"2026-10-26", titre:"Première version", items:["Gestion locative sur téléphone : loyers, quittances, locataires, baux, états des lieux, annonces, candidatures et bilans.","Location meublée ou vide : le bail, le dépôt de garantie et les délais s'adaptent au type choisi pour chaque logement.","Guide du bailleur : différences meublé / vide, colocation, régimes fiscaux, démarches et liens utiles. Courrier d'option LMNP prérempli.","Tes données restent sur ton téléphone : aucun envoi sur internet."]}
 ];
 
@@ -1216,6 +1217,7 @@ const HELP = {
     "Les trois tuiles (retard, à pointer, à saisir en compta) sont cliquables.",
     "Le bénéfice réalisé ne compte que ce qui est vraiment passé sur le compte (pointé)."]},
   cmp:{t:"Compta", p:"Ce qu'il faut pour remplir ta compta en ligne.", l:[
+    "Logement loué vide : la compta devient « revenus fonciers ». Elle compare micro-foncier (abattement de 30 %, jusqu'à 15 000 € de loyers) et régime réel, calcule le déficit foncier et sort un PDF pour la déclaration 2044. Les catégories « à vérifier » ne sont pas comptées : change leur catégorie si besoin. Règles vérifiées en octobre 2026, à revérifier à chaque déclaration.",
     "Les 5 onglets suivent le site : Synthèse, Logements, Échéances, Dépenses, Recettes. Remplis le site dans cet ordre.",
     "Dépenses et Recettes : une ligne par facture, avec l'article du site. Touche le rond quand c'est saisi. « Articles » change l'article d'une catégorie.",
     "Échéances : date, total, capital, intérêts pour chaque mois. Compare avec l'échéancier de ta banque.",
@@ -1986,8 +1988,10 @@ function checklistCard(y, list){
     <div class="btns"><button class="btn ghost" data-act="ck-open">Personnaliser ma liste</button><button class="btn ghost" data-act="ck-docx">Word ⬇</button><button class="btn ghost" data-act="ck-imp">Word ⬆</button></div></div>`;
 }
 function viewCompta(){
-  const y = V.y, ids = bienIds().filter(id => bkind(id) === "meuble");
-  if (!ids.length) return topbar("Compta", yearNav()) + `<div class="card"><h2>Compta : location meublée (LMNP)</h2><div class="small">Cette partie prépare la comptabilité des locations <b>meublées</b> (régime LMNP, BIC au réel). Tes logements sont en location vide : ils relèvent des revenus fonciers (déclaration 2044), qui ne sont pas encore gérés ici. Le Guide du bailleur explique la différence.</div><div class="btns"><button class="btn" data-act="go" data-v="guide">Ouvrir le Guide du bailleur</button></div></div>`;
+  const y = V.y, ids = bienIds().filter(id => bkind(id) === "meuble"), vides = bienIds().filter(id => bkind(id) === "vide");
+  if (vides.length && !ids.length) return viewComptaFoncier(vides);
+  if (vides.length && ids.length){ if (V.ckind !== "vide") V.ckind = "meuble"; if (V.ckind === "vide") return `<div class="seg" style="margin:8px 0"><button data-act="ckind" data-v="meuble">Meublé (LMNP)</button><button class="on" data-act="ckind" data-v="vide">Location vide</button></div>` + viewComptaFoncier(vides); }
+  if (!ids.length) return topbar("Compta", yearNav()) + `<div class="card"><h2>Compta</h2><div class="small">Ajoute un logement pour commencer.</div></div>`;
   if (!V.csel || (V.csel !== "all" && !ids.includes(V.csel))) V.csel = "all";
   const sel = V.csel, list = sel === "all" ? ids : [sel], D = list.map(id => comptaBien(id, y));
   const T = k => r2(sum(D.map(d => d[k])));
@@ -2015,7 +2019,7 @@ function viewCompta(){
     <div class="btns"><button class="btn" data-act="cmp-xlsx">Excel</button><button class="btn ghost" data-act="cmp-pdf">PDF</button><button class="btn ghost" data-act="go" data-v="guide">Guide du bailleur</button></div></div>`;
   const SUBS = [["syn","Synthèse"],["log","Logements"],["emp","Échéances"],["dep","Dépenses"],["rec","Recettes"]]; if (!SUBS.some(x => x[0] === V.csub)) V.csub = "syn";
   const subseg = `<div class="seg">${SUBS.map(([k, l]) => `<button class="${V.csub === k ? "on" : ""}" data-act="csub" data-v="${k}">${l}</button>`).join("")}</div>`;
-  return topbar("Compta", yearNav()) + seg + subseg + (V.csub === "syn" ? syn : cmpSite(V.csub, list, y));
+  return topbar("Compta", yearNav()) + (vides.length ? `<div class="seg" style="margin:8px 0"><button class="on" data-act="ckind" data-v="meuble">Meublé (LMNP)</button><button data-act="ckind" data-v="vide">Location vide</button></div>` : "") + seg + subseg + (V.csub === "syn" ? syn : cmpSite(V.csub, list, y));
 }
 
 function sheetEmprunt(id){
@@ -2278,6 +2282,101 @@ function placeCard(id){
 document.addEventListener("click", ev => {
   const b = ev.target.closest("[data-act]"); if (!b || b.dataset.act !== "int-add") return;
   const bien = b.dataset.id; V.back = "bld"; V.bsub = "vue"; V.bsel = bien; V.editId = null; V.draft = newDraft({type:"Entrée", bien, cat:CAT_INT, lib:"Intérêts", pt:true}); V.tab = "add"; render();
+});
+
+/* ---------- Compta location vide : revenus fonciers (micro-foncier / réel, déclaration 2044) ----------
+   Règles vérifiées sur impots.gouv.fr (notice 2044) et BOFiP BOI-RFPI-DECLA-10 : voir FONC_REGLES (date de vérification incluse).
+   Tout est INDICATIF : l'appli ne remplace pas la déclaration ni un conseil. */
+const FONC_REGLES = {
+  verif:"octobre 2026",
+  seuilMicro:15000, abattMicro:0.30, forfaitGestion:20, plafondDeficit:10700, plafondDeficitReno:21400, reportAns:10,
+  sources:[
+    ["Notice de la déclaration 2044 (impots.gouv.fr)", "https://www.impots.gouv.fr/formulaire/2044/declaration-des-revenus-fonciers"],
+    ["BOFiP · Régime micro-foncier (BOI-RFPI-DECLA-10)", "https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"],
+    ["BOFiP · Imputation des déficits fonciers", "https://bofip.impots.gouv.fr/export/pdf/7391"]
+  ]
+};
+/* traitement de chaque catégorie de dépense au régime réel : ok = déductible, non = non déductible, verif = à vérifier */
+const FONC_CAT = {
+  "Assurance PNO":{s:"ok", l:"Primes d'assurance"}, "Assurance GMPA":{s:"ok", l:"Primes d'assurance"},
+  "Syndic / copropriété":{s:"ok", l:"Charges de copropriété non récupérables (ligne 230)"},
+  "Eau":{s:"verif", l:"Charges non récupérables seulement"}, "Électricité":{s:"verif", l:"Charges non récupérables seulement"},
+  "Taxe foncière":{s:"ok", l:"Taxe foncière (lignes 226-227), hors ordures ménagères récupérables"},
+  "Entretien / réparations":{s:"ok", l:"Réparation, entretien, amélioration (ligne 224)"},
+  "Diagnostics":{s:"verif", l:"À vérifier : frais d'administration ou de gestion"},
+  "Divers":{s:"verif", l:"À vérifier selon la nature"},
+  "Frais bancaires / cotisations":{s:"non", l:"Couvert par le forfait de gestion"},
+  "Comptabilité":{s:"non", l:"Couvert par le forfait de gestion"}, "CGA / OGA":{s:"non", l:"Non déductible en revenus fonciers"},
+  "Abonnement Rendement locatif":{s:"non", l:"Non déductible en revenus fonciers"}, "CFE":{s:"non", l:"Concerne la location meublée"},
+  "Mobilier / équipement":{s:"non", l:"Mobilier non déductible en location vide"}
+};
+const foncOf = c => FONC_CAT[c] || {s:"verif", l:"À vérifier selon la nature"};
+
+function foncierBien(id, y){
+  const base = comptaBien(id, y);
+  const dep = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && (j.compta || "Bien") !== "Perso" && j.cat !== "Crédit (mensualité)");
+  const lignes = {}; let ded = 0, verif = 0, non = 0;
+  for (const j of dep){ const f = foncOf(j.cat), o = lignes[j.cat] || (lignes[j.cat] = {cat:j.cat, v:0, s:f.s, l:f.l}); o.v = r2(o.v + j.montant);
+    if (f.s === "ok") ded += j.montant; else if (f.s === "verif") verif += j.montant; else non += j.montant; }
+  return {id, y, rec:r2(base.loyers + base.autres), loyers:base.loyers, autres:base.autres, forfait:FONC_REGLES.forfaitGestion, ded:r2(ded), verif:r2(verif), non:r2(non),
+    interets:r2(base.interets + base.assurE), ey:base.ey, lignes:Object.values(lignes).sort((a, b) => b.v - a.v)};
+}
+/* calcul foyer : micro vs réel, déficit foncier */
+function foncierCalc(list, withVerif){
+  const R = FONC_REGLES, rec = r2(sum(list.map(d => d.rec))), forfait = r2(sum(list.map(d => d.forfait)));
+  const ded = r2(sum(list.map(d => d.ded + (withVerif ? d.verif : 0)))), inter = r2(sum(list.map(d => d.interets)));
+  const microOk = rec <= R.seuilMicro, micro = r2(rec * (1 - R.abattMicro));
+  const avant = r2(rec - forfait - ded);       /* résultat avant intérêts */
+  let reel, deficitGlobal = 0, reportGlobal = 0, reportFoncier = 0;
+  if (avant >= 0){ reel = r2(avant - inter); if (reel < 0){ reportFoncier = -reel; reel = 0; } }
+  else { const d = -avant; deficitGlobal = Math.min(d, R.plafondDeficit); reportGlobal = r2(d - deficitGlobal); reportFoncier = inter; reel = 0; }
+  return {rec, forfait, ded, inter, microOk, micro, reel, avant, deficitGlobal:r2(deficitGlobal), reportGlobal, reportFoncier:r2(reportFoncier),
+    meilleur: microOk && micro <= reel ? "micro" : "reel", gainGlobal:r2(deficitGlobal)};
+}
+function foncierPdf(y, ids){
+  const list = ids.map(id => foncierBien(id, y)), c = foncierCalc(list, false), d = new PdfDoc("Revenus fonciers"), M = d.M, Rr = d.W - M;
+  const line = (l, v, bold) => { d.need(16); d.text(M, d.y, l, {size:10, bold}); d.text(Rr, d.y, v, {size:10, right:true, bold}); d.y -= 15; };
+  d.text(M, d.y, "Revenus fonciers " + y, {size:20, bold:true}); d.y -= 22;
+  d.para("Récapitulatif indicatif pour la déclaration 2044 (location vide). À contrôler avec tes justificatifs. Règles vérifiées en " + FONC_REGLES.verif + " : à revérifier à chaque campagne de déclaration.", 9.5, 13);
+  for (const x of list){ d.h(bienName(x.id), 13); line("Loyers et recettes", eur(x.rec)); line("Forfait de gestion (ligne 222)", eur(x.forfait));
+    for (const l of x.lignes) line(l.cat + (l.s === "ok" ? "" : l.s === "non" ? " (non déductible)" : " (à vérifier)"), eur(l.v));
+    line("Intérêts et assurance d'emprunt (ligne 250)", eur(x.interets)); d.y -= 4; }
+  d.h("Foyer", 13); line("Revenus bruts", eur(c.rec));
+  line("Micro-foncier : revenu imposable (abattement 30 %)", c.microOk ? eur(c.micro) : "non applicable (> 15 000 €)");
+  line("Réel : revenu foncier imposable", eur(c.reel), true);
+  if (c.deficitGlobal) line("Déficit imputable sur le revenu global", eur(c.deficitGlobal));
+  if (c.reportGlobal) line("Déficit reportable (10 ans)", eur(c.reportGlobal));
+  if (c.reportFoncier) line("Intérêts à reporter sur revenus fonciers (10 ans)", eur(c.reportFoncier));
+  d.para("Sources : " + FONC_REGLES.sources.map(s => s[0]).join(" ; ") + ".", 8.5, 12);
+  return d.finish("Revenus fonciers " + y);
+}
+function viewComptaFoncier(ids){
+  const y = V.y; if (!V.csel || (V.csel !== "all" && !ids.includes(V.csel))) V.csel = "all";
+  const sel = V.csel, list = (sel === "all" ? ids : [sel]).map(id => foncierBien(id, y)), c = foncierCalc(list, false), cv = foncierCalc(list, true);
+  const R = FONC_REGLES, seg = `<div class="seg"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  const reg = c.microOk ? (c.meilleur === "micro" ? "Le micro-foncier semble plus avantageux cette année." : "Le régime réel semble plus avantageux cette année.") : "Tes revenus dépassent 15 000 € : le régime réel est obligatoire (déclaration 2044).";
+  const lignes = list.map(x => `<div class="env" style="padding:8px 0"><div>${bienPill(x.id)}</div>${kv("Loyers et recettes", eur(x.rec))}${kv("Forfait de gestion (ligne 222)", eur(x.forfait))}
+    ${x.lignes.map(l => kv(esc(l.cat) + ` <span class="muted small">${l.s === "ok" ? "déductible" : l.s === "non" ? "non déductible" : "à vérifier"}</span>`, eur(l.v), l.s === "ok" ? "" : "muted")).join("")}
+    ${kv("Intérêts et assurance d'emprunt (ligne 250)", eur(x.interets))}</div>`).join("");
+  return topbar("Compta", yearNav()) + seg + `
+  <div class="hero"><div class="small">Revenu foncier imposable ${y} (indicatif)</div><div class="big num">${eur(c.microOk && c.meilleur === "micro" ? c.micro : c.reel)}</div>
+    <div class="small">${c.microOk && c.meilleur === "micro" ? "Micro-foncier" : "Régime réel"} · revenus bruts ${eur(c.rec)}</div></div>
+  <div class="card"><h2>Micro-foncier ou réel ?</h2><div class="small">${reg}</div>
+    ${kv("Micro-foncier (abattement 30 %)", c.microOk ? eur(c.micro) : "non applicable")}${kv("Réel (forfait 20 € + charges + intérêts)", eur(c.reel))}
+    ${cv.ded !== c.ded || cv.reel !== c.reel ? kv("Réel si les dépenses « à vérifier » sont déductibles", eur(cv.reel), "muted") : ""}
+    <div class="small muted">Micro-foncier de plein droit jusqu'à ${eur(R.seuilMicro)} de loyers par an. L'option pour le réel vaut 3 ans, pour tous tes revenus fonciers.</div></div>
+  ${c.deficitGlobal || c.reportGlobal || c.reportFoncier ? `<div class="card"><h2>Déficit foncier</h2>
+    ${c.deficitGlobal ? kv("Imputable sur le revenu global (max " + eur(R.plafondDeficit) + ")", eur(c.deficitGlobal)) : ""}${c.reportGlobal ? kv("Reportable sur 10 ans", eur(c.reportGlobal)) : ""}${c.reportFoncier ? kv("Intérêts reportables sur revenus fonciers", eur(c.reportFoncier)) : ""}
+    <div class="small muted">La part due aux intérêts d'emprunt ne s'impute que sur les revenus fonciers (10 ans). Le bien doit rester loué 3 ans après l'imputation.</div></div>` : ""}
+  <div class="card"><h2>Détail par logement</h2>${lignes}<div class="small muted">Les charges marquées « à vérifier » ne sont pas comptées dans le réel ci-dessus. Corrige la catégorie dans le journal si besoin.</div></div>
+  <div class="card"><h2>Exporter</h2><div class="btns"><button class="btn" data-act="fon-pdf">PDF récapitulatif 2044</button><button class="btn ghost" data-act="go" data-v="guide">Guide du bailleur</button></div>
+    <div class="small muted">Règles vérifiées en ${R.verif}. Pense à les revérifier à chaque déclaration.</div>
+    ${R.sources.map(s => `<div class="small"><a href="${s[1]}" target="_blank" rel="noopener">${esc(s[0])}</a></div>`).join("")}</div>`;
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "fon-pdf"){ const ids = bienIds().filter(id => bkind(id) === "vide"), sel = V.csel && V.csel !== "all" && ids.includes(V.csel) ? [V.csel] : ids; saveFile("revenus-fonciers-" + V.y + ".pdf", foncierPdf(V.y, sel), "application/pdf"); }
+  if (b.dataset.act === "ckind"){ V.ckind = b.dataset.v; V.csel = "all"; render(); }
 });
 
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
@@ -3889,6 +3988,17 @@ function guideSections(){
       <div class="btns"><button class="btn" data-act="lmnp-open">Courrier d'option LMNP (PDF)</button></div>`),
     gsec("ca", "Choisir un locataire", `<div class="small"><b>Pièces autorisées</b> : la liste est limitative, fixée par le décret n° 2015-1437 du 5 novembre 2015. L'appli te la rappelle dans le dossier du candidat ; ne demande rien d'autre.<br><b>Vérifier un avis d'imposition</b> : le ${glink("https://cfsmsp.impots.gouv.fr", "service de vérification en ligne des avis")} (numéro fiscal + référence de l'avis).<br><b>Se protéger des impayés</b> : la garantie ${glink("https://www.visale.fr", "Visale")} (caution gratuite d'Action Logement, sous conditions) ou une assurance loyers impayés.<br><b>Rédiger le bail</b> : l'appli crée le bail en PDF (meublé ou vide) ; tu peux aussi comparer avec un modèle comme celui de ${glink("https://www.rentila.com", "Rentila")}.</div>`),
     gsec("an", "Une bonne annonce", `<div class="small">Une trame qui fonctionne :<br><b>1. Accroche et date</b> : surface, ce qui rend le logement unique, date de disponibilité.<br><b>2. Localisation</b> : rue, commerces, transports, accès rapides, employeurs proches.<br><b>3. Visite virtuelle</b> : l'entrée, la pièce de vie, la cuisine, la chambre, la salle de bain, les rangements.<br><b>4. Le « plus »</b> : équipements fournis (lave-linge, écran plat, literie de qualité), rénovation récente.<br><b>5. Loyer et détails</b> : loyer, charges et ce qu'elles comprennent, profil recherché.<br><b>6. Contact</b> : date de disponibilité répétée et mode de contact.</div><div class="btns"><button class="btn ghost" data-act="go" data-v="rent">Créer une annonce</button></div>`),
+    gsec("tx", "Textes de loi et sources", `<div class="small">Les règles de ce guide viennent de ces textes. Ouvre la source officielle avant toute décision : les textes évoluent. Dernière relecture : ${GUIDE_DATE}.</div>
+      ${gtbl(["Sujet", "Texte à consulter"], [
+        ["Location vide (bail, dépôt, préavis)", "Loi n° 89-462 du 6 juillet 1989"],
+        ["Contrats types de location", "Décret n° 2015-587 du 29 juin 2015"],
+        ["Location meublée : mobilier obligatoire", "Décret n° 2015-981 du 31 juillet 2015 (" + glink("https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000030967884", "Légifrance") + ")"],
+        ["Pièces demandées au candidat", "Décret n° 2015-1437 du 5 novembre 2015"],
+        ["Réparations locatives et charges récupérables", "Décrets n° 87-712 et n° 87-713 du 26 août 1987"],
+        ["Revenus fonciers (micro-foncier, réel, déficit)", glink("https://www.impots.gouv.fr/formulaire/2044/declaration-des-revenus-fonciers", "Notice 2044") + " · " + glink("https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306", "BOFiP micro-foncier")],
+        ["Location meublée (BIC, LMNP, amortissements)", "Code général des impôts, articles 35, 39 C et 50-0 · BOFiP BIC"]
+      ])}
+      <div class="small muted" style="margin-top:8px">Règles de la compta « location vide » vérifiées en ${FONC_REGLES.verif} (micro-foncier jusqu'à ${FONC_REGLES.seuilMicro} € avec abattement de 30 %, forfait de gestion de ${FONC_REGLES.forfaitGestion} € par logement, déficit imputable sur le revenu global jusqu'à ${FONC_REGLES.plafondDeficit} €). Un doute ? ${glink("https://www.anil.org", "ANIL")} (gratuit) ou ton expert-comptable. Une erreur dans l'appli ? Dis-le-moi pour que je la corrige.</div>`),
     gsec("li", "Liens utiles", `<div class="small">${glink("https://www.impots.gouv.fr", "impots.gouv.fr")} : impôts, SIE, avis d'imposition<br>${glink("https://www.service-public.fr", "service-public.fr")} : fiches pratiques sur la location<br>${glink("https://www.visale.fr", "Visale")} : garantie des loyers<br>${glink("https://www.legifrance.gouv.fr", "Légifrance")} : les textes de loi<br>${glink("https://www.anil.org", "ANIL")} : conseils juridiques gratuits sur le logement</div>`)
   ].join("");
 }
