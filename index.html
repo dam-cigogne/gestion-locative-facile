@@ -89,6 +89,7 @@ button{cursor:pointer}
 .hero .big{font-family:var(--font-display);font-weight:700;font-size:42px;line-height:1.05;letter-spacing:-.01em}
 .hero .sub{font-size:13px;opacity:.88}
 .hero .kv{opacity:.95}
+.cyhero{text-align:center}.cyhero .big{font-size:52px;font-weight:800;line-height:1.1}.cyhero.cyok{background:#1d5c43;color:#fff}.cyhero.cyok .small{color:#d7f2e4}.cybadge{font-size:16px;font-weight:700;margin:6px 0 10px}.cybar{height:8px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.cybar i{display:block;height:100%;background:var(--accent)}.cmdet>summary{cursor:pointer;padding:2px 0}.cmdet[open]>summary{margin-bottom:10px}
 #demobar{position:fixed;top:max(8px,env(safe-area-inset-top));left:10px;right:10px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:14px;background:var(--card,#1d2a26);border:1.5px solid var(--accent,#5fb3a1);color:var(--text,#fff);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.35)}#demobar button{background:none;border:0;color:var(--accent,#5fb3a1);font-weight:700;font-size:13px;padding:6px}body.demo{padding-top:58px}
 .banner{background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:13px}
 .rows{display:flex;flex-direction:column}
@@ -1176,8 +1177,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.3.0";
 const CHANGELOG = [
+  {v:"1.3.0", date:"2026-11-01", titre:"Onglet Compta refait", items:["Année de compta en gros en haut, avec les années en pastilles pour passer de l'une à l'autre, et la mention « Année clôturée · compta faite » quand tu as terminé.","Rappel de la date limite : « Vous avez jusqu'au … pour clôturer votre liasse fiscale », avec le lien de ton site de compta (facultatif, modifiable ou à laisser vide). Pour 2025, les dates officielles relevées sont indiquées ; pour les autres années, tu saisis la date publiée.","« À saisir sur le site » : une seule liste par Dépenses, Recettes et Échéances, groupée par logement. Tu coches un logement, tout, ou ligne par ligne, puis « Marquer comme saisi », avec Annuler et onglet « Déjà saisi ».","Liasse fiscale : tu peux importer (PDF ou photo) et garder celle de chaque année, puis la rouvrir ou la partager.","Les chiffres, la liste « À ne pas oublier » et l'export sont rangés dans « Détails, chiffres et export » (replié par défaut).","Démo : les actions de compta et de candidature se testent sans rien enregistrer."]},
   {v:"1.2.0", date:"2026-11-01", titre:"Saisie en compta plus rapide, signature papier, règles à jour", items:["Saisie en compta : cases à cocher, tout cocher par mois, par catégorie ou d'un coup (loyers compris), bouton Annuler et onglet « Déjà saisi ». Le rond du pointage ne dépointe plus les lignes par erreur.","Signature : paraphe tracé une fois et reproduit en bas de chaque page, référence du document sur chaque page, étape « renforcer la preuve » (pièce d'identité, e-mail de confirmation).","Signature papier : tu n'imprimes que la dernière page, tu la fais signer à la main, tu la rescannes dans l'appli puis tu envoies le dossier par e-mail.","Placements : historique avec modification et suppression, bouton « Mettre de côté » (un livret A placé n'est plus compté comme un remboursement).","Dates facultatives (fin de bail…) : bouton « Effacer la date ».","Mise à jour des règles : export Word avec un prompt guidé pour une IA, import de sa réponse, validation ligne par ligne avec la source et l'historique.","Lien de démonstration (index.html?demo=1) et tutoriel d'installation dans la fiche."]},
   {v:"1.1.0", date:"2026-10-27", titre:"Compta pour la location vide", items:["Compta « revenus fonciers » pour les logements loués vides : comparaison micro-foncier (abattement 30 %) et régime réel, forfait de gestion, charges déductibles, déficit foncier et récapitulatif PDF pour la déclaration 2044.","Si tu as des logements meublés et vides, un sélecteur Meublé (LMNP) / Location vide apparaît dans Compta.","Guide du bailleur : nouvelle section « Textes de loi et sources » avec la date de dernière vérification.","Les chiffres et règles fiscales sont indicatifs : l'appli indique la source officielle et la date de vérification."]},
   {v:"1.0.0", date:"2026-10-26", titre:"Première version", items:["Gestion locative sur téléphone : loyers, quittances, locataires, baux, états des lieux, annonces, candidatures et bilans.","Location meublée ou vide : le bail, le dépôt de garantie et les délais s'adaptent au type choisi pour chaque logement.","Guide du bailleur : différences meublé / vide, colocation, régimes fiscaux, démarches et liens utiles. Courrier d'option LMNP prérempli.","Tes données restent sur ton téléphone : aucun envoi sur internet."]}
@@ -1231,7 +1233,10 @@ const HELP = {
     "Le bénéfice réalisé ne compte que ce qui est vraiment passé sur le compte (pointé)."]},
   cmp:{t:"Compta", p:"Ce qu'il faut pour remplir ta compta en ligne.", l:[
     "Logement loué vide : la compta devient « revenus fonciers ». Elle compare micro-foncier (abattement de 30 %, jusqu'à 15 000 € de loyers) et régime réel, calcule le déficit foncier et sort un PDF pour la déclaration 2044. Les catégories « à vérifier » ne sont pas comptées : change leur catégorie si besoin. Règles vérifiées en octobre 2026, à revérifier à chaque déclaration.",
-    "Les 5 onglets suivent le site : Synthèse, Logements, Échéances, Dépenses, Recettes. Remplis le site dans cet ordre.",
+    "En haut : l'année en gros (change d'année avec les pastilles) et le bouton « Clôturer : compta faite » quand tu as fini. Une année clôturée s'affiche en vert et peut être rouverte.",
+    "Le rappel « Vous avez jusqu'au … » utilise la date limite que tu saisis (publiée chaque printemps). Le site de compta est facultatif : touche « Mon site de compta » pour le changer ou le retirer.",
+    "« À saisir sur le site » : choisis Dépenses, Recettes ou Échéances, coche un logement, tout ou ligne par ligne, puis « Marquer comme saisi ». Une erreur : « Annuler » (12 secondes) ou « Déjà saisi » pour remettre à saisir. Seules les lignes payées ou encaissées sont listées.",
+    "Liasse fiscale : importe le PDF ou la photo de chaque année pour la retrouver ici. Les chiffres, la liste « À ne pas oublier » et l'export sont dans « Détails, chiffres et export ».",
     "Dépenses et Recettes : une ligne par facture, avec l'article du site. Touche le rond quand c'est saisi. « Articles » change l'article d'une catégorie.",
     "Échéances : date, total, capital, intérêts pour chaque mois. Compare avec l'échéancier de ta banque.",
     "PDF : le dossier à imprimer, avec une case à cocher par ligne. Excel : mêmes colonnes que le site.",
@@ -2012,7 +2017,7 @@ function checklistCard(y, list){
     <div class="small muted">Un point ❌ est normal si la dépense n'existe pas pour ce bien cette année.</div>
     <div class="btns"><button class="btn ghost" data-act="ck-open">Personnaliser ma liste</button><button class="btn ghost" data-act="ck-docx">Word ⬇</button><button class="btn ghost" data-act="ck-imp">Word ⬆</button></div></div>`;
 }
-function viewCompta(){
+function viewComptaOld(parts){
   const y = V.y, ids = bienIds().filter(id => bkind(id) === "meuble"), vides = bienIds().filter(id => bkind(id) === "vide");
   if (vides.length && !ids.length) return viewComptaFoncier(vides);
   if (vides.length && ids.length){ if (V.ckind !== "vide") V.ckind = "meuble"; if (V.ckind === "vide") return `<div class="seg" style="margin:8px 0"><button data-act="ckind" data-v="meuble">Meublé (LMNP)</button><button class="on" data-act="ckind" data-v="vide">Location vide</button></div>` + viewComptaFoncier(vides); }
@@ -2044,6 +2049,7 @@ function viewCompta(){
     <div class="btns"><button class="btn" data-act="cmp-xlsx">Excel</button><button class="btn ghost" data-act="cmp-pdf">PDF</button><button class="btn ghost" data-act="go" data-v="guide">Guide du bailleur</button></div></div>`;
   const SUBS = [["syn","Synthèse"],["log","Logements"],["emp","Échéances"],["dep","Dépenses"],["rec","Recettes"]]; if (!SUBS.some(x => x[0] === V.csub)) V.csub = "syn";
   const subseg = `<div class="seg">${SUBS.map(([k, l]) => `<button class="${V.csub === k ? "on" : ""}" data-act="csub" data-v="${k}">${l}</button>`).join("")}</div>`;
+  if (parts) return {syn, seg, list};
   return topbar("Compta", yearNav()) + (vides.length ? `<div class="seg" style="margin:8px 0"><button class="on" data-act="ckind" data-v="meuble">Meublé (LMNP)</button><button data-act="ckind" data-v="vide">Location vide</button></div>` : "") + seg + subseg + (V.csub === "syn" ? syn : cmpSite(V.csub, list, y));
 }
 
@@ -2379,7 +2385,7 @@ function foncierPdf(y, ids){
   d.para("Sources : " + FONC_REGLES.sources.map(s => s[0]).join(" ; ") + ".", 8.5, 12);
   return d.finish("Revenus fonciers " + y);
 }
-function viewComptaFoncier(ids){
+function viewComptaFoncier(ids, noTop){
   const y = V.y; if (!V.csel || (V.csel !== "all" && !ids.includes(V.csel))) V.csel = "all";
   const sel = V.csel, list = (sel === "all" ? ids : [sel]).map(id => foncierBien(id, y)), c = foncierCalc(list, false), cv = foncierCalc(list, true);
   const R = FONC_REGLES, seg = `<div class="seg"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
@@ -2387,7 +2393,7 @@ function viewComptaFoncier(ids){
   const lignes = list.map(x => `<div class="env" style="padding:8px 0"><div>${bienPill(x.id)}</div>${kv("Loyers et recettes", eur(x.rec))}${kv("Forfait de gestion (ligne 222)", eur(x.forfait))}
     ${x.lignes.map(l => kv(esc(l.cat) + ` <span class="muted small">${l.s === "ok" ? "déductible" : l.s === "non" ? "non déductible" : "à vérifier"}</span>`, eur(l.v), l.s === "ok" ? "" : "muted")).join("")}
     ${kv("Intérêts et assurance d'emprunt (ligne 250)", eur(x.interets))}</div>`).join("");
-  return topbar("Compta", yearNav()) + seg + `
+  return (noTop ? "" : topbar("Compta", yearNav())) + seg + `
   <div class="hero"><div class="small">Revenu foncier imposable ${y} (indicatif)</div><div class="big num">${eur(c.microOk && c.meilleur === "micro" ? c.micro : c.reel)}</div>
     <div class="small">${c.microOk && c.meilleur === "micro" ? "Micro-foncier" : "Régime réel"} · revenus bruts ${eur(c.rec)}</div></div>
   <div class="card"><h2>Micro-foncier ou réel ?</h2><div class="small">${reg}</div>
@@ -2480,6 +2486,136 @@ document.addEventListener("click", ev => {
 new MutationObserver(() => { const sh = document.getElementById("sheet"); if (!sh) return;
   sh.querySelectorAll('input[type="date"]').forEach(i => { if (!/(^|-)fin$|^t-debut$|-fin-|-sortie$/.test(i.id || "")) return; const n = i.nextElementSibling; if (n && n.classList.contains("dclr")) return;
     const bt = document.createElement("button"); bt.type = "button"; bt.className = "mini dclr"; bt.dataset.act = "dclr"; bt.textContent = "Effacer la date"; i.insertAdjacentElement("afterend", bt); }); }).observe(document.body, {childList:true, subtree:true});
+
+/* ---------- Compta v2 : année en gros, clôture, date limite + site (facultatif), saisie cochable par logement, liasse des années ---------- */
+V.cc = V.cc || {}; V.ctab = V.ctab || "dep"; V.cview = V.cview || "todo";
+const CM_SITE0 = {nom:"Je déclare mon meublé", url:"https://www.jedeclaremonmeuble.com/"};
+const CM = () => (S.cmpt = S.cmpt || {site:Object.assign({}, CM_SITE0), years:{}});
+const CMY = y => { const c = CM(); c.years = c.years || {}; return c.years[y] = c.years[y] || {}; };
+const cmYear = y => ((CM().years || {})[y]) || {};
+/* dates officielles relevées (à confirmer chaque année : elles sont publiées au printemps) */
+const CM_DEAD = {2025:{d:"2026-05-05", txt:"Liasse fiscale (régime réel) : 5 mai 2026, ou 20 mai 2026 si elle est transmise par un partenaire EDI. Déclaration de revenus (2042 C PRO) : 21 mai, 28 mai ou 4 juin 2026 selon le département.", url:"https://www.jedeclaremonmeuble.com/loueurs-en-meuble-non-professionnels-lmnp-calendrier-des-echeances-fiscales/"}};
+const cmLimite = y => cmYear(y).limite || (CM_DEAD[y] && CM_DEAD[y].d) || "";
+const cmClosed = y => !!cmYear(y).closed;
+const cmUrl = u => { u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch(e){ return ""; } };
+const cmTabs = [["dep", "Dépenses"], ["rec", "Recettes"], ["ech", "Échéances d'emprunt"]];
+function cmYears(){ const s = new Set([new Date().getFullYear(), V.y]); for (const j of S.journal) if (!j.del && j.date) s.add(+j.date.slice(0, 4)); for (const k of Object.keys((CM().years) || {})) s.add(+k); return [...s].filter(x => x > 2000).sort(); }
+function cmSetDone(k, on){
+  for (const key of String(k).split(",")){
+    if (key.startsWith("j:")){ const j = S.journal.find(x => x.id === key.slice(2)); if (j){ j.compta = on ? "x" : ""; j.upd = Date.now(); } }
+    else { S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.cdone = S.cfg.cdone || {}; if (on) S.cfg.cdone[key] = 1; else delete S.cfg.cdone[key]; } }
+}
+const cmRows = (tab, y, ids) => (tab === "dep" ? cmpDepLines(y, ids) : tab === "rec" ? cmpRecLines(y, ids) : cmpEchLines(y, ids)).filter(r => r.pointe !== false);
+function cmCounts(y, ids){ const o = {tot:0, done:0}; for (const [t] of cmTabs){ const R = cmRows(t, y, ids), keys = new Set(R.map(r => r.k)), dk = new Set(R.filter(r => r.done).map(r => r.k)); o[t] = {n:keys.size, d:dk.size}; o.tot += keys.size; o.done += dk.size; } return o; }
+
+function cmHeader(y, kind){
+  const closed = cmClosed(y), o = cmYear(y), site = CM().site || {}, su = cmUrl(site.url), lim = cmLimite(y);
+  const chips = `<div class="seg">${cmYears().map(a => `<button class="${a === y ? "on" : ""}" data-act="cy-set" data-v="${a}">${a}${cmClosed(a) ? " ✓" : ""}</button>`).join("")}</div>`;
+  const hero = closed
+    ? `<div class="hero cyhero cyok"><div class="small">Compta</div><div class="big">${y}</div><div class="cybadge">✅ Année clôturée · compta faite${typeof o.closed === "string" && o.closed.length === 10 ? " le " + frDate(o.closed) : ""}</div><div class="btns" style="justify-content:center"><button class="btn ghost sm" data-act="cy-open">Rouvrir l'année</button></div></div>`
+    : `<div class="hero cyhero"><div class="small">Compta</div><div class="big">${y}</div><div class="small">Année en cours de saisie</div><div class="btns" style="justify-content:center"><button class="btn sm" data-act="cy-close">Clôturer ${y} : compta faite</button></div></div>`;
+  let dl = "";
+  if (!closed){
+    const action = kind === "vide" ? "déclarer vos revenus fonciers" : "clôturer votre liasse fiscale", where = su ? ` sur <a href="${esc(su)}" target="_blank" rel="noopener">${esc(site.nom || su)}</a>` : "";
+    let txt;
+    if (lim){ const days = Math.round((new Date(lim + "T12:00:00") - new Date(todayIso() + "T12:00:00")) / 864e5);
+      txt = `Vous avez jusqu'au <b>${frDate(lim)}</b> pour ${action}${where}. ` + (days > 0 ? `Il reste <b>${days} jour${days > 1 ? "s" : ""}</b>.` : days === 0 ? "<b>C'est aujourd'hui.</b>" : `<b>La date est passée depuis ${-days} jour${-days > 1 ? "s" : ""}</b> : vérifie que c'est fait.`); }
+    else txt = `Pour ${action}${where} : <b>date limite à confirmer</b>. Elle est publiée chaque printemps (en général début mai pour la liasse fiscale, fin mai à début juin pour la déclaration de revenus). Touche « Saisir la date » dès qu'elle est connue.`;
+    const d = CM_DEAD[y] && !cmYear(y).limite ? `<div class="small muted">${esc(CM_DEAD[y].txt)} <a href="${esc(CM_DEAD[y].url)}" target="_blank" rel="noopener">Source</a></div>` : "";
+    dl = `<div class="card cydl"><div class="small" style="font-size:14.5px;line-height:1.5">⏰ ${txt}</div>${d}
+      <div class="btns"><button class="btn ghost sm" data-act="cy-date">${lim ? "Modifier la date" : "Saisir la date"}</button><button class="btn ghost sm" data-act="cy-site">${su ? "Mon site de compta" : "Ajouter un site (facultatif)"}</button></div></div>`;
+  }
+  return chips + hero + dl;
+}
+
+function cmSaisie(y, ids){
+  const C = cmCounts(y, ids); let tab = cmTabs.some(t => t[0] === V.ctab) ? V.ctab : "dep"; if (!V.ctabSet && !C[tab].n){ const f = cmTabs.find(t => C[t[0]].n); if (f) tab = f[0]; }
+  const all = cmRows(tab, y, ids), nx = (tab === "ech" ? cmpEchLines(y, ids) : tab === "dep" ? cmpDepLines(y, ids) : cmpRecLines(y, ids)).filter(r => r.pointe === false).length;
+  const todo = all.filter(r => !r.done), done = all.filter(r => r.done), L = V.cview === "done" ? done : todo;
+  const keys = new Set(L.map(r => r.k)); for (const k of Object.keys(V.cc)) if (!keys.has(k)) delete V.cc[k];
+  const sel = [...keys].filter(k => V.cc[k]), allOn = keys.size && sel.length === keys.size, closed = cmClosed(y);
+  const pct = C.tot ? Math.round(100 * C.done / C.tot) : 0;
+  const tabs = `<div class="seg">${cmTabs.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" data-act="cc-tab" data-v="${k}">${l} (${C[k].d}/${C[k].n})</button>`).join("")}</div>`;
+  const row = r => { const on = !!V.cc[r.k], sign = tab === "rec" ? "+" : "−";
+    const t = tab === "ech" ? `${frDate(r.date)} · total ${eur(r.total)}` : `${esc(r.art)}${r.immo ? ' <span class="chip warn">immobilisation</span>' : ""}`, s = tab === "ech" ? `capital ${eur(r.kap)} · intérêts ${eur(r.it)}` : `${frDate(r.date)} · ${esc(r.com)}`;
+    return `<div class="row"><button class="sck ${on ? "on" : ""}" data-act="cc-sel" data-k="${esc(r.k)}" aria-label="Sélectionner" aria-pressed="${on}">${ICON.check}</button><div class="main"><div class="t">${t}</div><div class="s">${s}</div></div><div class="amt num ${tab === "rec" ? "pos" : ""}">${tab === "ech" ? eur(r.total) : sign + " " + eur(r.montant)}</div></div>`; };
+  const groups = ids.map(id => { const G = L.filter(r => r.bien === id); if (!G.length) return ""; const gk = [...new Set(G.map(r => r.k))], on = gk.every(k => V.cc[k]), tot = r2(sum(G.map(r => tab === "ech" ? r.total : r.montant)));
+    return `<div class="gh"><button class="sck ${on ? "on" : ""}" data-act="cc-grp" data-ks="${gk.map(esc).join(";")}" aria-label="Tout cocher pour ce logement">${ICON.check}</button><div><b>${esc(bienName(id))}</b><div class="small muted">${G.length} ligne(s)</div></div><span class="num">${eur(tot)}</span></div>${G.map(row).join("")}`; }).join("");
+  const act = V.cview === "done" ? `Remettre à saisir (${sel.length})` : `Marquer comme saisi (${sel.length})`;
+  return `<div class="card"><h2>À saisir sur le site de compta</h2>
+    <div class="small muted">${C.done} ligne(s) saisie(s) sur ${C.tot}</div><div class="cybar"><i style="width:${pct}%"></i></div>
+    ${tabs}
+    <div class="seg"><button class="${V.cview === "todo" ? "on" : ""}" data-act="cc-view" data-v="todo">À saisir (${todo.length})</button><button class="${V.cview === "done" ? "on" : ""}" data-act="cc-view" data-v="done">Déjà saisi (${done.length})</button></div>
+    <div class="small muted">${V.cview === "done" ? "Lignes déjà recopiées sur ton site. Coche-en pour les remettre à saisir." : (tab === "rec" ? "Coche tes loyers un par un, ou « Tout cocher » pour les marquer d'un coup. " : "Coche les lignes que tu as recopiées sur le site, ou « Tout cocher ». ") + "Une erreur ? Touche « Annuler »."}${closed ? " <b>L'année est clôturée.</b>" : ""}</div>
+    ${tab === "dep" ? '<div class="btns"><button class="mini" data-act="map-open">Articles du site</button></div>' : ""}
+    <div class="skbar"><button class="sck ${allOn ? "on" : ""}" data-act="cc-all" aria-label="Tout cocher">${ICON.check}</button><span class="small"><b>Tout cocher</b> (${keys.size})</span><button class="btn sm" data-act="cc-do" ${sel.length ? "" : "disabled"}>${act}</button></div>
+    <div class="rows">${L.length ? groups : '<div class="empty">Rien ici.</div>'}</div>
+    ${nx ? `<div class="small muted">${nx} ligne(s) pas encore ${tab === "rec" ? "encaissée(s)" : "payée(s)"} ne sont pas listées : pointe-les d'abord dans Pointage.</div>` : ""}</div>`;
+}
+
+function cmLiasse(y){
+  const L = cmYear(y).liasse || [];
+  return `<div class="card"><h2>Liasse fiscale ${y}</h2><div class="small muted">Garde ici la liasse fiscale de l'année (PDF ou photo) pour la retrouver et la partager quand tu en as besoin. Elle reste sur ton téléphone.</div>
+    ${L.length ? `<div class="rows">${L.map((f, i) => `<div class="row"><div class="main"><div class="t">${esc(f.name)}</div><div class="s">ajoutée le ${frDate(f.date)} · ${Math.max(1, Math.round((f.size || 0) / 1024))} Ko</div></div><button class="mini" data-act="li-open" data-i="${i}">Ouvrir</button><button class="mini" data-act="li-del" data-i="${i}">Supprimer</button></div>`).join("")}</div>` : '<div class="empty">Aucun fichier pour cette année.</div>'}
+    <div class="btns"><label class="btn ghost" style="text-align:center;cursor:pointer">Importer la liasse ${y}<input id="li-file" type="file" accept="application/pdf,image/*,.pdf" hidden></label></div></div>`;
+}
+
+function viewCompta(){
+  const y = V.y, ids = bienIds().filter(id => bkind(id) === "meuble"), vides = bienIds().filter(id => bkind(id) === "vide");
+  if (!ids.length && !vides.length) return topbar("Compta", "") + `<div class="card"><h2>Compta</h2><div class="small">Ajoute un logement pour commencer.</div></div>`;
+  V.cgrp = false;
+  if (ids.length && vides.length && V.ckind !== "vide") V.ckind = "meuble";
+  const kind = ids.length && vides.length ? V.ckind : (ids.length ? "meuble" : "vide"), ksel = ids.length && vides.length ? `<div class="seg"><button class="${kind === "meuble" ? "on" : ""}" data-act="ckind" data-v="meuble">Meublé (LMNP)</button><button class="${kind === "vide" ? "on" : ""}" data-act="ckind" data-v="vide">Location vide</button></div>` : "";
+  const head = topbar("Compta", "") + cmHeader(y, kind) + ksel;
+  if (kind === "vide") return head + viewComptaFoncier(vides, true) + cmLiasse(y);
+  const P = viewComptaOld(true);
+  return head + P.seg + cmSaisie(y, P.list) + cmLiasse(y) + `<details class="card cmdet"${V.cdet ? " open" : ""} data-det="cdet"><summary><b>Détails, chiffres et export</b></summary>${P.syn}${cmpSite("log", P.list, y)}</details>`;
+}
+document.addEventListener("toggle", e => { if (e.target && e.target.dataset && e.target.dataset.det === "cdet") V.cdet = e.target.open; }, true);
+
+function cmUndoBar(msg, ks, to){
+  V.cundo = {ks, to}; let el = document.getElementById("undobar");
+  if (!el){ el = document.createElement("div"); el.id = "undobar"; document.body.appendChild(el); }
+  el.innerHTML = `<span>${esc(msg)}</span><button type="button" data-act="cc-undo">Annuler</button>`; el.hidden = false;
+  clearTimeout(saisieUndoBar.t); saisieUndoBar.t = setTimeout(() => { el.hidden = true; V.cundo = null; }, 12000);
+}
+function cmRemaining(y){ const ids = bienIds().filter(id => bkind(id) === "meuble"); return ids.length ? cmCounts(y, ids).tot - cmCounts(y, ids).done : 0; }
+
+document.addEventListener("change", async ev => {
+  const f = ev.target; if (!f || f.id !== "li-file" || !f.files || !f.files[0]) return;
+  if (DEMO){ toast("Indisponible en mode démo"); return; }
+  const file = f.files[0], y = V.y, buf = await file.arrayBuffer(), fid = uid();
+  try { await flPut(fid, {name:file.name, type:file.type || "application/octet-stream", buf}); } catch(e){ return toast("Enregistrement impossible : " + (e.message || e)); }
+  const o = CMY(y); o.liasse = (o.liasse || []).concat([{fid, name:file.name, type:file.type || "application/octet-stream", size:buf.byteLength, date:todayIso()}]); persist(); toast("Liasse ajoutée"); render();
+});
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, v = b.dataset.v, y = V.y;
+  switch (a){
+    case "cy-set": V.y = +v; V.cc = {}; render(); break;
+    case "cy-close": { const n = cmRemaining(y); openSheet(`<h2>Clôturer ${y} ?</h2><p style="margin:0">${n ? "Il reste <b>" + n + " ligne(s)</b> à saisir sur le site." : "Toutes tes lignes sont saisies."} L'année sera notée « clôturée, compta faite ». Tu pourras la rouvrir quand tu veux.</p><div class="btns"><button class="btn" style="flex:1" data-act="cy-close-ok">Oui, compta faite</button><button class="btn ghost" data-act="sheetclose">Pas encore</button></div>`); break; }
+    case "cy-close-ok": CMY(y).closed = todayIso(); persist(); closeSheet(); toast(y + " clôturée"); render(); break;
+    case "cy-open": delete CMY(y).closed; persist(); render(); break;
+    case "cy-date": openSheet(`<h2>Date limite ${y}</h2><div class="small muted">La date à laquelle tu dois avoir terminé (publiée chaque printemps sur impots.gouv.fr ou sur ton site de compta).</div><label class="f">Date limite<input id="cy-d" type="date" value="${esc(cmLimite(y))}"></label><div class="btns"><button class="btn" style="flex:1" data-act="cy-date-ok">Enregistrer</button><button class="btn ghost" data-act="cy-date-clr">Effacer la date</button></div>`); break;
+    case "cy-date-ok": { const o = CMY(y); o.limite = $("#cy-d").value; persist(); closeSheet(); render(); break; }
+    case "cy-date-clr": { const o = CMY(y); o.limite = ""; if (CM_DEAD[y]) o.limite = ""; persist(); closeSheet(); render(); break; }
+    case "cy-site": { const s = CM().site || {}; openSheet(`<h2>Mon site de compta</h2><div class="small muted">Facultatif : si tu utilises un site pour ta compta, son lien apparaît dans le rappel de date limite. Sinon laisse vide.</div>
+      <label class="f">Nom du site<input id="cy-sn" value="${esc(s.nom || "")}" autocomplete="off"></label><label class="f">Adresse du site<input id="cy-su" type="url" inputmode="url" autocapitalize="off" placeholder="https://" value="${esc(s.url || "")}"></label>
+      <div class="btns"><button class="btn" style="flex:1" data-act="cy-site-ok">Enregistrer</button><button class="btn ghost" data-act="cy-site-none">Je n'utilise pas de site</button></div><div class="btns"><button class="btn ghost" data-act="cy-site-jd">Utiliser jedeclaremonmeuble.com</button></div>`); break; }
+    case "cy-site-ok": { const u = cmUrl($("#cy-su").value); CM().site = {nom:$("#cy-sn").value.trim(), url:u}; persist(); closeSheet(); render(); break; }
+    case "cy-site-none": CM().site = {nom:"", url:""}; persist(); closeSheet(); render(); break;
+    case "cy-site-jd": CM().site = Object.assign({}, CM_SITE0); persist(); closeSheet(); render(); break;
+    case "cc-tab": V.ctab = v; V.ctabSet = true; V.cc = {}; render(); break;
+    case "cc-view": V.cview = v; V.cc = {}; render(); break;
+    case "cc-sel": keepScroll(() => { const k = b.dataset.k; if (V.cc[k]) delete V.cc[k]; else V.cc[k] = 1; }); break;
+    case "cc-grp": { const ks = b.dataset.ks.split(";"), on = ks.every(k => V.cc[k]); keepScroll(() => ks.forEach(k => { if (on) delete V.cc[k]; else V.cc[k] = 1; })); break; }
+    case "cc-all": { const ids = bienIds().filter(id => bkind(id) === "meuble"), sc = V.csel === "all" || !V.csel ? ids : [V.csel], R = cmRows(V.ctab, y, sc).filter(r => V.cview === "done" ? r.done : !r.done), ks = [...new Set(R.map(r => r.k))], on = ks.length && ks.every(k => V.cc[k]); keepScroll(() => ks.forEach(k => { if (on) delete V.cc[k]; else V.cc[k] = 1; })); break; }
+    case "cc-do": { const ks = Object.keys(V.cc).filter(k => V.cc[k]); if (!ks.length) break; const to = V.cview !== "done"; ks.forEach(k => cmSetDone(k, to)); persist(); V.cc = {}; render(); cmUndoBar(ks.length + " ligne(s) " + (to ? "marquée(s) saisie(s)" : "remise(s) à saisir"), ks, to); break; }
+    case "cc-undo": { const u = V.cundo; if (!u) break; u.ks.forEach(k => cmSetDone(k, !u.to)); persist(); V.cundo = null; const el = document.getElementById("undobar"); if (el) el.hidden = true; toast("Annulé"); render(); break; }
+    case "li-open": { const f = (cmYear(y).liasse || [])[+b.dataset.i]; if (!f) break; const r = await flGet(f.fid); if (!r) return toast("Fichier introuvable"); await saveFile(f.name, new Uint8Array(r.buf), f.type); break; }
+    case "li-del": { const f = (cmYear(y).liasse || [])[+b.dataset.i]; if (!f) break; openSheet(`<h2>Supprimer ce fichier ?</h2><p style="margin:0">${esc(f.name)} sera retiré de ton téléphone.</p><div class="btns"><button class="btn danger" data-act="li-del-ok" data-i="${b.dataset.i}">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
+    case "li-del-ok": { const o = CMY(y), f = (o.liasse || [])[+b.dataset.i]; if (!f) break; try { await flDel(f.fid); } catch(e){} o.liasse.splice(+b.dataset.i, 1); persist(); closeSheet(); render(); break; }
+  }
+});
 
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
 
