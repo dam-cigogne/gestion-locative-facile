@@ -89,6 +89,7 @@ button{cursor:pointer}
 .hero .big{font-family:var(--font-display);font-weight:700;font-size:42px;line-height:1.05;letter-spacing:-.01em}
 .hero .sub{font-size:13px;opacity:.88}
 .hero .kv{opacity:.95}
+#demobar{position:fixed;top:max(8px,env(safe-area-inset-top));left:10px;right:10px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:14px;background:var(--card,#1d2a26);border:1.5px solid var(--accent,#5fb3a1);color:var(--text,#fff);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.35)}#demobar button{background:none;border:0;color:var(--accent,#5fb3a1);font-weight:700;font-size:13px;padding:6px}body.demo{padding-top:58px}
 .banner{background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:13px}
 .rows{display:flex;flex-direction:column}
 .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);min-width:0}
@@ -114,6 +115,14 @@ button{cursor:pointer}
 .chk.on{background:var(--accent);border-color:var(--accent)}
 .chk svg{width:14px;height:14px;opacity:0}
 .chk.on svg{opacity:1}
+.sck{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:none;flex:none;display:grid;place-items:center;color:var(--accent-ink)}
+.sck.on{background:var(--accent);border-color:var(--accent)}.sck svg{width:15px;height:15px;opacity:0}.sck.on svg{opacity:1}
+.gh{display:flex;align-items:center;gap:10px;padding:12px 0 6px;border-top:2px solid var(--line);margin-top:6px}.gh>div{flex:1}
+.skbar{display:flex;align-items:center;gap:10px;padding:10px 0;position:sticky;top:0;background:var(--surface);z-index:3}.skbar .small{flex:1}
+#undobar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 10px 9px 14px;border-radius:999px;font-size:13.5px;z-index:60;max-width:92%;display:flex;gap:12px;align-items:center}
+#undobar[hidden]{display:none}#undobar button{border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:999px;padding:6px 12px}
+.dclr{margin-top:6px}
+.ck{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:8px 0}.ck input{margin-top:3px;width:20px;height:20px;flex:none}
 .mg{display:flex;gap:2px;height:16px;border-radius:999px;background:var(--line);overflow:hidden;margin:10px 0 8px;border:1px solid var(--line)}.mg i{display:block;height:100%}.mgl{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;font-weight:600;color:var(--ink)}.mgl b{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
 .bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
@@ -309,7 +318,8 @@ const sum = a => a.reduce((s,v) => s + N(v), 0);
 /* ============ Données ============ */
 let S = null, memCopy = null;
 function load(){ try { const t = localStorage.getItem(KEY); if (t) return JSON.parse(t); } catch(e){} return memCopy; }
-function persist(){ if (!S) return; memCopy = S; if (SEC.on){ SEC.dirty = true; if (!SEC.saving) flushEnc(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+let DEMO = false, REAL_S = null;
+function persist(){ if (!S || DEMO) return; memCopy = S; if (SEC.on){ SEC.dirty = true; if (!SEC.saving) flushEnc(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
 /* ============ Sécurité : code, Face ID, chiffrement AES-GCM ============ */
 const ENC = KEY + "-enc", SECK = KEY + "-sec";
@@ -470,6 +480,7 @@ function demoData(rich){
   const iv = (grp,nom,qte,etat) => ({id:uid(),grp,nom,qte,etat,com:""});
   d.inv.push({id:uid(),bien:"T2",type:"entree",date:dE,loc:"Julien Exemple",rem:"",ref:"",upd:0,
     items:[iv("Chambre","Lit (couchage 140 cm)","1","Bon"),iv("Chambre","Couette","1","Bon"),iv("Séjour","Table","1","Bon"),iv("Séjour","Chaises","4","Moyen"),iv("Cuisine","Réfrigérateur","1","Bon"),iv("Cuisine","Assiettes","6","Bon"),iv("Entretien","Aspirateur","1","Neuf")]});
+  d.cand = [{id:uid(),bien:"T2",nom:"Marie Candidate",tel:"0600000002",email:"marie.candidate@example.com",statut:"dem",dateDem:todayIso(),contrat:"",rev:2400,occ:"1",entree:"",garant:"",grev:"",visite:"",note:"Candidature d'exemple",pieces:{},fichiers:[]},{id:uid(),bien:"T2",nom:"Paul Dossier",tel:"0600000003",email:"paul.dossier@example.com",statut:"dos",dateDem:todayIso(),contrat:"CDI",rev:3100,occ:"2",entree:"",garant:"",grev:"",visite:"",note:"Candidature d'exemple",pieces:{},fichiers:[]}];
   return d;
 }
 
@@ -659,6 +670,7 @@ function monthListAll(){
 }
 function monthList(){ return monthListAll().filter(j => !isArch(j)); }
 function viewMonth(){
+  if (V.mf === "compta") return viewSaisie();
   const L = monthList().sort((a,b) => b.date.localeCompare(a.date) || (b.upd||0) - (a.upd||0));
   const todo = L.filter(j => j.pointe !== "x" && j.date <= todayIso());
   const LA = monthListAll(), na = LA.length - L.length;
@@ -976,7 +988,7 @@ function viewSet(){
     <div class="btns"><button class="btn" data-act="exp-journal">Exporter le journal (.xlsx)</button><button class="btn ghost" data-act="exp-json">Sauvegarde légère (.json)</button></div>
     <div class="btns"><button class="btn" data-act="exp-zip">Sauvegarde complète avec fichiers (.zip)</button></div>
     <div class="small muted"><b>Que fait chaque bouton ?</b><br>• <b>Exporter le journal (.xlsx)</b> : sert à l'exploitation dans ton fichier Excel dédié (comptabilité, bilans). Ce n'est pas une sauvegarde.<br><b>Quelle sauvegarde choisir ?</b><br>• <b>Légère (.json)</b> : tes données (biens, opérations, locataires, fiches, états des lieux et inventaires en texte). Petite, mais <b>sans</b> photos ni fichiers (pièces d'identité, contrats, PDF importés).<br>• <b>Complète avec fichiers (.zip)</b> : tout, photos et documents des locataires compris. C'est celle à faire avant de changer de téléphone. Pour restaurer, importe le .zip ci-dessus tel quel (ne le décompresse pas).<br>Aucune n'est chiffrée et le .zip contient des papiers personnels : garde-les dans un endroit privé, jamais dans un dossier partagé.</div></div>
-  ${biensCard()}${matelasCardSet()}${bourseCardSet()}${dirCard()}${secCard()}${themeCard()}${confortCard()}${modelesCard()}${archCard()}${demoCard()}${ficheCard()}${guideCard()}${legalCard()}${aideCard()}${histCard()}
+  ${biensCard()}${matelasCardSet()}${bourseCardSet()}${dirCard()}${secCard()}${themeCard()}${confortCard()}${modelesCard()}${archCard()}${demoCard()}${ficheCard()}${guideCard()}${rulesCard()}${legalCard()}${histCard()}
   <div class="card"><h2>Données</h2><div class="small muted">${live(S.biens).length} bien(s) · ${live(S.journal).length} opération(s) · ${live(S.factures).length} facture(s) · ${live(S.locataires).length} locataire(s)</div>
     ${V.wipe ? `<div class="small">Cette action efface tout ce qui est stocké sur cet appareil.</div><div class="btns"><button class="btn danger" data-act="wipe-yes">Oui, tout effacer</button><button class="btn ghost" data-act="wipe-no">Annuler</button></div>`
              : `<div class="btns"><button class="btn ghost" data-act="wipe">Tout effacer</button></div>`}</div>
@@ -988,7 +1000,7 @@ function render(){
   if (V.tab === "welcome" && live(S.biens).length && !(V.wz && V.wz.active)) V.tab = "home";
   if (V.doc && (V.tab !== "bld" || V.bsub !== "docs")) V.doc = null;
   document.body.classList.toggle("welcome", V.tab === "welcome");
-  renderTabs();
+  renderTabs(); demoBar();
   const main = $("#main");
   const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig; V.lastSig = sig;
   main.dataset.tab = V.tab;
@@ -1032,7 +1044,7 @@ function bkSummary(o){
   return (V.pending && V.pending.zip ? "Sauvegarde avec fichiers (" + V.pending.zip.filter(f => /^fichiers\//.test(f.name)).length + " fichier(s)/photo(s)) : " : "Sauvegarde complète : ") + nb + " bien(s), " + nl + " locataire(s), " + no + " opération(s), bailleur : " + ((o.cfg && o.cfg.bailleur) || "non renseigné") + "." + (o.demo ? " ⚠ Ce sont des données d'exemple (version d'essai), pas tes vraies données." : "") + (!nb ? " ⚠ Aucun bien dans ce fichier." : "");
 }
 function commitImport(replace){
-  const p = V.pending; if (!p) return;
+  const p = V.pending; if (!p) return; if (DEMO) return toast("Quitte d'abord le mode démo");
   if (p.kind === "dos"){ restoreDossiers(p.dos).then(r => { V.pending = null; V.msg = r.n + " fichier(s) rangé(s) dans les fiches" + (r.skip ? ", " + r.skip + " déjà présent(s)" : "") + (r.nolo.length ? ". Locataire(s) introuvable(s) dans l'appli : " + r.nolo.join(", ") + " (crée d'abord leur fiche)." : "."); persist(); render(); }).catch(e => toast("Rangement impossible : " + e.message)); return; }
   if (p.kind === "json"){ S = Object.assign(emptyData(), p.data); S.demo = false; if (p.zip) restoreFull(p.zip).then(n => { toast(n + " fichier(s) et photo(s) restauré(s)"); render(); }).catch(e => toast("Fichiers non restaurés : " + e.message)); V.msg = "Sauvegarde restaurée : " + (S.biens || []).filter(b => !b.del).length + " bien(s), " + (S.locataires || []).filter(x => !x.del).length + " locataire(s), bailleur : " + ((S.cfg && S.cfg.bailleur) || "non renseigné") + "."; }
   else {
@@ -1143,7 +1155,7 @@ document.addEventListener("click", ev => {
     case "imp-replace": commitImport(true); break; case "imp-merge": commitImport(false); break;
     case "imp-cancel": V.pending = null; render(); break;
     case "wipe": V.wipe = true; render(); break; case "wipe-no": V.wipe = false; render(); break;
-    case "wipe-yes": S = emptyData(); V.wipe = false; V.msg = "Données effacées."; persist(); render(); break;
+    case "wipe-yes": if (DEMO){ V.wipe = false; toast("Quitte d'abord le mode démo"); render(); break; } S = emptyData(); V.wipe = false; V.msg = "Données effacées."; persist(); render(); break;
   }
 });
 document.addEventListener("input", ev => {
@@ -1164,8 +1176,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 const CHANGELOG = [
+  {v:"1.2.0", date:"2026-11-01", titre:"Saisie en compta plus rapide, signature papier, règles à jour", items:["Saisie en compta : cases à cocher, tout cocher par mois, par catégorie ou d'un coup (loyers compris), bouton Annuler et onglet « Déjà saisi ». Le rond du pointage ne dépointe plus les lignes par erreur.","Signature : paraphe tracé une fois et reproduit en bas de chaque page, référence du document sur chaque page, étape « renforcer la preuve » (pièce d'identité, e-mail de confirmation).","Signature papier : tu n'imprimes que la dernière page, tu la fais signer à la main, tu la rescannes dans l'appli puis tu envoies le dossier par e-mail.","Placements : historique avec modification et suppression, bouton « Mettre de côté » (un livret A placé n'est plus compté comme un remboursement).","Dates facultatives (fin de bail…) : bouton « Effacer la date ».","Mise à jour des règles : export Word avec un prompt guidé pour une IA, import de sa réponse, validation ligne par ligne avec la source et l'historique.","Lien de démonstration (index.html?demo=1) et tutoriel d'installation dans la fiche."]},
   {v:"1.1.0", date:"2026-10-27", titre:"Compta pour la location vide", items:["Compta « revenus fonciers » pour les logements loués vides : comparaison micro-foncier (abattement 30 %) et régime réel, forfait de gestion, charges déductibles, déficit foncier et récapitulatif PDF pour la déclaration 2044.","Si tu as des logements meublés et vides, un sélecteur Meublé (LMNP) / Location vide apparaît dans Compta.","Guide du bailleur : nouvelle section « Textes de loi et sources » avec la date de dernière vérification.","Les chiffres et règles fiscales sont indicatifs : l'appli indique la source officielle et la date de vérification."]},
   {v:"1.0.0", date:"2026-10-26", titre:"Première version", items:["Gestion locative sur téléphone : loyers, quittances, locataires, baux, états des lieux, annonces, candidatures et bilans.","Location meublée ou vide : le bail, le dépôt de garantie et les délais s'adaptent au type choisi pour chaque logement.","Guide du bailleur : différences meublé / vide, colocation, régimes fiscaux, démarches et liens utiles. Courrier d'option LMNP prérempli.","Tes données restent sur ton téléphone : aucun envoi sur internet."]}
 ];
@@ -1236,6 +1249,7 @@ const HELP = {
     "Les modèles remplissent le formulaire en un appui. Ils se créent avec « Enregistrer comme modèle ».",
     "En modification, « Dupliquer » crée une copie que tu ajustes ensuite."]},
   month:{t:"Pointage", p:"Le mois, ligne par ligne.", l:[
+    "« Saisie en compta » : coche une ligne, un mois entier ou « Tout sélectionner » (filtre Dépenses / Recettes / catégorie), puis « Marquer comme saisi ». Une erreur ? Touche « Annuler » dans la bannière, ou « Déjà saisi » pour remettre des lignes à saisir.",
     "Touche le rond d'une ligne pour la pointer quand tu la vois passer sur le relevé de banque.",
     "« À pointer » regroupe tout ce qui est passé mais pas encore vérifié. « À saisir en compta » : dépenses payées, pas encore saisies sur ton site de compta.",
     "Rechercher : un mot, un montant, une date ou un mois, dans tout le journal.",
@@ -1309,6 +1323,8 @@ const HELP = {
     "« Toutes les années » : résultats, soldes et bourse versée cumulée.",
     "Le bouton Exporter produit le bilan d'un mois ou de l'année complète (par bien, mois par mois, par catégorie, toutes les opérations), en Excel ou en PDF."]},
   set:{t:"Réglages", p:"Échange avec Excel, sécurité et confort.", l:[
+    "Mise à jour des règles : « Exporter en Word » donne un fichier à coller dans une IA qui cherche sur internet ; « Importer la réponse » te montre chaque changement avec sa source. Rien ne s'applique sans ton accord, et l'historique garde la trace.",
+    "Signature : à l'écran (signature + paraphe reproduit sur chaque page + preuves) ou sur papier (tu n'imprimes que la dernière page puis tu la rescannes). La signature à l'écran est une signature électronique simple : sa valeur dépend de l'accord des deux parties.",
     "Excel → appli : importe export_appli.xlsx. Appli → Excel : exporte le journal, puis lance l'import dans le classeur.",
     "Sauvegarde légère (.json) : tes données, sans photos ni fichiers. Sauvegarde complète avec fichiers (.zip) : tout, y compris pièces d'identité, contrats et photos des locataires ; à faire avant de changer de téléphone, et à restaurer en important le .zip tel quel.",
     "Aucune sauvegarde n'est chiffrée : garde-les dans un endroit privé, jamais dans un dossier partagé.",
@@ -1699,10 +1715,11 @@ document.addEventListener("click", async ev => {
     case "tour-end": lsSet("glf-tour", "1"); closeSheet(); break;
     case "hist-all": V.histAll = true; render(); break;
     case "hist-less": V.histAll = false; render(); break;
-    case "demo": openSheet(`<h2>Version d'essai</h2><p style="margin:0">Cela remplace les données affichées par de faux biens, adresses, locataires, un état des lieux et un inventaire d'exemple. ${SEC.on || S.demo ? "" : "Tes données sont mises de côté sur cet appareil : le bouton « Retrouver mes données » (Réglages) les remet. "}Exporte quand même une sauvegarde avant.</p><div class="btns"><button class="btn danger" data-act="demo-ok">Charger les données d'exemple</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break;
+    case "demo": openSheet(`<h2>Voir le mode démo</h2><p style="margin:0">L'appli affiche de faux biens, locataires, documents et une compta d'exemple. <b>Rien n'est enregistré</b> et tes vraies données ne sont pas touchées : « Quitter la démo » (bandeau en haut) te remet exactement où tu étais.</p><div class="btns"><button class="btn" style="flex:1" data-act="demo-ok">Voir la démo</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break;
+    case "exitdemo": exitDemo(); break;
     case "demo-back": { let sv = null; try { sv = JSON.parse(localStorage.getItem("glf-avant-essai")); } catch(e){} if (!sv) return toast("Aucune sauvegarde de côté");
       S = Object.assign(emptyData(), sv); S.demo = false; persist(); try { localStorage.removeItem("glf-avant-essai"); } catch(e){} V.tab = "home"; toast("Tes données sont revenues"); render(); break; }
-    case "demo-ok": if (!SEC.on && !S.demo){ try { localStorage.setItem("glf-avant-essai", JSON.stringify(S)); } catch(e){} } S = demoData(true); persist(); closeSheet(); V.tab = "home"; toast("Données d'exemple chargées"); render(); break;
+    case "demo-ok": closeSheet(); enterDemo(); break;
     case "pal": lsSet("glf-pal", v); applyTheme(); render(); break;
     case "tmode": lsSet("glf-theme", v); applyTheme(); render(); break;
     case "set-start": lsSet("glf-start", v); render(); break;
@@ -1857,6 +1874,14 @@ document.addEventListener("click", ev => {
     case "bl-save": S.cfg = S.cfg || {}; S.cfg.bailleur = $("#bl-nom").value.trim(); S.cfg.bailleurAdr = $("#bl-adr").value.trim(); persist(); closeSheet(); toast("Bailleur enregistré"); render(); break;
   }
 });
+
+/* ---------- Mode démo en mémoire : rien n'est enregistré, les vraies données ne sont pas touchées ---------- */
+function enterDemo(){ if (!DEMO){ REAL_S = S; } DEMO = true; S = demoData(true); migrate(); V.tab = "home"; V.doc = null; V.bsel = null; closeSheet(); render(); toast("Mode démo : rien n'est enregistré"); }
+function exitDemo(){ if (!DEMO) return; DEMO = false; S = REAL_S || emptyData(); REAL_S = null; V.doc = null; V.bsel = null; V.pending = null; V.tab = live(S.biens).length ? "home" : "welcome"; if (V.tab === "welcome") V.wz = V.wz || {step:0}; try { history.replaceState(null, "", location.pathname); } catch(e){} closeSheet(); render(); window.scrollTo(0, 0); }
+function demoBar(){ let el = document.getElementById("demobar");
+  if (!DEMO){ if (el) el.remove(); document.body.classList.remove("demo"); return; }
+  if (!el){ el = document.createElement("div"); el.id = "demobar"; document.body.appendChild(el); }
+  el.innerHTML = '<span><b>Mode démo</b> · rien n\'est enregistré</span><button type="button" data-act="exitdemo">Quitter la démo</button>'; document.body.classList.add("demo"); }
 
 /* ---------- Compta : regroupement pour ton site de compta (indicatif, à ajuster) ---------- */
 /* Articles de dépenses du site (liste lue sur l'écran Dépenses) */
@@ -2273,11 +2298,15 @@ function matelasHome(){
 const usedTypes = id => PLACE_CATS.filter(c => J().some(j => j.cat === c && (id == null || j.bien === id)));
 const titleTypes = ty => ty.length < 2 ? (ty[0] || "Bourse") : ty.slice(0, -1).join(", ") + " et " + ty[ty.length - 1];
 function placeCard(id){
-  const p = placeOf(id), rows = [];
+  const p = placeOf(id);
   if (!p.interets && !(id && usedTypes(id).length)) return "";
-  return `<div class="card"><div class="top"><h2>${id ? "Intérêts des placements" : "Intérêts gagnés (tous les biens)"}</h2>${id ? `<button class="btn sm" data-act="int-add" data-id="${esc(id)}">Ajouter des intérêts</button>` : ""}</div>
+  const L = id ? J().filter(j => j.bien === id && (PLACE_CATS.includes(j.cat) || j.cat === CAT_INT)).sort((a, b) => b.date.localeCompare(a.date)) : [];
+  const lab = j => j.cat === CAT_INT ? "Intérêts" : j.type === "Sortie" ? "Mis de côté" : "Remboursé (revenu sur le compte)";
+  const hist = L.length ? `<div class="rows" style="margin-top:6px">${L.map(j => `<div class="row"><div class="main"><div class="t">${lab(j)}${j.cat === CAT_INT ? "" : " · " + esc(j.cat)}</div><div class="s">${frDate(j.date)}${j.lib ? " · " + esc(j.lib) : ""}</div></div><div class="amt num ${j.type === "Sortie" ? "" : "pos"}">${eur(j.montant)}</div><button class="mini" data-act="jedit" data-id="${esc(j.id)}">Modifier / supprimer</button></div>`).join("")}</div>` : "";
+  return `<div class="card"><div class="top"><h2>${id ? "Placements et intérêts" : "Intérêts gagnés (tous les biens)"}</h2></div>
+    ${id ? `<div class="btns"><button class="btn sm" data-act="pl-add" data-id="${esc(id)}" data-cat="Livret A">Mettre de côté</button><button class="btn sm ghost" data-act="int-add" data-id="${esc(id)}">Ajouter des intérêts</button></div>` : ""}
     <div class="kv tot"><span>Intérêts gagnés</span><span class="num pos">${eur(p.interets)}</span></div>
-    <div class="small muted">L'argent placé reste compté dans le total du bien. Les intérêts sont notés à part : c'est ce que ton bien te fait gagner en plus.</div></div>`;
+    <div class="small muted">« Mis de côté » = de l'argent du compte du bien placé sur un livret ou en bourse (il reste compté dans le total du bien). « Remboursé » = il revient sur le compte. Les intérêts sont notés à part : c'est ce que ton bien te fait gagner en plus.</div>${hist}</div>`;
 }
 document.addEventListener("click", ev => {
   const b = ev.target.closest("[data-act]"); if (!b || b.dataset.act !== "int-add") return;
@@ -2378,6 +2407,79 @@ document.addEventListener("click", ev => {
   if (b.dataset.act === "fon-pdf"){ const ids = bienIds().filter(id => bkind(id) === "vide"), sel = V.csel && V.csel !== "all" && ids.includes(V.csel) ? [V.csel] : ids; saveFile("revenus-fonciers-" + V.y + ".pdf", foncierPdf(V.y, sel), "application/pdf"); }
   if (b.dataset.act === "ckind"){ V.ckind = b.dataset.v; V.csel = "all"; render(); }
 });
+
+/* ---------- Saisie en compta : cocher en masse, groupes par mois, annuler ----------
+   + « Effacer la date » dans les feuilles + historique des placements (modifier / supprimer) */
+V.cs = V.cs || {}; V.sk = V.sk || "all"; V.sc = V.sc || "all"; V.sv = V.sv || "todo";
+function saisieAll(){
+  return J().filter(j => (V.bf === "all" || j.bien === V.bf) && j.pointe === "x" && (j.type === "Dépense" || j.type === "Recette") && !isArch(j));
+}
+function saisieList(){
+  let L = saisieAll().filter(j => V.sv === "done" ? !!j.compta : !j.compta);
+  if (V.sk !== "all") L = L.filter(j => j.type === V.sk);
+  if (V.sc !== "all") L = L.filter(j => (j.cat || "") === V.sc);
+  return L.sort((a, b) => b.date.localeCompare(a.date) || (b.upd || 0) - (a.upd || 0));
+}
+function saisieRow(j, showBien){
+  const sign = isIn(j) ? 1 : -1, on = !!V.cs[j.id];
+  return `<div class="row"><button class="sck ${on ? "on" : ""}" data-act="sk-sel" data-id="${esc(j.id)}" aria-label="Sélectionner" aria-pressed="${on}">${ICON.check}</button>
+    <button class="rowbtn" data-act="jedit" data-id="${esc(j.id)}"><div class="t">${esc(j.lib || j.cat || j.type)}</div>
+    <div class="s">${frDate(j.date)}${showBien ? " " + bienPill(j.bien) : ""} · <span class="cdot" style="background:${catColor(j.cat)};margin-right:4px"></span>${esc(j.cat || j.type)}${j.compte === "Perso" ? " · perso" : ""}</div></button>
+    <div class="amt num ${sign > 0 ? "pos" : ""}">${sign > 0 ? "+" : "−"} ${eur(j.montant)}</div></div>`;
+}
+function viewSaisie(){
+  const all = saisieAll(), nTodo = all.filter(j => !j.compta).length, nDone = all.length - nTodo;
+  const base = all.filter(j => V.sv === "done" ? !!j.compta : !j.compta);
+  const L = saisieList(), ids = new Set(L.map(j => j.id));
+  for (const k of Object.keys(V.cs)) if (!ids.has(k)) delete V.cs[k];
+  const nSel = L.filter(j => V.cs[j.id]).length, allOn = L.length && nSel === L.length;
+  const kinds = [["all", "Tout"], ["Dépense", "Dépenses"], ["Recette", "Recettes"]];
+  const baseK = V.sk === "all" ? base : base.filter(j => j.type === V.sk), cats = {};
+  for (const j of baseK) cats[j.cat || "Autre"] = (cats[j.cat || "Autre"] || 0) + 1;
+  const catSeg = Object.keys(cats).length > 1 ? `<div class="seg"><button class="${V.sc === "all" ? "on" : ""}" data-act="sk-cat" data-v="all">Toutes catégories</button>${Object.keys(cats).sort().map(c => `<button class="${V.sc === c ? "on" : ""}" data-act="sk-cat" data-v="${esc(c)}">${esc(c)} (${cats[c]})</button>`).join("")}</div>` : "";
+  const groups = {}; for (const j of L){ const k = j.date.slice(0, 7); (groups[k] = groups[k] || []).push(j); }
+  const body = Object.keys(groups).sort().reverse().map(k => { const g = groups[k], on = g.every(j => V.cs[j.id]), tot = r2(sum(g.map(j => isIn(j) ? j.montant : -j.montant)));
+    return `<div class="gh"><button class="sck ${on ? "on" : ""}" data-act="sk-grp" data-ids="${g.map(j => esc(j.id)).join(",")}" aria-label="Sélectionner le mois">${ICON.check}</button><div><b>${MOIS[+k.slice(5, 7) - 1]} ${k.slice(0, 4)}</b><div class="small muted">${g.length} ligne(s)</div></div><span class="num ${tot >= 0 ? "pos" : ""}">${eur(tot)}</span></div>${g.map(j => saisieRow(j, V.bf === "all")).join("")}`; }).join("");
+  const act = V.sv === "done" ? `Remettre à saisir (${nSel})` : `Marquer comme saisi (${nSel})`;
+  return topbar("Pointage", "") + `<div class="seg"><button data-act="mf" data-v="mois">Ce mois</button><button data-act="mf" data-v="todo">À pointer</button><button class="on" data-act="mf" data-v="compta">Saisie en compta</button></div>` + bienSeg("bf", V.bf, true) + `
+  <div class="seg"><button class="${V.sv === "todo" ? "on" : ""}" data-act="sk-view" data-v="todo">À saisir (${nTodo})</button><button class="${V.sv === "done" ? "on" : ""}" data-act="sk-view" data-v="done">Déjà saisi (${nDone})</button></div>
+  <div class="seg">${kinds.map(([k, l]) => `<button class="${V.sk === k ? "on" : ""}" data-act="sk-kind" data-v="${k}">${l}</button>`).join("")}</div>${catSeg}
+  <div class="card"><div class="small muted">${V.sv === "done" ? "Lignes déjà saisies sur ton site de compta. Sélectionne-en pour les remettre à saisir." : "Lignes payées ou encaissées, pas encore saisies sur ton site de compta. Coche une ligne, un mois ou tout, puis « Marquer comme saisi ». Une erreur ? Touche « Annuler »."}</div>
+    <div class="skbar"><button class="sck ${allOn ? "on" : ""}" data-act="sk-all" aria-label="Tout sélectionner">${ICON.check}</button><span class="small"><b>Tout sélectionner</b> (${L.length})</span>
+      <button class="btn sm" data-act="sk-do" ${nSel ? "" : "disabled"}>${act}</button></div>
+    <div class="rows">${L.length ? body : '<div class="empty">Rien ici.</div>'}</div></div>`;
+}
+function saisieUndoBar(msg, ids, to){
+  V.undo = {ids, to}; let el = document.getElementById("undobar");
+  if (!el){ el = document.createElement("div"); el.id = "undobar"; document.body.appendChild(el); }
+  el.innerHTML = `<span>${esc(msg)}</span><button type="button" data-act="sk-undo">Annuler</button>`; el.hidden = false;
+  clearTimeout(saisieUndoBar.t); saisieUndoBar.t = setTimeout(() => { el.hidden = true; V.undo = null; }, 12000);
+}
+function keepScroll(fn){ const y = window.scrollY; fn(); render(); window.scrollTo(0, y); }
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id, v = b.dataset.v;
+  switch (a){
+    case "sk-sel": keepScroll(() => { if (V.cs[id]) delete V.cs[id]; else V.cs[id] = 1; }); break;
+    case "sk-grp": { const ids = b.dataset.ids.split(","), on = ids.every(i => V.cs[i]); keepScroll(() => ids.forEach(i => { if (on) delete V.cs[i]; else V.cs[i] = 1; })); break; }
+    case "sk-all": { const L = saisieList(), on = L.length && L.every(j => V.cs[j.id]); keepScroll(() => L.forEach(j => { if (on) delete V.cs[j.id]; else V.cs[j.id] = 1; })); break; }
+    case "sk-view": V.sv = v; V.cs = {}; V.sc = "all"; render(); break;
+    case "sk-kind": V.sk = v; V.cs = {}; V.sc = "all"; render(); break;
+    case "sk-cat": V.sc = v; V.cs = {}; render(); break;
+    case "sk-do": { const ids = Object.keys(V.cs).filter(k => V.cs[k]); if (!ids.length) break; const to = V.sv !== "done", t = Date.now();
+      for (const k of ids){ const j = S.journal.find(x => x.id === k); if (j){ j.compta = to ? "x" : ""; j.upd = t; } }
+      persist(); V.cs = {}; render(); saisieUndoBar(ids.length + " ligne(s) " + (to ? "marquée(s) saisie(s)" : "remise(s) à saisir"), ids, to); break; }
+    case "sk-undo": { const u = V.undo; if (!u) break; const t = Date.now();
+      for (const k of u.ids){ const j = S.journal.find(x => x.id === k); if (j){ j.compta = u.to ? "" : "x"; j.upd = t; } }
+      persist(); V.undo = null; const el = document.getElementById("undobar"); if (el) el.hidden = true; toast("Annulé"); render(); break; }
+    case "dclr": { const i = b.previousElementSibling; if (i && i.tagName === "INPUT"){ i.value = ""; i.dispatchEvent(new Event("input", {bubbles:true})); i.dispatchEvent(new Event("change", {bubbles:true})); toast("Date effacée : enregistre pour valider"); } break; }
+    case "pl-add": { const bien = b.dataset.id; V.back = "bld"; V.bsub = "vue"; V.bsel = bien; V.editId = null; V.draft = newDraft({type:"Sortie", bien, cat:b.dataset.cat || "Livret A", lib:"Mis de côté", pt:true}); V.tab = "add"; render(); break; }
+  }
+});
+/* « Effacer la date » à côté des dates facultatives des feuilles (sur iPhone on ne peut pas vider un champ date) */
+new MutationObserver(() => { const sh = document.getElementById("sheet"); if (!sh) return;
+  sh.querySelectorAll('input[type="date"]').forEach(i => { if (!/(^|-)fin$|^t-debut$|-fin-|-sortie$/.test(i.id || "")) return; const n = i.nextElementSibling; if (n && n.classList.contains("dclr")) return;
+    const bt = document.createElement("button"); bt.type = "button"; bt.className = "mini dclr"; bt.dataset.act = "dclr"; bt.textContent = "Effacer la date"; i.insertAdjacentElement("afterend", bt); }); }).observe(document.body, {childList:true, subtree:true});
 
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
 
@@ -2737,7 +2839,7 @@ function sheetBail(){
     <div class="grid2">${dxS("bl-assclause", "Défaut d'assurance", [["Non", "Non"], ["Oui", "Oui"]], "Non")}${dxS("bl-trouble", "Troubles de voisinage", [["Non", "Non"], ["Oui", "Oui"]], "Non")}</div>
     ${dxS("bl-servit", "Servitude de résidence principale (secteur du PLU)", [["Non", "Non"], ["Oui", "Oui"]], "Non")}
     ${dxF("bl-ville", "Fait à", (S.cfg && S.cfg.ville) || "")}
-    <div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-rel">PDF de relecture</button></div><div class="btns"><button class="btn" style="flex:1" data-act="bail-pdf">Créer le bail (PDF)</button><button class="btn" style="flex:1" data-act="bail-sign">Faire signer à l'écran</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-rel">PDF de relecture</button></div><div class="btns"><button class="btn" style="flex:1" data-act="bail-pdf">Créer le bail (PDF)</button><button class="btn" style="flex:1" data-act="bail-sign">Faire signer à l'écran</button></div><div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-paper">Signer sur papier (1 page à imprimer)</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div><div class="small muted">Signature à l'écran : simple et sans imprimante, preuve moins forte. Papier : tu imprimes seulement la dernière page, tu la fais signer à la main et tu la rescannes ici.</div>`);
 }
 function bailRead(){ const o = {}; for (const k of ["bail", "badr", "loc", "adr", "type", "surf", "etage", "pieces", "copro", "dpe", "chauf", "eau", "annex", "duree", "debut", "regchg", "jour", "irl", "enc", "tendue", "encinfo", "ville", "bmob", "lmob", "assclause", "trouble", "servit"]) o[k] = dxV("bl-" + k);
   o.lhc = parseNum(dxV("bl-lhc")) || 0; o.chg = parseNum(dxV("bl-chg")) || 0; o.dep = parseNum(dxV("bl-dep")) || 0; return o; }
@@ -2974,11 +3076,18 @@ function sgSetup(){
   cv.onpointermove = e => { if (!SG.drawing) return; const [x, y] = pos(e); c.lineTo(x, y); c.stroke(); c.beginPath(); c.moveTo(x, y); e.preventDefault(); };
   cv.onpointerup = cv.onpointercancel = () => { SG.drawing = false; };
 }
-function sgExport(){ const cv = $("#sg-cv"), W = 420, H = Math.round(W * cv.height / cv.width), t = document.createElement("canvas"); t.width = W; t.height = H;
+function sgExport(W0){ const cv = $("#sg-cv"), W = W0 || 420, H = Math.round(W * cv.height / cv.width), t = document.createElement("canvas"); t.width = W; t.height = H;
   const c = t.getContext("2d"); c.fillStyle = "#fff"; c.fillRect(0, 0, W, H); c.drawImage(cv, 0, 0, W, H); return {d:t.toDataURL("image/jpeg", 0.85), w:W, h:H}; }
 function signFlow(parties, done, what, fp){ V.sg = {parties, i:0, res:{}, done, what, fingerprint:fp}; sgStep(); }
 function sgStep(){
   const sg = V.sg, p = sg.parties[sg.i];
+  if (sg.ph === "par"){
+    openSheet(`<h2>Paraphe · ${esc(p.label)}</h2><div class="small muted">${sg.i + 1} sur ${sg.parties.length}</div>
+      <div class="info"><b>${esc(p.name || p.label)}</b> : trace tes initiales une seule fois. L'appli les reproduit en bas de chaque page du document. Ce n'est pas un paraphe fait à la main sur chaque page.</div>
+      <canvas id="sg-cv" style="width:100%;height:110px;border:2px dashed var(--muted);border-radius:12px;background:#fff;touch-action:none;display:block"></canvas>
+      <div class="small muted">Initiales avec le doigt dans le cadre.</div>
+      <div class="btns"><button class="btn" style="flex:1" data-act="sg-ok">Valider le paraphe</button><button class="btn ghost" data-act="sg-clear">Effacer</button><button class="btn ghost" data-act="sg-skip">Sans paraphe</button></div>`);
+  } else
   openSheet(`<h2>Signature · ${esc(p.label)}</h2><div class="small muted">${sg.i + 1} sur ${sg.parties.length}${sg.i > 0 ? " · passe le téléphone à " + esc(p.name || p.label) : ""}</div>
     <div class="info"><b>${esc(p.name || p.label)}</b> : « Lu et approuvé. J'accepte de signer électroniquement ${esc(sg.what || "ce document")}. »</div>
     <canvas id="sg-cv" style="width:100%;height:170px;border:2px dashed var(--muted);border-radius:12px;background:#fff;touch-action:none;display:block"></canvas>
@@ -2988,27 +3097,35 @@ function sgStep(){
 }
 async function sgFinish(){
   const sg = V.sg, ts = new Date().toISOString(); sg.res.ts = ts; sg.res.hash = await sha256Hex(JSON.stringify({ctx:sg.fingerprint || "", ts, sig:sg.parties.map(p => [p.key, p.name, sg.res[p.key] && sg.res[p.key].ts, sg.res[p.key] && sg.res[p.key].d])}));
-  closeSheet(); const f = sg.done; V.sg = null; await f(sg.res);
+  closeSheet(); const f = sg.done; V.sg = null; proofStep(sg.res, f);
 }
 function sigBlock(d, ville, date, sig){
   if (RELECT){ d.need(110); d.y -= 14; d.line(d.M, d.y + 8, d.W - d.M, d.y + 8, "#B3261E"); d.para("Projet destiné à la relecture. Aucune signature n'est portée. Une fois les points vérifiés avec le locataire, crée le document définitif pour le signer.", 10, 14); d.y -= 14;
     d.text(d.M, d.y, "Relu et confirmé par le locataire le ____ / ____ / ________      Initiales : ________", {size:10.5}); d.y -= 22; d.text(d.M, d.y, "Relu par le bailleur le ____ / ____ / ________      Initiales : ________", {size:10.5}); d.y -= 20; return; }
+  if (PAPER && !sig){ d.newPage(); d.paperRef = PAPER.ref; d.text(d.M, d.y, "PAGE DE SIGNATURE", {size:15, bold:true, color:"#0E6B5C"}); d.y -= 22;
+    d.para("Référence du document : " + PAPER.ref + ". Il comporte " + d.pages.length + " pages, toutes numérotées et portant cette référence. Imprime uniquement cette dernière page, fais-la signer et parapher à la main, puis scanne-la dans l'appli.", 10, 14); d.y -= 8; }
   d.need(sig ? 190 : 120); d.y -= 10; d.text(d.M, d.y, "Fait" + (ville ? " à " + ville : "") + ", le " + frDate(sig ? sig.ts.slice(0, 10) : (date || todayIso())) + ", en deux exemplaires.", {size:10.5}); d.y -= 34;
   d.text(d.M, d.y, "Le bailleur (ou son mandataire)", {size:10, bold:true}); d.text(d.W - d.M, d.y, "Le locataire", {size:10, bold:true, right:true}); d.y -= 14;
   d.text(d.W - d.M, d.y, sig ? "(« lu et approuvé », signature électronique)" : "(mention « lu et approuvé »)", {size:8.5, right:true, color:"#5C6B66"}); d.y -= 62;
   d.line(d.M, d.y, d.M + 190, d.y, "#9AA8A3"); d.line(d.W - d.M - 190, d.y, d.W - d.M, d.y, "#9AA8A3");
   if (sig) for (const [k, x, right] of [["bailleur", d.M, false], ["locataire", d.W - d.M - 190, true]]){ const s = sig[k]; if (!s) continue; const h = Math.min(56, 160 * s.h / s.w), w = h === 56 ? 56 * s.w / s.h : 160;
     d.image(x + 4, d.y + 3, w, h, s); d.text(x, d.y - 11, "Signé le " + hhmm(s.ts), {size:8, color:"#5C6B66"}); }
+  if (PAPER && !sig){ d.y -= 30; d.text(d.M, d.y, "Paraphes (initiales) :   bailleur ______________      locataire ______________", {size:10}); d.y -= 22;
+    d.para("En signant, chaque partie confirme avoir lu toutes les pages du document portant la référence " + PAPER.ref + " et en conserve un exemplaire.", 9.5, 13.5); }
 }
 function proofPage(d, sig, titre){
-  d.newPage(); d.text(d.M, d.y, "PREUVE DE SIGNATURE ÉLECTRONIQUE", {size:15, bold:true, color:"#0E6B5C"}); d.y -= 26; d.para("Document : " + titre, 10.5, 15); d.y -= 6;
+  d.stampSig = sig; d.newPage(); d.text(d.M, d.y, "PREUVE DE SIGNATURE ÉLECTRONIQUE", {size:15, bold:true, color:"#0E6B5C"}); d.y -= 26; d.para("Document : " + titre, 10.5, 15); d.y -= 6;
   dTable(d, [{h:"Rôle", w:110}, {h:"Nom", w:230}, {h:"Date et heure de signature", w:171}], [["Bailleur", sig.bailleur], ["Locataire", sig.locataire]].filter(r => r[1]).map(r => [r[0], r[1].nom || "", hhmm(r[1].ts)]));
   d.para("Empreinte numérique (SHA-256) du contenu et des signatures :", 10, 14); const hx = sig.hash || "indisponible"; d.para(hx.slice(0, 32), 10, 14); d.para(hx.slice(32), 10, 14); d.y -= 8;
   d.para("Signatures électroniques simples (articles 1366 et 1367 du Code civil ; règlement européen n° 910/2014 « eIDAS »), tracées à l'écran de l'appareil du bailleur, en présence des signataires, après leur mention « lu et approuvé ». L'identité des signataires n'est pas vérifiée par un tiers de confiance : cette preuve est moins forte qu'une signature électronique avancée ou qualifiée. Conserve ce PDF : le document et l'empreinte ci-dessus en font foi.", 9.5, 13.5);
+  if ((sig.bailleur && sig.bailleur.paraphe) || (sig.locataire && sig.locataire.paraphe)){ d.y -= 6; d.para("Paraphes : chaque partie a tracé ses initiales une seule fois à l'écran ; elles sont reproduites en bas de chaque page, avec la référence du document. Ce ne sont pas des paraphes faits à la main sur chaque page.", 9.5, 13.5); }
+  const pr = sig.proofs; if (pr){ d.y -= 6; d.text(d.M, d.y, "Éléments déclarés par le bailleur au moment de la signature", {size:10.5, bold:true, color:"#0E6B5C"}); d.y -= 16;
+    for (const l of [["Pièce d'identité du locataire jointe au dossier", pr.idLoc], ["Pièce d'identité du bailleur jointe au dossier", pr.idBail], ["E-mail de confirmation « lu et approuvé » demandé au locataire" + (pr.mail ? " (" + pr.mail + ")" : ""), pr.mailSent], ["Confirmation du locataire reçue par e-mail (conservée)", pr.mailRec]]) d.para((l[1] ? "[x] " : "[ ] ") + l[0], 9.5, 13.5);
+    d.para("Ces mentions sont déclaratives : elles n'ont pas été vérifiées par l'appli.", 8.5, 12); }
 }
 function sigBanner(e){
   return `<div class="btns"><button class="btn sm ghost" data-act="dx-rel">PDF de relecture (à relire avant de signer)</button></div>` + (e.sig ? `<div class="info">Signé par ${esc(e.sig.bailleur.nom || "le bailleur")} le ${hhmm(e.sig.bailleur.ts)} et par ${esc(e.sig.locataire.nom || "le locataire")} le ${hhmm(e.sig.locataire.ts)}. Modifier le document efface les signatures.</div><div class="btns"><button class="btn sm ghost" data-act="dx-sign">Refaire les signatures</button></div>`
-    : `<div class="btns"><button class="btn sm ghost" data-act="dx-sign">Faire signer sur l'écran</button></div>`);
+    : `<div class="btns"><button class="btn sm ghost" data-act="dx-sign">Faire signer sur l'écran</button><button class="btn sm ghost" data-act="dx-paper">Signer sur papier (1 page à imprimer)</button></div>`);
 }
 
 /* ---------- ZIP (sans compression) : dossier d'un bien rangé en sous-dossiers ---------- */
@@ -3048,13 +3165,15 @@ document.addEventListener("click", async ev => {
   switch (a){
     case "sg-clear": sgSetup(); break;
     case "sg-cancel": V.sg = null; closeSheet(); break;
-    case "sg-ok": { if (!SG.dirty) return toast("Signe d'abord dans le cadre"); const sg = V.sg, p = sg.parties[sg.i]; sg.res[p.key] = Object.assign(sgExport(), {ts:new Date().toISOString(), nom:p.name || p.label}); sg.i++;
-      if (sg.i < sg.parties.length) sgStep(); else await sgFinish(); break; }
+    case "sg-ok": { if (!SG.dirty) return toast("Trace d'abord dans le cadre"); const sg = V.sg, p = sg.parties[sg.i];
+      if (sg.ph !== "par"){ sg.res[p.key] = Object.assign(sgExport(), {ts:new Date().toISOString(), nom:p.name || p.label}); sg.ph = "par"; sgStep(); break; }
+      sg.res[p.key].paraphe = sgExport(240); sg.ph = null; sg.i++; if (sg.i < sg.parties.length) sgStep(); else await sgFinish(); break; }
+    case "sg-skip": { const sg = V.sg; sg.ph = null; sg.i++; if (sg.i < sg.parties.length) sgStep(); else await sgFinish(); break; }
     case "dx-sign": { if (!e) break; const bn = bailleurInfo().nom || "Bailleur", what = (V.doc.kind === "edl" ? "cet état des lieux" : "cet inventaire");
       signFlow([{key:"bailleur", label:"Bailleur", name:bn}, {key:"locataire", label:"Locataire", name:e.loc || "Locataire"}], async res => {
         e.sig = res; e.upd = Date.now(); persist(); render(); toast("Signé le " + hhmm(res.ts)); }, what, JSON.stringify(Object.assign({}, e, {sig:null}))); break; }
     case "bail-sign": { const o = bailRead(); if (!o.loc || !o.debut) return toast("Indique au moins le locataire et la date de prise d'effet"); if (o.lhc <= 0) return toast("Indique le loyer hors charges");
-      if (o.dep > r2(o.lhc * 2) + 0.005) return toast("Le dépôt ne peut pas dépasser 2 mois de loyer hors charges (" + eur(o.lhc * 2) + ")");
+      { const mx = bkind(V.bsel) === "vide" ? 1 : 2; if (o.dep > r2(o.lhc * mx) + 0.005) return toast("Le dépôt ne peut pas dépasser " + mx + " mois de loyer hors charges (" + eur(o.lhc * mx) + ")"); }
       S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.bailleur = o.bail; S.cfg.bailleurAdr = o.badr; S.cfg.ville = o.ville;
       const bn = S.biens.find(x => x.id === V.bsel); if (bn){ if (o.adr) bn.adresse = o.adr; bn.desc = {type:o.type, surface:o.surf, etage:o.etage, pieces:o.pieces, copro:o.copro, dpe:o.dpe, chauffage:o.chauf, eauch:o.eau, annexes:o.annex}; } persist();
       const bien = V.bsel; signFlow([{key:"bailleur", label:"Bailleur", name:o.bail || "Bailleur"}, {key:"locataire", label:"Locataire", name:o.loc}], async res => {
@@ -3146,9 +3265,13 @@ document.addEventListener("change", ev => {
 });
 /* ---------- Version d'essai (faux biens, adresses, locataires) ---------- */
 function demoCard(){
-  const back = (() => { try { return !!localStorage.getItem("glf-avant-essai"); } catch(e){ return false; } })();
-  return `<div class="card"><h2>Version d'essai</h2><div class="small muted">Charge de faux biens, adresses, locataires, états des lieux et inventaires pour tester toutes les fonctions sans toucher à tes vraies données.</div>
-    <div class="btns"><button class="btn sm" data-act="demo">Charger la version d'essai</button>${S.demo && back ? '<button class="btn sm ghost" data-act="demo-back">Retrouver mes données</button>' : ""}</div></div>`;
+  const back = DEMO ? false : (() => { try { return !!localStorage.getItem("glf-avant-essai"); } catch(e){ return false; } })();
+  const row = (act, t, s) => `<div class="row" data-act="${act}" style="cursor:pointer"><div class="main"><div class="t">${t}</div><div class="s">${s}</div></div><div class="s" style="font-size:22px;line-height:1">›</div></div>`;
+  return `<div class="card"><h2>Démo et aide</h2><div class="rows">
+    ${DEMO ? row("exitdemo", "Quitter le mode démo", "") : row("demo", "Voir le mode démo", "Avec des données d'exemple")}
+    ${!DEMO && S.demo && back ? row("demo-back", "Retrouver mes données", "Quitter la démo") : ""}
+    ${row("guide", "Mode d'emploi", "Le guide, expliqué simplement")}
+    ${row("tour", "Parcours guidé", "Les grandes étapes en quelques écrans")}</div></div>`;
 }
 
 /* ============ Reprendre une liste depuis un PDF ou un texte collé (inventaire, état des lieux) ============ */
@@ -3911,6 +4034,225 @@ async function docTextOf(f){
   throw new Error("texte introuvable dans ce fichier");
 }
 
+/* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
+let PAPER = null;
+const refFmt = h => String(h || "").slice(0, 12).toUpperCase().replace(/(.{4})(?=.)/g, "$1-");
+async function withPaper(ref, fn){ const was = PAPER; PAPER = {ref}; try { return await fn(); } finally { PAPER = was; } }
+
+/* tampon sur chaque page : référence du document (papier) ou référence de l'empreinte (écran) + paraphes */
+function stampParaphes(d, sig){
+  const L = [["bailleur", "bailleur"], ["locataire", "locataire"]].map(([k, l]) => sig[k] && sig[k].paraphe ? [l, sig[k].paraphe] : null).filter(Boolean);
+  d.imgs = d.imgs || []; d.pageImg = d.pageImg || {}; const ks = L.map(([l, o]) => { d.imgs.push(o); return d.imgs.length - 1; });
+  d.pages.forEach((ops, i) => { d.cur = ops;
+    L.forEach(([l, o], j) => { const h = 17, w = Math.min(60, h * o.w / o.h), x = d.W - d.M - 150 + j * 76; (d.pageImg[i] = d.pageImg[i] || []).push(ks[j]);
+      ops.push("q " + w.toFixed(1) + " 0 0 " + h + " " + x.toFixed(1) + " 48 cm /Im" + ks[j] + " Do Q"); d.text(x + w + 3, 54, "paraphe " + l, {size:6.5, color:"#8A9690"}); }); });
+}
+PdfDoc.prototype.finish = (function(orig){
+  return function(sub){
+    const ref = this.paperRef || (this.stampSig && this.stampSig.hash ? refFmt(this.stampSig.hash) : "");
+    if (ref) this.pages.forEach((ops, i) => { this.cur = ops; this.text(this.W / 2, 30, "Réf. " + ref, {size:8.5, center:true, color:"#5C6B66"}); });
+    if (this.stampSig) stampParaphes(this, this.stampSig);
+    return orig.call(this, sub);
+  };
+})(PdfDoc.prototype.finish);
+
+/* étape « renforcer la preuve » après une signature à l'écran */
+function proofStep(res, f){
+  V.pf = {res, f}; const t = S.locataires.find(x => !x.del && res.locataire && x.nom === res.locataire.nom), ref = refFmt(res.hash);
+  openSheet(`<h2>Renforcer la preuve (conseillé)</h2><div class="small muted">Ces mentions s'écrivent sur la page de preuve du PDF. Plus tu en coches, plus le dossier est solide. Elles restent déclaratives.</div>
+    <label class="f">E-mail du locataire<input id="pf-mail" type="email" inputmode="email" value="${esc((t && t.email) || "")}" autocomplete="off"></label>
+    <label class="ck"><input type="checkbox" id="pf-idl"> Pièce d'identité du locataire jointe au dossier (fiche locataire › Documents)</label>
+    <label class="ck"><input type="checkbox" id="pf-idb"> Ma pièce d'identité de bailleur jointe au dossier</label>
+    <label class="ck"><input type="checkbox" id="pf-ms"> J'ai envoyé au locataire un e-mail pour qu'il confirme « lu et approuvé »</label>
+    <label class="ck"><input type="checkbox" id="pf-mr"> J'ai reçu sa confirmation par e-mail (je la conserve)</label>
+    <div class="btns"><button class="btn ghost" data-act="pf-mail">Écrire l'e-mail de confirmation</button></div>
+    <div class="small muted">Réf. du document : ${esc(ref)}. Le locataire répond simplement « Lu et approuvé » à l'e-mail.</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="pf-ok">Continuer</button><button class="btn ghost" data-act="pf-skip">Passer</button></div>`);
+}
+const nl = "\n";
+function paperSteps(p){
+  return `<div class="info"><b>Signature papier · réf. ${esc(p.ref)}</b></div>
+    <ol class="small" style="padding-left:18px;margin:6px 0;line-height:1.55"><li>Enregistre le PDF (il est aussi gardé dans les documents du logement).</li><li>Imprime <b>uniquement la dernière page</b> (« PAGE DE SIGNATURE »), chez toi, au tabac, à la mairie ou à la médiathèque. Pas d'imprimante : le locataire peut l'imprimer de son côté.</li><li>Le bailleur et le locataire <b>signent et paraphent à la main</b> cette page.</li><li>Scanne-la avec le bouton ci-dessous.</li><li>Envoie le dossier (PDF complet + page signée) par e-mail.</li></ol>
+    <div class="btns"><button class="btn ghost" data-act="pp-save">1 · Enregistrer le PDF</button><label class="btn" style="flex:1;text-align:center;cursor:pointer">2 · Scanner la page signée<input id="pp-file" type="file" accept="image/*,application/pdf" hidden></label></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="pp-send">3 · Envoyer le dossier par e-mail</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
+    <div class="small muted">Pour que le bail soit solide, il vaut mieux que chaque page soit paraphée à la main. Ici toutes les pages portent la même référence (${esc(p.ref)}) : c'est un repère, pas une garantie juridique. En cas de doute, demande à ANIL, à un notaire ou à un avocat.</div>`;
+}
+async function paperMake(kind, build, bien, titre, name){
+  const hash = await sha256Hex(JSON.stringify(kind) + titre + (await sha256Hex(build.fp))), ref = refFmt(hash);
+  const pdf = await withPaper(ref, build.run), fid = uid(), fname = name + " (réf " + ref.slice(0, 9) + ").pdf";
+  await flPut(fid, {name:fname, type:"application/pdf", buf:pdf.buffer}); const dt = todayIso();
+  docList("docs").push({id:fid, bien, kind:"bail", nom:titre + " à signer sur papier, réf. " + ref, fname, date:dt, type:"application/pdf", size:pdf.length, upd:Date.now()});
+  V.pp = {fid, ref, bien, titre, fname, scan:null}; persist(); render(); openSheet("<h2>Signer sur papier</h2>" + paperSteps(V.pp));
+}
+document.addEventListener("change", async ev => {
+  const f = ev.target; if (!f || f.id !== "pp-file" || !f.files || !f.files[0] || !V.pp) return;
+  const file = f.files[0], buf = await file.arrayBuffer(), fid = uid(), p = V.pp, ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const name = "Page signée réf " + p.ref.slice(0, 9) + "." + ext;
+  await flPut(fid, {name, type:file.type || "image/jpeg", buf});
+  docList("docs").push({id:fid, bien:p.bien, kind:"bail", nom:"Page signée à la main, réf. " + p.ref, fname:name, date:todayIso(), type:file.type || "image/jpeg", size:buf.byteLength, upd:Date.now()});
+  p.scan = {fid, name, type:file.type || "image/jpeg"}; persist(); render(); toast("Page signée enregistrée");
+  openSheet("<h2>Signer sur papier</h2>" + paperSteps(p) + '<div class="info">Page signée enregistrée : ' + esc(name) + ". Vérifie sur le scan que la référence " + esc(p.ref) + " est lisible, puis envoie le dossier.</div>");
+});
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
+  switch (a){
+    case "pf-mail": { const pf = V.pf; if (!pf) break; const mail = $("#pf-mail").value.trim(), ref = refFmt(pf.res.hash), nom = (pf.res.locataire && pf.res.locataire.nom) || "";
+      const body = "Bonjour " + nom + "," + nl + nl + "Nous avons signé ensemble le contrat de location le " + hhmm(pf.res.ts) + " (référence du document : " + ref + ")." + nl + "Merci de répondre à ce message par « Lu et approuvé », pour confirmer que vous avez lu l'ensemble du document et que vous l'acceptez." + nl + nl + "Cordialement";
+      location.href = "mailto:" + encodeURIComponent(mail) + "?subject=" + encodeURIComponent("Confirmation du contrat de location, réf. " + ref) + "&body=" + encodeURIComponent(body); break; }
+    case "pf-ok": case "pf-skip": { const pf = V.pf; if (!pf) break;
+      if (a === "pf-ok") pf.res.proofs = {mail:$("#pf-mail").value.trim(), idLoc:$("#pf-idl").checked, idBail:$("#pf-idb").checked, mailSent:$("#pf-ms").checked, mailRec:$("#pf-mr").checked};
+      V.pf = null; closeSheet(); await pf.f(pf.res); break; }
+    case "bail-paper": { const o = bailRead(); if (!o.loc || !o.debut) return toast("Indique au moins le locataire et la date de prise d'effet"); if (o.lhc <= 0) return toast("Indique le loyer hors charges");
+      const mx = bkind(V.bsel) === "vide" ? 1 : 2; if (o.dep > r2(o.lhc * mx) + 0.005) return toast("Le dépôt ne peut pas dépasser " + mx + " mois de loyer hors charges (" + eur(o.lhc * mx) + ")");
+      S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.bailleur = o.bail; S.cfg.bailleurAdr = o.badr; S.cfg.ville = o.ville; persist();
+      await paperMake("bail", {fp:JSON.stringify(o), run:async () => bailPdf(o)}, V.bsel, "Bail", "Bail " + o.debut); break; }
+    case "dx-paper": { const e = V.doc ? docCur() : null; if (!e) break; const kind = V.doc.kind, bien = V.bsel;
+      await paperMake(kind, {fp:JSON.stringify(Object.assign({}, e, {sig:null})), run:async () => kind === "edl" ? await edlPdf(e) : invPdf(e)}, e.bien || bien, kind === "edl" ? "État des lieux" : "Inventaire", (kind === "edl" ? "Etat des lieux " : "Inventaire ") + e.date); break; }
+    case "pp-save": { const p = V.pp; if (!p) break; const r = await flGet(p.fid); if (r) await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); break; }
+    case "pp-send": { const p = V.pp; if (!p) break; const r = await flGet(p.fid), sc = p.scan ? await flGet(p.scan.fid) : null; if (!r) break;
+      if (!sc){ toast("Scanne d'abord la page signée (étape 2)"); break; }
+      const files = [new File([r.buf], r.name, {type:"application/pdf"}), new File([sc.buf], sc.name, {type:sc.type})];
+      try { if (navigator.canShare && navigator.canShare({files})){ await navigator.share({files, title:"Document signé, réf. " + p.ref, text:"Document complet et page de signature signée à la main. Référence : " + p.ref}); break; } } catch(e){ if (e && e.name === "AbortError") break; }
+      await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); await saveFile(sc.name, new Uint8Array(sc.buf), sc.type); toast("Fichiers prêts : joins-les à ton e-mail"); break; }
+  }
+});
+
+/* ---------- Mise à jour des règles avec une IA (export Word → réponse de l'IA → import validé ligne par ligne) ---------- */
+const RULE_HOSTS = ["legifrance.gouv.fr", "service-public.fr", "impots.gouv.fr", "bofip.impots.gouv.fr", "anil.org", "economie.gouv.fr", "urssaf.fr", "vie-publique.fr"];
+const RULES = [
+  {id:"seuilMicroFoncier", prop:"seuilMicro", div:1, titre:"Seuil du micro-foncier (revenus bruts annuels de location vide)", unite:"€", def:15000, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
+  {id:"abattMicroFoncier", prop:"abattMicro", div:100, titre:"Abattement forfaitaire du micro-foncier", unite:"%", def:30, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
+  {id:"forfaitGestion", prop:"forfaitGestion", div:1, titre:"Forfait de frais de gestion par local au régime réel foncier (ligne 222 de la 2044)", unite:"€", def:20, src:"Notice 2044", url:"https://www.impots.gouv.fr/formulaire/2044/declaration-des-revenus-fonciers"},
+  {id:"plafondDeficit", prop:"plafondDeficit", div:1, titre:"Plafond annuel d'imputation du déficit foncier (hors intérêts) sur le revenu global", unite:"€", def:10700, src:"Notice 2044 · BOFiP déficits fonciers", url:"https://bofip.impots.gouv.fr/export/pdf/7391"},
+  {id:"plafondDeficitReno", prop:"plafondDeficitReno", div:1, titre:"Plafond relevé du déficit foncier avec dépenses de rénovation énergétique", unite:"€", def:21400, src:"Notice 2044", url:"https://www.impots.gouv.fr/formulaire/2044/declaration-des-revenus-fonciers"},
+  {id:"reportDeficit", prop:"reportAns", div:1, titre:"Durée de report du déficit foncier", unite:"ans", def:10, src:"Notice 2044 · BOFiP déficits fonciers", url:"https://bofip.impots.gouv.fr/export/pdf/7391"}
+];
+/* les valeurs de la compta foncière lisent les valeurs validées (S.regles.vals) quand il y en a */
+for (const r of RULES){ const def = FONC_REGLES[r.prop]; Object.defineProperty(FONC_REGLES, r.prop, {enumerable:true, get(){ const v = S && S.regles && S.regles.vals && S.regles.vals[r.id]; return v == null ? def : v / r.div; }}); }
+{ const dv = FONC_REGLES.verif; Object.defineProperty(FONC_REGLES, "verif", {enumerable:true, get(){ return (S && S.regles && S.regles.verif) || dv; }}); }
+const rgVal = r => { const v = S && S.regles && S.regles.vals && S.regles.vals[r.id]; return v == null ? r.def : v; };
+const rgHost = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch(e){ return ""; } };
+const rgOfficial = u => { const h = rgHost(u); return !!h && RULE_HOSTS.some(x => h === x || h.endsWith("." + x)); };
+const rgNum = s => { const n = parseFloat(String(s || "").replace(/\s| | /g, "").replace(",", ".").replace(/[^\d.]/g, "")); return isFinite(n) && n >= 0 ? n : null; };
+const rgDate = () => { const d = new Date(); return MOIS[d.getMonth()].toLowerCase() + " " + d.getFullYear(); };
+
+function rgPrompt(){
+  const dt = frDate(todayIso());
+  return [
+"CONSIGNE POUR L'IA (copie tout ce document dans une IA qui a accès à internet, par exemple ChatGPT, Claude ou Gemini avec la recherche web activée)",
+"",
+"Tu es un assistant de vérification juridique et fiscale pour une application française de gestion locative destinée aux bailleurs particuliers (location meublée LMNP et location vide, revenus fonciers). Nous sommes le " + dt + ". Tu dois utiliser la recherche web.",
+"",
+"MISSION : vérifier, point par point, chaque règle et chaque chiffre des parties « POINTS CHIFFRÉS » et « TEXTES DU GUIDE » ci-dessous, et dire s'il est encore exact aujourd'hui.",
+"",
+"SOURCES AUTORISÉES (uniquement) : legifrance.gouv.fr, service-public.fr, impots.gouv.fr, bofip.impots.gouv.fr, anil.org, economie.gouv.fr, urssaf.fr, vie-publique.fr.",
+"INTERDIT : blogs, forums, agences immobilières, sites de comptables ou commerciaux, articles de presse, autres IA, ta mémoire sans source.",
+"",
+"MÉTHODE (obligatoire, dans cet ordre) :",
+"1. Pour chaque point, ouvre la page officielle et lis le texte en vigueur à la date du jour.",
+"2. Note l'article ou la rubrique précise et la date de publication ou de mise à jour de la page.",
+"3. Compare avec la valeur actuelle indiquée dans ce document.",
+"4. Si la valeur est identique, réponds quand même par un bloc avec statut: inchangé.",
+"5. Si tu ne trouves aucune source officielle claire, écris statut: doute et certitude: doute. N'invente rien, ne devine pas.",
+"6. Ne donne aucun conseil et aucun avis : tu vérifies des faits. Ne reformule pas les textes du guide, indique seulement ce qui est faux ou dépassé.",
+"7. Si tu constates une règle nouvelle, supprimée ou un seuil absent de ce document qui concerne un bailleur particulier, ajoute un bloc avec id: nouveau-point.",
+"8. N'écris aucune phrase en dehors des blocs (ni introduction, ni conclusion, ni liste).",
+"",
+"FORMAT DE LA RÉPONSE : un bloc par point, exactement comme ci-dessous, une information par ligne, sans mise en forme (pas de gras, pas de tableau, pas de puces) :",
+"CHANGEMENT",
+"id: <identifiant du point, copié tel quel>",
+"statut: inchangé ou modifié ou doute",
+"ancien: <valeur actuelle de l'application>",
+"nouveau: <valeur vérifiée ; pour un point chiffré, le nombre seul sans unité>",
+"source: <URL exacte de la page officielle que tu as ouverte>",
+"article: <article de loi ou rubrique>",
+"extrait: <phrase copiée mot pour mot de la source, entre guillemets>",
+"date_source: <JJ/MM/AAAA>",
+"pourquoi: <une phrase : ce qui a changé ou pourquoi tu confirmes>",
+"certitude: officiel ou doute",
+"FIN",
+"",
+"Quand tu as fini, ta réponse ne contient que des blocs CHANGEMENT … FIN. Elle sera importée dans l'application, qui n'applique rien sans validation de l'utilisateur."
+  ].join("\n");
+}
+function rgGuideText(){
+  try { const d = document.createElement("div"); d.innerHTML = guideSections().join ? guideSections().join("") : String(guideSections());
+    return d.innerHTML.replace(/<\/(tr|p|li|div|h2|h3|summary)>/gi, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/<\/t[dh]>/gi, " | ").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
+  } catch(e){ return "(texte du guide indisponible)"; }
+}
+async function rgExport(){
+  const x = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"), enc = new TextEncoder();
+  const par = (t, o = {}) => `<w:p><w:pPr>${o.h ? '<w:pStyle w:val="Heading1"/>' : ""}<w:spacing w:after="${o.h ? 160 : 60}"/></w:pPr><w:r><w:rPr>${o.b || o.h ? "<w:b/>" : ""}${o.g ? '<w:color w:val="666666"/>' : ""}${o.h ? '<w:sz w:val="30"/>' : ""}</w:rPr><w:t xml:space="preserve">${x(t)}</w:t></w:r></w:p>`;
+  const lines = [];
+  lines.push(par("Gestion Locative Facile · vérification des règles", {h:1}), par("Document généré le " + frDate(todayIso()) + " · version de l'appli " + APP_VERSION, {g:1}));
+  for (const l of rgPrompt().split("\n")) lines.push(par(l));
+  lines.push(par("POINTS CHIFFRÉS (à vérifier un par un)", {h:1}));
+  for (const r of RULES) lines.push(par("id: " + r.id, {b:1}), par("point: " + r.titre), par("valeur actuelle: " + rgVal(r) + " " + r.unite), par("source de départ: " + r.src + " · " + r.url), par("dernière vérification: " + FONC_REGLES.verif), par(" "));
+  lines.push(par("TEXTES DU GUIDE (à vérifier ; en cas de différence, utilise id: texte-<sujet>)", {h:1}));
+  for (const l of rgGuideText().split("\n")) lines.push(par(l));
+  const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + lines.join("") + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>';
+  const files = [
+    {name:"[Content_Types].xml", data:enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')},
+    {name:"_rels/.rels", data:enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')},
+    {name:"word/document.xml", data:enc.encode(doc)}];
+  await saveFile("verification-regles-" + todayIso() + ".docx", zipStore(files), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "Colle tout le contenu dans une IA avec recherche web.");
+}
+function rgParse(text){
+  const out = [], re = /CHANGEMENT\s*([\s\S]*?)\s*FIN/gi; let m;
+  while ((m = re.exec(text))){ const o = {}; for (const line of m[1].split(/\r?\n/)){ const k = line.match(/^\s*([a-zA-Zéèê_]+)\s*:\s*(.*)$/); if (k) o[stripAcc(k[1])] = k[2].trim(); } if (o.id) out.push(o); }
+  return out;
+}
+function rgClassify(o){
+  const r = RULES.find(x => x.id === o.id), st = stripAcc(o.statut || ""), off = rgOfficial(o.source), cert = stripAcc(o.certitude || "");
+  const n = rgNum(o.nouveau);
+  let kind = "note", why = "";
+  if (st.startsWith("inchang")) kind = "same";
+  else if (st === "doute" || cert === "doute"){ kind = "doubt"; why = "L'IA n'est pas sûre : rien à appliquer."; }
+  else if (!off){ kind = "doubt"; why = "Source non officielle ou absente (" + (rgHost(o.source) || "aucune") + ") : rejetée."; }
+  else if (r){ if (n == null){ kind = "doubt"; why = "Valeur illisible."; } else if (n === rgVal(r)) kind = "same"; else kind = "num"; }
+  return Object.assign({r, kind, why, n, off}, o);
+}
+function rgShow(list){
+  V.rg = list.map(rgClassify); const ch = V.rg.filter(x => x.kind === "num" || x.kind === "note"), same = V.rg.filter(x => x.kind === "same"), doubt = V.rg.filter(x => x.kind === "doubt");
+  const card = (x, i) => `<div class="env" style="padding:10px 0"><div><b>${esc(x.r ? x.r.titre : x.id)}</b></div>
+    ${x.kind === "num" ? `<div class="small">Valeur actuelle <b>${esc(String(rgVal(x.r)))} ${esc(x.r.unite)}</b> → proposée <b>${esc(String(x.n))} ${esc(x.r.unite)}</b></div>` : `<div class="small">${esc(x.ancien || "")} → ${esc(x.nouveau || "")}</div>`}
+    <div class="small muted">${esc(x.pourquoi || "")}</div>${x.article ? `<div class="small muted">Article : ${esc(x.article)}${x.date_source ? " · source du " + esc(x.date_source) : ""}</div>` : ""}${x.extrait ? `<div class="small muted">« ${esc(x.extrait.replace(/^["«»\s]+|["«»\s]+$/g, ""))} »</div>` : ""}
+    ${x.source ? `<div class="small"><a href="${esc(x.source)}" target="_blank" rel="noopener">Ouvrir la source (${esc(rgHost(x.source))})</a>${x.off ? "" : " · <b style='color:var(--bad)'>non officielle</b>"}</div>` : ""}
+    <div class="btns"><button class="btn sm" data-act="rg-acc" data-i="${i}">${x.kind === "num" ? "Appliquer" : "Garder comme note"}</button><button class="btn sm ghost" data-act="rg-ign" data-i="${i}">Ignorer</button></div></div>`;
+  openSheet(`<h2>Réponse de l'IA</h2><div class="small muted">${V.rg.length} point(s) lus : ${same.length} inchangé(s), ${ch.length} à examiner, ${doubt.length} douteux. Ouvre la source de chaque ligne avant d'accepter.</div>
+    ${ch.length ? ch.map(x => card(x, V.rg.indexOf(x))).join("") : '<div class="info">Aucun changement à appliquer.</div>'}
+    ${doubt.length ? `<details style="margin-top:8px"><summary><b>Douteux ou rejetés (${doubt.length})</b></summary>${doubt.map(x => `<div class="small" style="padding:6px 0"><b>${esc(x.id)}</b> : ${esc(x.why)} ${esc(x.pourquoi || "")}</div>`).join("")}</details>` : ""}
+    ${same.length ? `<details style="margin-top:8px"><summary><b>Confirmés inchangés (${same.length})</b></summary>${same.map(x => `<div class="small" style="padding:4px 0">${esc(x.r ? x.r.titre : x.id)}</div>`).join("")}</details>` : ""}
+    <div class="btns"><button class="btn ghost" data-act="rg-done" style="flex:1">Terminer</button></div>`);
+}
+function rgRecord(x, applied){ S.regles = S.regles || {vals:{}, hist:[]}; S.regles.hist = S.regles.hist || []; S.regles.hist.unshift({ts:Date.now(), id:x.id, titre:x.r ? x.r.titre : x.id, ancien:x.ancien || "", nouveau:x.nouveau || "", source:x.source || "", pourquoi:x.pourquoi || "", applied}); S.regles.hist = S.regles.hist.slice(0, 60); }
+function rulesCard(){
+  const h = (S.regles && S.regles.hist) || [];
+  return `<div class="card"><h2>Mise à jour des règles</h2><div class="small muted">Les chiffres fiscaux et les règles changent. Exporte-les en Word, donne le fichier à une IA qui cherche sur internet (le prompt est dans le fichier), puis importe sa réponse : l'appli te montre ce qui change, pourquoi, avec la source, et n'applique rien sans ton accord. Dernière vérification des règles chiffrées : ${esc(FONC_REGLES.verif)}.</div>
+    <div class="btns"><button class="btn" data-act="rg-export">1 · Exporter en Word</button><label class="btn ghost" style="cursor:pointer">2 · Importer la réponse<input id="rg-file" type="file" accept=".txt,.md,.docx" hidden></label><button class="btn ghost" data-act="rg-paste">Coller la réponse</button></div>
+    <details style="margin-top:6px"><summary class="small"><b>Valeurs actuellement utilisées</b></summary>${RULES.map(r => `<div class="kv"><span class="small">${esc(r.titre)}</span><span class="num">${esc(String(rgVal(r)))} ${esc(r.unite)}</span></div>`).join("")}</details>
+    ${h.length ? `<div style="margin-top:8px"><b class="small">Historique des mises à jour</b>${h.slice(0, 15).map(x => `<div class="small" style="padding:6px 0;border-top:1px solid var(--line)"><b>${esc(x.titre)}</b> · ${frDate(new Date(x.ts).toISOString().slice(0, 10))}<br>${x.applied ? "Appliqué" : "Gardé en note"} : ${esc(x.ancien)} → ${esc(x.nouveau)}<br><span class="muted">${esc(x.pourquoi)}</span>${x.source ? `<br><a href="${esc(x.source)}" target="_blank" rel="noopener">source</a>` : ""}</div>`).join("")}</div>` : '<div class="small muted" style="margin-top:6px">Aucune mise à jour appliquée pour l\'instant.</div>'}
+    <div class="small muted" style="margin-top:6px">Une IA peut se tromper : ouvre toujours la source officielle avant d'accepter. Seuls les chiffres de la compta « location vide » changent automatiquement ; les autres points sont gardés en note.</div></div>`;
+}
+document.addEventListener("change", async ev => {
+  const f = ev.target; if (!f || f.id !== "rg-file" || !f.files || !f.files[0]) return;
+  try { const t = await docTextOf(f.files[0]), l = rgParse(t); if (!l.length) return toast("Aucun bloc CHANGEMENT … FIN trouvé dans ce fichier"); rgShow(l); } catch(e){ toast("Fichier illisible"); } f.value = "";
+});
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
+  switch (a){
+    case "rg-export": await rgExport(); break;
+    case "rg-paste": openSheet(`<h2>Coller la réponse de l'IA</h2><textarea id="rg-txt" rows="10" style="width:100%" placeholder="CHANGEMENT&#10;id: …&#10;FIN"></textarea><div class="btns"><button class="btn" style="flex:1" data-act="rg-parse">Lire la réponse</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break;
+    case "rg-parse": { const l = rgParse($("#rg-txt").value); if (!l.length) return toast("Aucun bloc CHANGEMENT … FIN trouvé"); rgShow(l); break; }
+    case "rg-acc": { const x = V.rg && V.rg[+b.dataset.i]; if (!x) break;
+      if (x.kind === "num"){ S.regles = S.regles || {vals:{}, hist:[]}; S.regles.vals = S.regles.vals || {}; S.regles.vals[x.r.id] = x.n; S.regles.verif = rgDate(); rgRecord(x, true); }
+      else rgRecord(x, false);
+      persist(); x.kind = "done"; toast(x.r ? "Appliqué" : "Gardé en note"); rgShow(V.rg.filter(y => y.kind !== "done").map(y => y)); render(); break; }
+    case "rg-ign": { const x = V.rg && V.rg[+b.dataset.i]; if (!x) break; x.kind = "done"; rgShow(V.rg.filter(y => y.kind !== "done")); break; }
+    case "rg-done": closeSheet(); render(); break;
+  }
+});
+
 /* ============ Version publique : Guide du bailleur, courrier d'option LMNP, avertissements ============ */
 const GUIDE_DATE = "octobre 2026";
 const GUIDE_WARN = `<div class="small muted" style="margin:8px 0">Outil d'aide à la gestion : ce guide ne remplace ni un notaire, ni un avocat, ni un expert-comptable. Les règles et les montants changent : vérifie toujours sur les sites officiels avant de décider. Dernière relecture : ${GUIDE_DATE}.</div>`;
@@ -3991,7 +4333,7 @@ function guideSections(){
     gsec("tx", "Textes de loi et sources", `<div class="small">Les règles de ce guide viennent de ces textes. Ouvre la source officielle avant toute décision : les textes évoluent. Dernière relecture : ${GUIDE_DATE}.</div>
       ${gtbl(["Sujet", "Texte à consulter"], [
         ["Location vide (bail, dépôt, préavis)", "Loi n° 89-462 du 6 juillet 1989"],
-        ["Contrats types de location", "Décret n° 2015-587 du 29 juin 2015"],
+        ["Contrats types de location", "Décret n° 2015-587 du 29 mai 2015"],
         ["Location meublée : mobilier obligatoire", "Décret n° 2015-981 du 31 juillet 2015 (" + glink("https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000030967884", "Légifrance") + ")"],
         ["Pièces demandées au candidat", "Décret n° 2015-1437 du 5 novembre 2015"],
         ["Réparations locatives et charges récupérables", "Décrets n° 87-712 et n° 87-713 du 26 août 1987"],
@@ -4054,7 +4396,10 @@ const migrate = () => { if (!S.cfg || typeof S.cfg !== "object") S.cfg = {baille
 function startApp(){
   S = load();
   if (!S || !Array.isArray(S.journal)){ S = emptyData(); persist(); }
-  migrate(); render(); bootRoutines();
+  migrate();
+  let dm = false; try { dm = new URLSearchParams(location.search).get("demo") === "1"; } catch(e){}
+  if (dm) enterDemo(); else render();
+  bootRoutines();
 }
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) { try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch(e){} }
 window.HAD_DATA = !!(lsGet(KEY) || lsGet(ENC));
