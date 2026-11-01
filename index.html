@@ -90,6 +90,8 @@ button{cursor:pointer}
 .hero .sub{font-size:13px;opacity:.88}
 .hero .kv{opacity:.95}
 body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;top:calc(150px + env(safe-area-inset-top,0px));z-index:30;flex-direction:column;flex-wrap:nowrap;gap:8px;align-items:flex-end;max-height:calc(100vh - 290px);overflow-y:auto;scrollbar-width:none}body.side .seg.rail::-webkit-scrollbar{display:none}body.side .seg.rail button{writing-mode:vertical-rl;padding:14px 9px;border-radius:14px 0 0 14px;border-right:0;max-height:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:-2px 2px 8px rgba(0,0,0,.12)}body.side .seg.rail button.on{padding-right:13px}
+.cvz{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0}.cvwrap .cmt{font-size:calc(12.5px * var(--z,1))}.cvwrap .cmt .s{font-size:calc(11px * var(--z,1))}.cvwrap .cmt .sck{width:calc(24px * var(--z,1));height:calc(24px * var(--z,1));border-radius:calc(8px * var(--z,1))}.cvwrap .cmt .sck svg{width:calc(15px * var(--z,1));height:calc(15px * var(--z,1))}.cvsmall .cmt .s{display:none}.cvwrap .cmt td{padding:calc(5px * var(--z,1)) 3px}.cvwrap .card{padding:8px}
+.cmt{width:100%;border-collapse:collapse;font-size:12.5px}.cmt td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:top}.cmt td:first-child{width:30px}.cmt td.num{text-align:right;white-space:nowrap}.cmt tr.d td{opacity:.45}.cmt .s{font-size:11px;color:var(--muted)}.cmt .sck{width:24px;height:24px}.cmt tr.tot td{border-bottom:0}
 .cyhero{text-align:center}.cyhero .big{font-size:52px;font-weight:800;line-height:1.1}.cyhero.cyok{background:#1d5c43;color:#fff}.cyhero.cyok .small{color:#d7f2e4}.cybadge{font-size:16px;font-weight:700;margin:6px 0 10px}.cybar{height:8px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.cybar i{display:block;height:100%;background:var(--accent)}.cmdet>summary{cursor:pointer;padding:2px 0}.cmdet[open]>summary{margin-bottom:10px}
 #demobar{position:fixed;top:max(8px,env(safe-area-inset-top));left:10px;right:10px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:14px;background:var(--card,#1d2a26);border:1.5px solid var(--accent,#5fb3a1);color:var(--text,#fff);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.35)}#demobar button{background:none;border:0;color:var(--accent,#5fb3a1);font-weight:700;font-size:13px;padding:6px}body.demo{padding-top:58px}
 .banner{background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:13px}
@@ -1185,8 +1187,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.3.2";
+const APP_VERSION = "1.3.3";
 const CHANGELOG = [
+  {v:"1.3.3", date:"2026-11-01", titre:"Compta : vue d'ensemble et fiche à imprimer", items:["Nouveau bouton « Vue d'ensemble » dans Compta : toutes les lignes à saisir (échéances d'emprunt, dépenses, recettes), logement par logement, en petit et d'un coup d'œil. Une case par ligne pour la marquer saisie pendant que tu remplis le site, un filtre « Reste à saisir » et des boutons Dézoomer / Zoomer (100 à 60 %) pour voir beaucoup de lignes d'un coup.","« PDF à imprimer » : la même liste en fiche A4 à cocher à la main, au choix complète ou seulement ce qui reste à saisir."]},
   {v:"1.3.2", date:"2026-11-01", titre:"Onglets sur le côté et Réglages rangés", items:["Nouveau réglage « Onglets » (Réglages › Aspect) : en haut comme avant, ou en intercalaires verticaux sur le côté droit, comme dans AgenDam. Il s'applique à Pointage, Compta, Biens, Mise en location et Réglages.","Réglages rangés en 5 onglets (Biens, Données, Aspect, Règles, Aide) : plus besoin de faire défiler une longue page."]},
   {v:"1.3.0", date:"2026-11-01", titre:"Onglet Compta refait", items:["Année de compta en gros en haut, avec les années en pastilles pour passer de l'une à l'autre, et la mention « Année clôturée · compta faite » quand tu as terminé.","Rappel de la date limite : « Vous avez jusqu'au … pour clôturer votre liasse fiscale », avec le lien de ton site de compta (facultatif, modifiable ou à laisser vide). Pour 2025, les dates officielles relevées sont indiquées ; pour les autres années, tu saisis la date publiée.","« À saisir sur le site » : une seule liste par Dépenses, Recettes et Échéances, groupée par logement. Tu coches un logement, tout, ou ligne par ligne, puis « Marquer comme saisi », avec Annuler et onglet « Déjà saisi ».","Liasse fiscale : tu peux importer (PDF ou photo) et garder celle de chaque année, puis la rouvrir ou la partager.","Les chiffres, la liste « À ne pas oublier » et l'export sont rangés dans « Détails, chiffres et export » (replié par défaut).","Démo : les actions de compta et de candidature se testent sans rien enregistrer."]},
   {v:"1.2.0", date:"2026-11-01", titre:"Saisie en compta plus rapide, signature papier, règles à jour", items:["Saisie en compta : cases à cocher, tout cocher par mois, par catégorie ou d'un coup (loyers compris), bouton Annuler et onglet « Déjà saisi ». Le rond du pointage ne dépointe plus les lignes par erreur.","Signature : paraphe tracé une fois et reproduit en bas de chaque page, référence du document sur chaque page, étape « renforcer la preuve » (pièce d'identité, e-mail de confirmation).","Signature papier : tu n'imprimes que la dernière page, tu la fais signer à la main, tu la rescannes dans l'appli puis tu envoies le dossier par e-mail.","Placements : historique avec modification et suppression, bouton « Mettre de côté » (un livret A placé n'est plus compté comme un remboursement).","Dates facultatives (fin de bail…) : bouton « Effacer la date ».","Mise à jour des règles : export Word avec un prompt guidé pour une IA, import de sa réponse, validation ligne par ligne avec la source et l'historique.","Lien de démonstration (index.html?demo=1) et tutoriel d'installation dans la fiche."]},
@@ -1245,6 +1248,7 @@ const HELP = {
   cmp:{t:"Compta", p:"Ce qu'il faut pour remplir ta compta en ligne.", l:[
     "Les onglets des logements (Tous, Studio…) peuvent se placer sur le côté : Réglages › Aspect › « Onglets ».",
     "Logement loué vide : la compta devient « revenus fonciers ». Elle compare micro-foncier (abattement de 30 %, jusqu'à 15 000 € de loyers) et régime réel, calcule le déficit foncier et sort un PDF pour la déclaration 2044. Les catégories « à vérifier » ne sont pas comptées : change leur catégorie si besoin. Règles vérifiées en octobre 2026, à revérifier à chaque déclaration.",
+    "« Vue d'ensemble » : tout ce qu'il faut saisir sur le site, logement par logement, d'un coup d'œil, avec une case par ligne. « PDF à imprimer » sort la même liste sur une fiche A4 (complète, ou seulement le reste à saisir).",
     "En haut : l'année en gros (change d'année avec les pastilles) et le bouton « Clôturer : compta faite » quand tu as fini. Une année clôturée s'affiche en vert et peut être rouverte.",
     "Le rappel « Vous avez jusqu'au … » utilise la date limite que tu saisis (publiée chaque printemps). Le site de compta est facultatif : touche « Mon site de compta » pour le changer ou le retirer.",
     "« À saisir sur le site » : choisis Dépenses, Recettes ou Échéances, coche un logement, tout ou ligne par ligne, puis « Marquer comme saisi ». Une erreur : « Annuler » (12 secondes) ou « Déjà saisi » pour remettre à saisir. Seules les lignes payées ou encaissées sont listées.",
@@ -2502,7 +2506,7 @@ new MutationObserver(() => { const sh = document.getElementById("sheet"); if (!s
     const bt = document.createElement("button"); bt.type = "button"; bt.className = "mini dclr"; bt.dataset.act = "dclr"; bt.textContent = "Effacer la date"; i.insertAdjacentElement("afterend", bt); }); }).observe(document.body, {childList:true, subtree:true});
 
 /* ---------- Compta v2 : année en gros, clôture, date limite + site (facultatif), saisie cochable par logement, liasse des années ---------- */
-V.cc = V.cc || {}; V.ctab = V.ctab || "dep"; V.cview = V.cview || "todo";
+V.cc = V.cc || {}; try { V.cz = V.cz || +localStorage.getItem("glf-cz") || 0.85; } catch(e){ V.cz = 0.85; } V.ctab = V.ctab || "dep"; V.cview = V.cview || "todo";
 const CM_SITE0 = {nom:"Je déclare mon meublé", url:"https://www.jedeclaremonmeuble.com/"};
 const CM = () => (S.cmpt = S.cmpt || {site:Object.assign({}, CM_SITE0), years:{}});
 const CMY = y => { const c = CM(); c.years = c.years || {}; return c.years[y] = c.years[y] || {}; };
@@ -2557,6 +2561,7 @@ function cmSaisie(y, ids){
     return `<div class="gh"><button class="sck ${on ? "on" : ""}" data-act="cc-grp" data-ks="${gk.map(esc).join(";")}" aria-label="Tout cocher pour ce logement">${ICON.check}</button><div><b>${esc(bienName(id))}</b><div class="small muted">${G.length} ligne(s)</div></div><span class="num">${eur(tot)}</span></div>${G.map(row).join("")}`; }).join("");
   const act = V.cview === "done" ? `Remettre à saisir (${sel.length})` : `Marquer comme saisi (${sel.length})`;
   return `<div class="card"><h2>À saisir sur le site de compta</h2>
+    <div class="btns"><button class="btn sm" data-act="cv-open">Vue d'ensemble</button><button class="btn sm ghost" data-act="cv-pdf" data-v="0">PDF à imprimer</button></div>
     <div class="small muted">${C.done} ligne(s) saisie(s) sur ${C.tot}</div><div class="cybar"><i style="width:${pct}%"></i></div>
     ${tabs}
     <div class="seg"><button class="${V.cview === "todo" ? "on" : ""}" data-act="cc-view" data-v="todo">À saisir (${todo.length})</button><button class="${V.cview === "done" ? "on" : ""}" data-act="cc-view" data-v="done">Déjà saisi (${done.length})</button></div>
@@ -2583,6 +2588,7 @@ function viewCompta(){
   const head = topbar("Compta", "") + cmHeader(y, kind) + ksel;
   if (kind === "vide") return head + viewComptaFoncier(vides, true) + cmLiasse(y);
   const P = viewComptaOld(true);
+  if (V.cvue) return topbar("Compta", "") + P.seg + cmOverview(y, P.list);
   return head + P.seg + cmSaisie(y, P.list) + cmLiasse(y) + `<details class="card cmdet"${V.cdet ? " open" : ""} data-det="cdet"><summary><b>Détails, chiffres et export</b></summary>${P.syn}${cmpSite("log", P.list, y)}</details>`;
 }
 document.addEventListener("toggle", e => { if (e.target && e.target.dataset && e.target.dataset.det === "cdet") V.cdet = e.target.open; }, true);
@@ -2628,6 +2634,61 @@ document.addEventListener("click", async ev => {
     case "li-open": { const f = (cmYear(y).liasse || [])[+b.dataset.i]; if (!f) break; const r = await flGet(f.fid); if (!r) return toast("Fichier introuvable"); await saveFile(f.name, new Uint8Array(r.buf), f.type); break; }
     case "li-del": { const f = (cmYear(y).liasse || [])[+b.dataset.i]; if (!f) break; openSheet(`<h2>Supprimer ce fichier ?</h2><p style="margin:0">${esc(f.name)} sera retiré de ton téléphone.</p><div class="btns"><button class="btn danger" data-act="li-del-ok" data-i="${b.dataset.i}">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
     case "li-del-ok": { const o = CMY(y), f = (o.liasse || [])[+b.dataset.i]; if (!f) break; try { await flDel(f.fid); } catch(e){} o.liasse.splice(+b.dataset.i, 1); persist(); closeSheet(); render(); break; }
+  }
+});
+
+/* ---------- Vue d'ensemble (tout d'un coup d'œil, devant le site) + fiche PDF à imprimer ---------- */
+const cmShort = d => frDate(d).slice(0, 5);
+function cmOverview(y, ids){
+  const only = !!V.cvonly, C = cmCounts(y, ids), site = CM().site || {}, su = cmUrl(site.url), keep = r => r.pointe !== false && (!only || !r.done);
+  const tbl = (title, rows, cols, tot) => !rows.length ? "" : `<div class="small" style="margin:10px 0 2px"><b>${title}</b></div><table class="cmt"><tbody>${rows.join("")}${tot ? `<tr class="tot"><td></td><td><b>Total</b></td><td class="num"><b>${eur(tot)}</b></td><td></td></tr>` : ""}</tbody></table>`;
+  const ck = r => `<td><button class="sck ${r.done ? "on" : ""}" data-act="cv-tog" data-k="${esc(r.k)}" aria-label="Saisi ou à saisir">${ICON.check}</button></td>`;
+  const body = ids.map(id => {
+    const b = S.biens.find(x => x.id === id) || {}, l = b.lmnp || {}, e = empOf(id);
+    const E = cmpEchLines(y, [id]).filter(keep), D = cmpDepLines(y, [id]).filter(keep), R = cmpRecLines(y, [id]).filter(keep);
+    const info = only ? "" : `<div class="small" style="margin-top:6px;line-height:1.5">${esc(b.adresse || "adresse à renseigner")}<br>Mise en location : ${l.miseLoc ? frDate(l.miseLoc) : "à renseigner"} · Prix : ${l.prix ? eur(l.prix) : "à renseigner"} · Régime : ${esc(b.regime || "-")}${e ? " · Déblocage emprunt : " + (e.fonds ? frDate(e.fonds) : "à renseigner") : ""}</div>`;
+    const eRows = E.map(r => `<tr class="${r.done ? "d" : ""}">${ck(r)}<td><b>${cmShort(r.date)}</b> · capital ${eur(r.kap)}<div class="s">intérêts ${eur(r.it)}</div></td><td class="num">${eur(r.total)}</td><td></td></tr>`);
+    const dRows = D.map(r => `<tr class="${r.done ? "d" : ""}">${ck(r)}<td><b>${esc(r.art)}</b>${r.immo ? " <span class=\"chip warn\">immo</span>" : ""}<div class="s">${esc(r.com)}</div></td><td class="num">${eur(r.montant)}</td><td>${cmShort(r.date)}</td></tr>`);
+    const rRows = R.map(r => `<tr class="${r.done ? "d" : ""}">${ck(r)}<td><b>${esc(r.art)}</b><div class="s">${esc(r.com)}</div></td><td class="num">${eur(r.montant)}</td><td>${cmShort(r.date)}</td></tr>`);
+    if (!E.length && !D.length && !R.length && only) return "";
+    return `<div class="card" style="padding:10px"><div class="top">${bienPill(id)}</div>${info}
+      ${tbl("Échéances d'emprunt", eRows, 0, r2(sum(E.map(r => r.total))))}${tbl("Dépenses", dRows, 0, r2(sum(D.map(r => r.montant))))}${tbl("Recettes", rRows, 0, r2(sum(R.map(r => r.montant))))}
+      ${!E.length && !D.length && !R.length ? '<div class="empty">Rien à afficher.</div>' : ""}</div>`; }).join("");
+  const ZS = [1, .85, .7, .6], zi = ZS.includes(V.cz) ? ZS.indexOf(V.cz) : 1, z = ZS[zi];
+  const zbar = `<div class="cvz"><button class="mini" data-act="cv-zoom" data-v="1" ${zi >= ZS.length - 1 ? "disabled" : ""} aria-label="Dézoomer">− Dézoomer</button><b>${Math.round(z * 100)} %</b><button class="mini" data-act="cv-zoom" data-v="-1" ${zi <= 0 ? "disabled" : ""} aria-label="Zoomer">+ Zoomer</button></div>`;
+  return `<div class="cvwrap ${z <= .7 ? "cvsmall" : ""}" style="--z:${z}"><div class="card" style="padding:10px"><div class="top"><h2>Vue d'ensemble ${y}</h2><button class="mini" data-act="cv-close">Retour</button></div>${zbar}
+    <div class="small muted">${C.done} ligne(s) saisie(s) sur ${C.tot}${su ? ` · site : <a href="${esc(su)}" target="_blank" rel="noopener">${esc(site.nom || su)}</a>` : ""}. Touche la case pour marquer une ligne saisie, ou la décocher.</div>
+    <div class="seg"><button class="${only ? "" : "on"}" data-act="cv-only" data-v="0">Tout</button><button class="${only ? "on" : ""}" data-act="cv-only" data-v="1">Reste à saisir</button></div>
+    <div class="btns"><button class="btn sm" data-act="cv-pdf" data-v="0">PDF complet</button><button class="btn sm ghost" data-act="cv-pdf" data-v="1">PDF reste à saisir</button></div></div>` + (body || '<div class="card"><div class="empty">Tout est saisi.</div></div>') + "</div>";
+}
+function cmListPdf(y, ids, only){
+  const d = new PdfDoc("Fiche de saisie"), M = d.M, ck = r => r.done ? "[x]" : "[  ]", keep = r => r.pointe !== false && (!only || !r.done), C = cmCounts(y, ids), site = CM().site || {};
+  d.text(M, d.y, "À saisir " + y + (only ? " : ce qui reste" : " : liste complète"), {size:18, bold:true, color:"#0E6B5C"}); d.y -= 20;
+  d.para((site.nom ? "Site : " + site.nom + " · " : "") + "édité le " + frDate(todayIso()) + " · " + C.done + " ligne(s) saisie(s) sur " + C.tot + ". Coche chaque ligne une fois saisie sur le site.", 9.5, 13);
+  for (const id of ids){ const b = S.biens.find(x => x.id === id) || {}, l = b.lmnp || {}, e = empOf(id);
+    const E = cmpEchLines(y, [id]).filter(keep), D = cmpDepLines(y, [id]).filter(keep), R = cmpRecLines(y, [id]).filter(keep);
+    if (only && !E.length && !D.length && !R.length) continue;
+    d.h(bienName(id) + (b.regime ? " · " + b.regime : ""), 13);
+    if (!only) d.para((b.adresse || "adresse à renseigner") + " · mise en location : " + (l.miseLoc ? frDate(l.miseLoc) : "à renseigner") + " · prix : " + (l.prix ? eur(l.prix) : "à renseigner") + (e ? " · déblocage emprunt : " + (e.fonds ? frDate(e.fonds) : "à renseigner") : ""), 9, 12);
+    if (E.length){ d.para("Échéances d'emprunt", 10, 13);
+      pdfTable(d, [{t:"Fait", w:34}, {t:"Date", w:80}, {t:"Total échéance", w:100, right:true}, {t:"Capital", w:100, right:true}, {t:"Intérêts", w:100, right:true}, {t:"Frais", w:97, right:true}], E.map(r => [ck(r), frDate(r.date), eur(r.total), eur(r.kap), eur(r.it), eur(0)]).concat([["", "Total", eur(r2(sum(E.map(r => r.total)))), eur(r2(sum(E.map(r => r.kap)))), eur(r2(sum(E.map(r => r.it)))), ""]])); }
+    if (D.length){ d.para("Dépenses", 10, 13);
+      pdfTable(d, [{t:"Fait", w:30}, {t:"Article", w:150}, {t:"Commentaire", w:158}, {t:"Montant", w:68, right:true}, {t:"Date", w:64}, {t:"Immo.", w:41}], D.map(r => [ck(r), r.art, r.com, eur(r.montant), frDate(r.date), r.immo ? "Oui" : "Non"]).concat([["", "Total", "", eur(r2(sum(D.map(r => r.montant)))), "", ""]])); }
+    if (R.length){ d.para("Recettes", 10, 13);
+      pdfTable(d, [{t:"Fait", w:30}, {t:"Article", w:170}, {t:"Commentaire", w:158}, {t:"Montant", w:80, right:true}, {t:"Date", w:73}], R.map(r => [ck(r), r.art, r.com, eur(r.montant), frDate(r.date)]).concat([["", "Total", "", eur(r2(sum(R.map(r => r.montant)))), ""]])); } }
+  d.para("Document établi par l'appli à partir de tes saisies : à comparer avec tes justificatifs et l'échéancier de ta banque.", 8.5, 12);
+  return d.finish("À saisir " + y);
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, v = b.dataset.v, y = V.y;
+  const sel = () => { const ids = bienIds().filter(id => bkind(id) === "meuble"); return V.csel && V.csel !== "all" && ids.includes(V.csel) ? [V.csel] : ids; };
+  switch (a){
+    case "cv-open": V.cvue = true; render(); window.scrollTo(0, 0); break;
+    case "cv-close": V.cvue = false; render(); break;
+    case "cv-only": V.cvonly = v === "1"; render(); break;
+    case "cv-zoom": { const ZS = [1, .85, .7, .6], i = Math.max(0, Math.min(ZS.length - 1, (ZS.includes(V.cz) ? ZS.indexOf(V.cz) : 1) + (+v))); V.cz = ZS[i]; try { localStorage.setItem("glf-cz", String(V.cz)); } catch(e){} keepScroll(() => {}); break; }
+    case "cv-tog": keepScroll(() => { const k = b.dataset.k, row = [...cmpDepLines(y, sel()), ...cmpRecLines(y, sel()), ...cmpEchLines(y, sel())].find(r => r.k === k); cmSetDone(k, !(row && row.done)); persist(); }); break;
+    case "cv-pdf": saveFile("fiche-saisie-" + y + (v === "1" ? "-reste" : "") + ".pdf", cmListPdf(y, sel(), v === "1"), "application/pdf"); break;
   }
 });
 
