@@ -89,6 +89,7 @@ button{cursor:pointer}
 .hero .big{font-family:var(--font-display);font-weight:700;font-size:42px;line-height:1.05;letter-spacing:-.01em}
 .hero .sub{font-size:13px;opacity:.88}
 .hero .kv{opacity:.95}
+body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;top:calc(150px + env(safe-area-inset-top,0px));z-index:30;flex-direction:column;flex-wrap:nowrap;gap:8px;align-items:flex-end;max-height:calc(100vh - 290px);overflow-y:auto;scrollbar-width:none}body.side .seg.rail::-webkit-scrollbar{display:none}body.side .seg.rail button{writing-mode:vertical-rl;padding:14px 9px;border-radius:14px 0 0 14px;border-right:0;max-height:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:-2px 2px 8px rgba(0,0,0,.12)}body.side .seg.rail button.on{padding-right:13px}
 .cyhero{text-align:center}.cyhero .big{font-size:52px;font-weight:800;line-height:1.1}.cyhero.cyok{background:#1d5c43;color:#fff}.cyhero.cyok .small{color:#d7f2e4}.cybadge{font-size:16px;font-weight:700;margin:6px 0 10px}.cybar{height:8px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.cybar i{display:block;height:100%;background:var(--accent)}.cmdet>summary{cursor:pointer;padding:2px 0}.cmdet[open]>summary{margin-bottom:10px}
 #demobar{position:fixed;top:max(8px,env(safe-area-inset-top));left:10px;right:10px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:14px;background:var(--card,#1d2a26);border:1.5px solid var(--accent,#5fb3a1);color:var(--text,#fff);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.35)}#demobar button{background:none;border:0;color:var(--accent,#5fb3a1);font-weight:700;font-size:13px;padding:6px}body.demo{padding-top:58px}
 .banner{background:var(--warn-soft);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:13px}
@@ -598,7 +599,7 @@ function topbar(title, nav){
 const kv = (l, v, cl) => `<div class="kv"><span>${l}</span><span class="num ${cl || ""}">${v}</span></div>`;
 const signCl = v => v < 0 ? "neg" : "";
 function bienSeg(act, sel, withAll){
-  return `<div class="seg">${withAll ? `<button class="${sel==="all"?"on":""}" data-act="${act}" data-v="all">Tous</button>` : ""}${bienIds().map(id => `<button class="${sel===id?"on":""}" data-act="${act}" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  return `<div class="seg rail">${withAll ? `<button class="${sel==="all"?"on":""}" data-act="${act}" data-v="all">Tous</button>` : ""}${bienIds().map(id => `<button class="${sel===id?"on":""}" data-act="${act}" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
 }
 const chipJ = (j, st) => st === "À pointer" ? `<span class="chip warn">${isIn(j) ? "À recevoir" : "Non pointé"}</span>` : chipFor(st);
 const chipFor = st => `<span class="chip ${st==="En retard"?"bad":st==="À pointer"?"warn":st==="Pointé"?"ok":""}">${st}</span>`;
@@ -982,18 +983,25 @@ function viewSet(){
     <div class="small">${p.kind === "json" ? bkSummary(p.data) : p.kind === "dos" ? esc(p.sum) : `${p.d.biens ? p.d.biens.length + " bien(s), " : ""}${p.d.tarifs ? p.d.tarifs.length + " tarif(s), " : ""}${p.d.journal.length} opération(s), ${p.d.factures.length} facture(s), ${p.d.locataires.length} locataire(s).`}</div>
     <div class="btns"><button class="btn" data-act="imp-merge">${p.kind === "json" ? "Restaurer" : p.kind === "dos" ? "Ranger les fichiers" : "Fusionner (recommandé)"}</button>
     ${p.kind !== "echange" ? "" : `<button class="btn ghost" data-act="imp-replace">Remplacer mes données</button>`}<button class="btn ghost" data-act="imp-cancel">Annuler</button></div></div>` : "";
-  return `<div class="top"><div class="app">Réglages</div><button class="q" data-act="help" aria-label="Aide">?</button></div>${V.msg ? `<div class="info">${esc(V.msg)}</div>` : ""}${pend}
-  <div class="card"><h2>Synchroniser avec Excel</h2>
+  const head = `<div class="top"><div class="app">Réglages</div><button class="q" data-act="help" aria-label="Aide">?</button></div>${V.msg ? `<div class="info">${esc(V.msg)}</div>` : ""}${pend}`;
+  const sync = `<div class="card"><h2>Synchroniser avec Excel</h2>
     <div class="small muted"><b>Excel → appli</b> : dans Excel, bouton « Exporter vers l'appli », puis importe ici <b>export_appli.xlsx</b>. Les lignes déjà connues sont mises à jour, les nouvelles ajoutées, celles supprimées dans Excel retirées.<br><b>Appli → Excel</b> : exporte le journal, enregistre-le dans Fichiers › dossier IMPORT, puis bouton « Importer depuis l'appli » dans Excel.</div>
     <label class="f">Importer un fichier (export_appli.xlsx, sauvegarde .json ou .zip)<input id="file" type="file" accept="*/*"></label>
     <div class="btns"><button class="btn" data-act="exp-journal">Exporter le journal (.xlsx)</button><button class="btn ghost" data-act="exp-json">Sauvegarde légère (.json)</button></div>
     <div class="btns"><button class="btn" data-act="exp-zip">Sauvegarde complète avec fichiers (.zip)</button></div>
-    <div class="small muted"><b>Que fait chaque bouton ?</b><br>• <b>Exporter le journal (.xlsx)</b> : sert à l'exploitation dans ton fichier Excel dédié (comptabilité, bilans). Ce n'est pas une sauvegarde.<br><b>Quelle sauvegarde choisir ?</b><br>• <b>Légère (.json)</b> : tes données (biens, opérations, locataires, fiches, états des lieux et inventaires en texte). Petite, mais <b>sans</b> photos ni fichiers (pièces d'identité, contrats, PDF importés).<br>• <b>Complète avec fichiers (.zip)</b> : tout, photos et documents des locataires compris. C'est celle à faire avant de changer de téléphone. Pour restaurer, importe le .zip ci-dessus tel quel (ne le décompresse pas).<br>Aucune n'est chiffrée et le .zip contient des papiers personnels : garde-les dans un endroit privé, jamais dans un dossier partagé.</div></div>
-  ${biensCard()}${matelasCardSet()}${bourseCardSet()}${dirCard()}${secCard()}${themeCard()}${confortCard()}${modelesCard()}${archCard()}${demoCard()}${ficheCard()}${guideCard()}${rulesCard()}${legalCard()}${histCard()}
-  <div class="card"><h2>Données</h2><div class="small muted">${live(S.biens).length} bien(s) · ${live(S.journal).length} opération(s) · ${live(S.factures).length} facture(s) · ${live(S.locataires).length} locataire(s)</div>
+    <div class="small muted"><b>Que fait chaque bouton ?</b><br>• <b>Exporter le journal (.xlsx)</b> : sert à l'exploitation dans ton fichier Excel dédié (comptabilité, bilans). Ce n'est pas une sauvegarde.<br><b>Quelle sauvegarde choisir ?</b><br>• <b>Légère (.json)</b> : tes données (biens, opérations, locataires, fiches, états des lieux et inventaires en texte). Petite, mais <b>sans</b> photos ni fichiers (pièces d'identité, contrats, PDF importés).<br>• <b>Complète avec fichiers (.zip)</b> : tout, photos et documents des locataires compris. C'est celle à faire avant de changer de téléphone. Pour restaurer, importe le .zip ci-dessus tel quel (ne le décompresse pas).<br>Aucune n'est chiffrée et le .zip contient des papiers personnels : garde-les dans un endroit privé, jamais dans un dossier partagé.</div></div>`;
+  const wipe = `<div class="card"><h2>Données</h2><div class="small muted">${live(S.biens).length} bien(s) · ${live(S.journal).length} opération(s) · ${live(S.factures).length} facture(s) · ${live(S.locataires).length} locataire(s)</div>
     ${V.wipe ? `<div class="small">Cette action efface tout ce qui est stocké sur cet appareil.</div><div class="btns"><button class="btn danger" data-act="wipe-yes">Oui, tout effacer</button><button class="btn ghost" data-act="wipe-no">Annuler</button></div>`
-             : `<div class="btns"><button class="btn ghost" data-act="wipe">Tout effacer</button></div>`}</div>
-  <div class="ver">Gestion Locative Facile · version ${APP_VERSION}</div>`;
+             : `<div class="btns"><button class="btn ghost" data-act="wipe">Tout effacer</button></div>`}</div>`;
+  const ver = `<div class="ver">Gestion Locative Facile · version ${APP_VERSION}</div>`;
+  const SECS = [
+    ["biens", "Biens", biensCard() + matelasCardSet() + bourseCardSet() + modelesCard()],
+    ["data", "Données", sync + dirCard() + archCard() + secCard() + wipe],
+    ["look", "Aspect", themeCard() + confortCard()],
+    ["regl", "Règles", guideCard() + rulesCard() + legalCard() + ficheCard()],
+    ["aide", "Aide", demoCard() + histCard()]];
+  const cur = SECS.find(x => x[0] === V.sset) ? V.sset : "biens";
+  return head + `<div class="seg rail">${SECS.map(([k, l]) => `<button class="${cur === k ? "on" : ""}" data-act="sset" data-v="${k}">${l}</button>`).join("")}</div>` + SECS.find(x => x[0] === cur)[2] + ver;
 }
 
 function render(){
@@ -1001,7 +1009,7 @@ function render(){
   if (V.tab === "welcome" && live(S.biens).length && !(V.wz && V.wz.active)) V.tab = "home";
   if (V.doc && (V.tab !== "bld" || V.bsub !== "docs")) V.doc = null;
   document.body.classList.toggle("welcome", V.tab === "welcome");
-  renderTabs(); demoBar();
+  document.body.classList.toggle("side", pref("glf-tabs", "top") === "side"); renderTabs(); demoBar();
   const main = $("#main");
   const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig; V.lastSig = sig;
   main.dataset.tab = V.tab;
@@ -1177,8 +1185,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.2";
 const CHANGELOG = [
+  {v:"1.3.2", date:"2026-11-01", titre:"Onglets sur le côté et Réglages rangés", items:["Nouveau réglage « Onglets » (Réglages › Aspect) : en haut comme avant, ou en intercalaires verticaux sur le côté droit, comme dans AgenDam. Il s'applique à Pointage, Compta, Biens, Mise en location et Réglages.","Réglages rangés en 5 onglets (Biens, Données, Aspect, Règles, Aide) : plus besoin de faire défiler une longue page."]},
   {v:"1.3.0", date:"2026-11-01", titre:"Onglet Compta refait", items:["Année de compta en gros en haut, avec les années en pastilles pour passer de l'une à l'autre, et la mention « Année clôturée · compta faite » quand tu as terminé.","Rappel de la date limite : « Vous avez jusqu'au … pour clôturer votre liasse fiscale », avec le lien de ton site de compta (facultatif, modifiable ou à laisser vide). Pour 2025, les dates officielles relevées sont indiquées ; pour les autres années, tu saisis la date publiée.","« À saisir sur le site » : une seule liste par Dépenses, Recettes et Échéances, groupée par logement. Tu coches un logement, tout, ou ligne par ligne, puis « Marquer comme saisi », avec Annuler et onglet « Déjà saisi ».","Liasse fiscale : tu peux importer (PDF ou photo) et garder celle de chaque année, puis la rouvrir ou la partager.","Les chiffres, la liste « À ne pas oublier » et l'export sont rangés dans « Détails, chiffres et export » (replié par défaut).","Démo : les actions de compta et de candidature se testent sans rien enregistrer."]},
   {v:"1.2.0", date:"2026-11-01", titre:"Saisie en compta plus rapide, signature papier, règles à jour", items:["Saisie en compta : cases à cocher, tout cocher par mois, par catégorie ou d'un coup (loyers compris), bouton Annuler et onglet « Déjà saisi ». Le rond du pointage ne dépointe plus les lignes par erreur.","Signature : paraphe tracé une fois et reproduit en bas de chaque page, référence du document sur chaque page, étape « renforcer la preuve » (pièce d'identité, e-mail de confirmation).","Signature papier : tu n'imprimes que la dernière page, tu la fais signer à la main, tu la rescannes dans l'appli puis tu envoies le dossier par e-mail.","Placements : historique avec modification et suppression, bouton « Mettre de côté » (un livret A placé n'est plus compté comme un remboursement).","Dates facultatives (fin de bail…) : bouton « Effacer la date ».","Mise à jour des règles : export Word avec un prompt guidé pour une IA, import de sa réponse, validation ligne par ligne avec la source et l'historique.","Lien de démonstration (index.html?demo=1) et tutoriel d'installation dans la fiche."]},
   {v:"1.1.0", date:"2026-10-27", titre:"Compta pour la location vide", items:["Compta « revenus fonciers » pour les logements loués vides : comparaison micro-foncier (abattement 30 %) et régime réel, forfait de gestion, charges déductibles, déficit foncier et récapitulatif PDF pour la déclaration 2044.","Si tu as des logements meublés et vides, un sélecteur Meublé (LMNP) / Location vide apparaît dans Compta.","Guide du bailleur : nouvelle section « Textes de loi et sources » avec la date de dernière vérification.","Les chiffres et règles fiscales sont indicatifs : l'appli indique la source officielle et la date de vérification."]},
@@ -1202,6 +1211,8 @@ function themeCard(){
   return `<div class="card"><h2>Apparence</h2>
     <div class="small muted">Couleur de l'appli</div>
     <div class="pals">${Object.keys(PAL_NAMES).map(k => `<button class="pal ${cur === k ? "on" : ""}" data-act="pal" data-v="${k}"><i style="background:${LOC_PALS[k][0]}"></i>${PAL_NAMES[k]}</button>`).join("")}</div>
+    <div class="small muted">Onglets (logements, réglages) : en haut ou sur le côté</div>
+    <div class="seg">${[["top","En haut"],["side","Sur le côté"]].map(([k, l]) => `<button class="${pref("glf-tabs", "top") === k ? "on" : ""}" data-act="ttabs" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="small muted">Mode clair ou sombre</div>
     <div class="seg">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"],["sched","Horaires"]].map(([k, l]) => `<button class="${mode === k ? "on" : ""}" data-act="tmode" data-v="${k}">${l}</button>`).join("")}</div>
     ${mode === "sched" ? `<div class="tl"><label class="f">Sombre à partir de<input type="time" id="sc-from" value="${sc.from}"></label><label class="f">Clair à partir de<input type="time" id="sc-to" value="${sc.to}"></label></div>
@@ -1232,6 +1243,7 @@ const HELP = {
     "Les trois tuiles (retard, à pointer, à saisir en compta) sont cliquables.",
     "Le bénéfice réalisé ne compte que ce qui est vraiment passé sur le compte (pointé)."]},
   cmp:{t:"Compta", p:"Ce qu'il faut pour remplir ta compta en ligne.", l:[
+    "Les onglets des logements (Tous, Studio…) peuvent se placer sur le côté : Réglages › Aspect › « Onglets ».",
     "Logement loué vide : la compta devient « revenus fonciers ». Elle compare micro-foncier (abattement de 30 %, jusqu'à 15 000 € de loyers) et régime réel, calcule le déficit foncier et sort un PDF pour la déclaration 2044. Les catégories « à vérifier » ne sont pas comptées : change leur catégorie si besoin. Règles vérifiées en octobre 2026, à revérifier à chaque déclaration.",
     "En haut : l'année en gros (change d'année avec les pastilles) et le bouton « Clôturer : compta faite » quand tu as fini. Une année clôturée s'affiche en vert et peut être rouverte.",
     "Le rappel « Vous avez jusqu'au … » utilise la date limite que tu saisis (publiée chaque printemps). Le site de compta est facultatif : touche « Mon site de compta » pour le changer ou le retirer.",
@@ -1725,6 +1737,8 @@ document.addEventListener("click", async ev => {
     case "demo-back": { let sv = null; try { sv = JSON.parse(localStorage.getItem("glf-avant-essai")); } catch(e){} if (!sv) return toast("Aucune sauvegarde de côté");
       S = Object.assign(emptyData(), sv); S.demo = false; persist(); try { localStorage.removeItem("glf-avant-essai"); } catch(e){} V.tab = "home"; toast("Tes données sont revenues"); render(); break; }
     case "demo-ok": closeSheet(); enterDemo(); break;
+    case "ttabs": lsSet("glf-tabs", v); render(); break;
+    case "sset": V.sset = v; render(); window.scrollTo(0, 0); break;
     case "pal": lsSet("glf-pal", v); applyTheme(); render(); break;
     case "tmode": lsSet("glf-theme", v); applyTheme(); render(); break;
     case "set-start": lsSet("glf-start", v); render(); break;
@@ -2028,7 +2042,7 @@ function viewComptaOld(parts){
   const posteAll = {}; for (const d of D) for (const p of d.postes){ const o = posteAll[p.n] || (posteAll[p.n] = {n:p.n, v:0}); o.v = r2(o.v + p.v); }
   const rows = Object.values(posteAll).sort((a, b) => b.v - a.v);
   const aSaisir = T("aSaisir"), nFact = sum(D.map(d => d.fact.filter(f => !f.jdmm).length));
-  const seg = `<div class="seg"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  const seg = `<div class="seg rail"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
   const emp = D.map(d => { const b = S.biens.find(x => x.id === d.id) || {}; return `<div class="env" style="padding:8px 0;gap:4px"><div class="top"><div>${bienPill(d.id)}</div><button class="mini" data-act="emp-open" data-id="${esc(d.id)}">${d.ey || empOf(d.id) ? "Modifier" : "Renseigner"}</button></div>
     ${empOf(d.id) ? `<div class="small muted">${eur(empOf(d.id).capital)} à ${String(empOf(d.id).taux).replace(".", ",")} % sur ${empOf(d.id).duree} mois, depuis ${frDate(empOf(d.id).debut)}</div>
       ${d.ey ? kv("Intérêts " + y, eur(d.ey.it)) + kv("Capital remboursé " + y, eur(d.ey.kap)) + kv("Assurance emprunteur " + y, eur(d.ey.assur)) + kv("Capital restant dû fin " + y, eur(d.ey.crd)) : ""}`
@@ -2388,7 +2402,7 @@ function foncierPdf(y, ids){
 function viewComptaFoncier(ids, noTop){
   const y = V.y; if (!V.csel || (V.csel !== "all" && !ids.includes(V.csel))) V.csel = "all";
   const sel = V.csel, list = (sel === "all" ? ids : [sel]).map(id => foncierBien(id, y)), c = foncierCalc(list, false), cv = foncierCalc(list, true);
-  const R = FONC_REGLES, seg = `<div class="seg"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  const R = FONC_REGLES, seg = `<div class="seg rail"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
   const reg = c.microOk ? (c.meilleur === "micro" ? "Le micro-foncier semble plus avantageux cette année." : "Le régime réel semble plus avantageux cette année.") : "Tes revenus dépassent 15 000 € : le régime réel est obligatoire (déclaration 2044).";
   const lignes = list.map(x => `<div class="env" style="padding:8px 0"><div>${bienPill(x.id)}</div>${kv("Loyers et recettes", eur(x.rec))}${kv("Forfait de gestion (ligne 222)", eur(x.forfait))}
     ${x.lignes.map(l => kv(esc(l.cat) + ` <span class="muted small">${l.s === "ok" ? "déductible" : l.s === "non" ? "non déductible" : "à vérifier"}</span>`, eur(l.v), l.s === "ok" ? "" : "muted")).join("")}
