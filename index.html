@@ -997,7 +997,7 @@ function viewSet(){
              : `<div class="btns"><button class="btn ghost" data-act="wipe">Tout effacer</button></div>`}</div>`;
   const ver = `<div class="ver">Gestion Locative Facile · version ${APP_VERSION}</div>`;
   const SECS = [
-    ["biens", "Biens", biensCard() + matelasCardSet() + bourseCardSet() + modelesCard()],
+    ["biens", "Biens", biensCard() + agendaCard() + matelasCardSet() + bourseCardSet() + modelesCard()],
     ["data", "Données", sync + dirCard() + archCard() + secCard() + wipe],
     ["look", "Aspect", themeCard() + confortCard()],
     ["regl", "Règles", guideCard() + rulesCard() + legalCard() + ficheCard()],
@@ -1187,8 +1187,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.3.3";
+const APP_VERSION = "1.4.0";
 const CHANGELOG = [
+  {v:"1.4.0", date:"2026-11-02", titre:"Visites : envoi vers ton agenda", items:["Quand tu programmes la visite d'un candidat, l'appli te propose de l'envoyer vers AgenDam (code à coller ou lien) ou vers le calendrier du téléphone (.ics), avec le maximum d'infos : nom, téléphone, e-mail, adresse du logement, loyer, situation, garant, emménagement souhaité, étape et note.","Le fichier du calendrier contient maintenant l'adresse, toutes ces infos et un rappel 1 h avant.","Nouveau réglage « Agenda pour les visites » (Réglages › Biens) : AgenDam par défaut, modifiable, ou aucun."]},
   {v:"1.3.3", date:"2026-11-01", titre:"Compta : vue d'ensemble et fiche à imprimer", items:["Nouveau bouton « Vue d'ensemble » dans Compta : toutes les lignes à saisir (échéances d'emprunt, dépenses, recettes), logement par logement, en petit et d'un coup d'œil. Une case par ligne pour la marquer saisie pendant que tu remplis le site, un filtre « Reste à saisir » et des boutons Dézoomer / Zoomer (100 à 60 %) pour voir beaucoup de lignes d'un coup.","« PDF à imprimer » : la même liste en fiche A4 à cocher à la main, au choix complète ou seulement ce qui reste à saisir."]},
   {v:"1.3.2", date:"2026-11-01", titre:"Onglets sur le côté et Réglages rangés", items:["Nouveau réglage « Onglets » (Réglages › Aspect) : en haut comme avant, ou en intercalaires verticaux sur le côté droit, comme dans AgenDam. Il s'applique à Pointage, Compta, Biens, Mise en location et Réglages.","Réglages rangés en 5 onglets (Biens, Données, Aspect, Règles, Aide) : plus besoin de faire défiler une longue page."]},
   {v:"1.3.0", date:"2026-11-01", titre:"Onglet Compta refait", items:["Année de compta en gros en haut, avec les années en pastilles pour passer de l'une à l'autre, et la mention « Année clôturée · compta faite » quand tu as terminé.","Rappel de la date limite : « Vous avez jusqu'au … pour clôturer votre liasse fiscale », avec le lien de ton site de compta (facultatif, modifiable ou à laisser vide). Pour 2025, les dates officielles relevées sont indiquées ; pour les autres années, tu saisis la date publiée.","« À saisir sur le site » : une seule liste par Dépenses, Recettes et Échéances, groupée par logement. Tu coches un logement, tout, ou ligne par ligne, puis « Marquer comme saisi », avec Annuler et onglet « Déjà saisi ».","Liasse fiscale : tu peux importer (PDF ou photo) et garder celle de chaque année, puis la rouvrir ou la partager.","Les chiffres, la liste « À ne pas oublier » et l'export sont rangés dans « Détails, chiffres et export » (replié par défaut).","Démo : les actions de compta et de candidature se testent sans rien enregistrer."]},
@@ -1304,7 +1305,7 @@ const HELP = {
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
     "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
-    "3. Visite : note la date. « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
+    "3. Visite : note la date et l'heure. L'appli te propose aussitôt de l'envoyer vers AgenDam ou vers le calendrier du téléphone, avec le maximum d'infos (bouton « Visite vers un agenda » pour le refaire). « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
     "4. Dossier complet : le candidat y dépose chaque pièce (identité, domicile, contrat de travail, bulletins, avis d'imposition, garant…). Les fichiers portent leur vrai nom. Enregistre-les dans Fichiers, puis colle le texte « DOSSIER » et joins les fichiers : les pièces se cochent toutes seules.",
     "5. La note compare les revenus au loyer charges comprises (3 fois = vert). Elle est indicative : ne refuse jamais pour un motif discriminatoire.",
     "6. Retenir : crée le locataire du bien, garde son dossier dans sa fiche et prépare l'arrivée (bail, inventaire, état des lieux).",
@@ -2692,6 +2693,63 @@ document.addEventListener("click", ev => {
   }
 });
 
+/* ---------- Visite confirmée : envoyer vers AgenDam (code ou lien) ou vers le calendrier du téléphone (.ics), avec le maximum d'infos ---------- */
+const AG_PRESET = {nom:"AgenDam", url:"https://dam-cigogne.github.io/agenda/"};
+const agendaCfg = () => (S.cfg && S.cfg.agenda !== undefined ? S.cfg.agenda : AG_PRESET) || {nom:"", url:""};
+const agUrl = u => { u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch(e){ return ""; } };
+const icsEsc = s => String(s == null ? "" : s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+function visitInfo(c){
+  const b = S.biens.find(x => x.id === c.bien) || {}, d = c.visite || "", date = d.slice(0, 10), t0 = d.length > 10 ? d.slice(11, 16) : "09:00";
+  const m = (+t0.slice(0, 2)) * 60 + (+t0.slice(3, 5)) + 30, t1 = String(Math.min(23, Math.floor(m / 60))).padStart(2, "0") + ":" + String(m >= 1440 ? 59 : m % 60).padStart(2, "0");
+  const st = (CAND_ST.find(x => x[0] === c.statut) || [0, ""])[1], cc = typeof loyerCC === "function" ? loyerCC(c.bien) : 0, L = [];
+  L.push("Visite du logement : " + bienName(c.bien) + (b.adresse ? " (" + b.adresse + ")" : ""));
+  L.push("Candidat : " + (c.nom || ""));
+  if (c.tel) L.push("Téléphone : " + c.tel);
+  if (c.email) L.push("E-mail : " + c.email);
+  if (cc > 0) L.push("Loyer charges comprises : " + eur(cc));
+  const sit = [c.contrat, c.rev ? eur(c.rev) + " nets/mois" : "", c.occ ? c.occ + " occupant(s)" : ""].filter(Boolean).join(" · "); if (sit) L.push("Situation : " + sit);
+  if (c.garant) L.push("Garant : " + c.garant + (c.grev ? " (" + eur(c.grev) + "/mois)" : ""));
+  if (c.entree) L.push("Emménagement souhaité : " + frDate(c.entree));
+  if (c.dateDem) L.push("Demande reçue le " + frDate(c.dateDem));
+  if (st) L.push("Étape : " + st);
+  if (c.note) L.push("Note : " + c.note);
+  return {date, t0, t1, title:"Visite · " + bienName(c.bien) + " · " + (c.nom || "candidat"), place:b.adresse || "", note:L.join("\n")};
+}
+function agCode(c){
+  const v = visitInfo(c), o = {app:"cv", v:1, src:"glf", ev:[{title:v.title, allDay:false, start:v.date, end:v.date, startTime:v.t0, endTime:v.t1, place:v.place, note:v.note, icon:"🏠"}]};
+  const u = new TextEncoder().encode(JSON.stringify(o)); let s = ""; u.forEach(x => s += String.fromCharCode(x));
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function sheetVisite(id){
+  const c = candGet(id); if (!c || !c.visite) return toast("Pas de date de visite"); const v = visitInfo(c), ag = agendaCfg(), au = agUrl(ag.url), code = agCode(c);
+  openSheet(`<h2>Visite programmée</h2>
+    <div class="info"><b>${esc(fmtVisite(c.visite))}</b> · ${esc(c.nom || "")}<br>${esc(bienName(c.bien))}${v.place ? "<br>" + esc(v.place) : ""}</div>
+    <div class="small muted">Tu peux garder cette visite dans un agenda pour ne pas l'oublier. Tout ceci est ajouté à l'événement :</div>
+    <div class="small" style="white-space:pre-line;padding:8px;border-radius:10px;background:var(--bg)">${esc(v.note)}</div>
+    ${au ? `<div class="btns"><button class="btn" style="flex:1" data-act="ag-copy" data-id="${esc(id)}">Copier pour ${esc(ag.nom || "mon agenda")}</button><a class="btn ghost" href="${esc(au)}#cv=${code}" target="_blank" rel="noopener">Ouvrir ${esc(ag.nom || "l'agenda")}</a></div>
+      <div class="small muted">« Copier » met le code dans le presse-papiers : ouvre ${esc(ag.nom || "ton agenda")} et utilise « Coller depuis CV en poche ». « Ouvrir » envoie la visite par lien (dans le navigateur).</div>` : ""}
+    <div class="btns"><button class="btn ghost" data-act="cd-ics" data-id="${esc(id)}">Calendrier du téléphone (.ics)</button><button class="btn ghost" data-act="sheetclose">Plus tard</button></div>
+    <details><summary class="small muted">Voir le code à copier à la main</summary><textarea readonly rows="3" style="width:100%;font-size:11px" onclick="this.select()">CVPOCHE:${code}</textarea></details>`);
+}
+function agendaCard(){
+  const a = agendaCfg(), au = agUrl(a.url);
+  return `<div class="card"><h2>Agenda pour les visites</h2><div class="small muted">Quand tu programmes la visite d'un candidat, l'appli te propose de l'envoyer vers cet agenda (avec le nom, le téléphone, l'adresse et les infos du dossier). Le calendrier du téléphone est toujours proposé.</div>
+    ${au ? kv("Agenda choisi", esc(a.nom || au)) : kv("Agenda choisi", "aucun")}
+    <div class="btns"><button class="btn ghost sm" data-act="ag-edit">Modifier</button><button class="btn ghost sm" data-act="ag-none">Aucun</button><button class="btn ghost sm" data-act="ag-preset">AgenDam</button></div></div>`;
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
+  switch (a){
+    case "cd-agenda": sheetVisite(id); break;
+    case "ag-copy": { const c = candGet(id); if (!c) break; const t = "CVPOCHE:" + agCode(c); let ok = false; try { await navigator.clipboard.writeText(t); ok = true; } catch(e){}
+      toast(ok ? "Code copié : colle-le dans " + (agendaCfg().nom || "ton agenda") : "Copie impossible : ouvre « Voir le code » et copie-le à la main"); break; }
+    case "ag-edit": { const a0 = agendaCfg(); openSheet(`<h2>Agenda pour les visites</h2><div class="small muted">Nom et adresse de l'application agenda où envoyer les visites (facultatif).</div><label class="f">Nom<input id="ag-n" value="${esc(a0.nom || "")}"></label><label class="f">Adresse<input id="ag-u" type="url" inputmode="url" autocapitalize="off" placeholder="https://" value="${esc(a0.url || "")}"></label><div class="btns"><button class="btn" style="flex:1" data-act="ag-ok">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
+    case "ag-ok": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.agenda = {nom:$("#ag-n").value.trim(), url:agUrl($("#ag-u").value)}; persist(); closeSheet(); render(); break;
+    case "ag-none": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.agenda = {nom:"", url:""}; persist(); render(); break;
+    case "ag-preset": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.agenda = Object.assign({}, AG_PRESET); persist(); render(); break;
+  }
+});
+
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
 
 /* ---------- Photos : stockées dans IndexedDB (jamais dans les données principales) ---------- */
@@ -3745,7 +3803,7 @@ function viewCands(bien){
   return `<div class="card"><div class="top"><h2>Candidats · ${esc(bienName(bien))}</h2><button class="btn sm" data-act="cd-new">+ Candidat</button></div>
     <div class="small muted" style="margin-bottom:6px">Loyer charges comprises : ${loyerCC(bien) ? eur(loyerCC(bien)) : "à renseigner dans l'annonce"}. Règle courante : revenus d'au moins 3 fois ce montant, ou un garant. La note est indicative et ne remplace pas ton jugement.</div>${chips}</div>
     ${candCard(bien)}
-    ${next.length ? `<div class="card"><h2>Prochaines visites</h2><div class="rows">${next.map(c => `<div class="row"><div class="main"><div class="t">${fmtVisite(c.visite)} · ${esc(c.nom)}</div></div><button class="mini" data-act="cd-ics" data-id="${c.id}">Calendrier</button></div>`).join("")}</div></div>` : ""}
+    ${next.length ? `<div class="card"><h2>Prochaines visites</h2><div class="rows">${next.map(c => `<div class="row"><div class="main"><div class="t">${fmtVisite(c.visite)} · ${esc(c.nom)}</div></div><button class="mini" data-act="cd-agenda" data-id="${c.id}">Agenda</button></div>`).join("")}</div></div>` : ""}
     <div class="card"><div class="rows">${list.length ? list.map(row).join("") : '<div class="empty">Aucun candidat. Quand une demande arrive par e-mail, ajoute-la avec « + Candidat ».</div>'}</div></div>
     ${(() => { const cl = candList().filter(c => !c.del); const nf = cl.reduce((n, c) => n + (c.fichiers || []).length, 0); return `<div class="card"><h2>Sauvegarde des candidats</h2>
       <div class="small muted"><b>${cl.length} fiche(s)</b> et <b>${nf} fichier(s)</b> joints (pièces importées dans les fiches). Les fiches (coordonnées, situation, notes, pièces cochées) sont dans toutes les sauvegardes. Les <b>fichiers</b> restent sur cet appareil : ils ne sont que dans la <b>sauvegarde complète (.zip)</b>. Pour changer d'appareil ou ne rien perdre, fais-la ici, puis restaure-la dans Réglages › Importer un fichier.</div>
@@ -3797,7 +3855,7 @@ function sheetCand(id){
     ${id ? `<div class="small muted" style="margin-top:8px">Pièces jointes (restent sur cet appareil, non incluses dans la sauvegarde)</div><div class="rows">${files}</div>
       <label class="f">Joindre une photo ou un PDF<input id="cd-file" type="file" accept="image/*,.pdf" multiple></label>` : '<div class="small muted">Enregistre la fiche pour pouvoir joindre des pièces.</div>'}
     <div class="btns"><button class="btn" style="flex:1" data-act="cd-save" data-id="${id || ""}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
-    ${id ? `<div class="btns"><button class="btn sm" data-act="cd-mail" data-id="${id}">Écrire au candidat</button>${c.visite ? `<button class="btn sm ghost" data-act="cd-ics" data-id="${id}">Visite au calendrier</button>` : ""}${c.statut !== "ret" ? `<button class="btn sm" style="background:var(--ok,#1f8a5b)" data-act="cd-keep" data-id="${id}">Retenir ce candidat</button>` : ""}<button class="btn sm danger" data-act="cd-del" data-id="${id}">Supprimer</button></div>` : ""}`);
+    ${id ? `<div class="btns"><button class="btn sm" data-act="cd-mail" data-id="${id}">Écrire au candidat</button>${c.visite ? `<button class="btn sm ghost" data-act="cd-agenda" data-id="${id}">Visite vers un agenda</button>` : ""}${c.statut !== "ret" ? `<button class="btn sm" style="background:var(--ok,#1f8a5b)" data-act="cd-keep" data-id="${id}">Retenir ce candidat</button>` : ""}<button class="btn sm danger" data-act="cd-del" data-id="${id}">Supprimer</button></div>` : ""}`);
 }
 function cdRead(c){
   const num = id => { const v = parseNum($("#" + id).value); return v == null ? "" : v; };
@@ -3846,9 +3904,10 @@ function sheetKeep(id){
     <div class="btns"><button class="btn" style="flex:1" data-act="cd-keep-ok" data-id="${id}">Créer le locataire</button><button class="btn ghost" data-act="cd-open" data-id="${id}">Annuler</button></div>`);
 }
 function candIcs(c){
-  const d = c.visite; if (!d) return null; const z = x => x.replace(/[-:]/g, "").slice(0, 15), st = z(d + ":00"), en = new Date(new Date(d).getTime() + 30 * 60000), p = n => String(n).padStart(2, "0");
-  const e = en.getFullYear() + p(en.getMonth() + 1) + p(en.getDate()) + "T" + p(en.getHours()) + p(en.getMinutes()) + "00", b = S.biens.find(x => x.id === c.bien) || {};
-  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Gestion Locative Facile//FR", "BEGIN:VEVENT", "UID:" + c.id + "@mes-locations", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z", "DTSTART:" + st, "DTEND:" + e, "SUMMARY:Visite " + (c.nom || "") + " – " + bienName(c.bien), "LOCATION:" + (b.adresse || "").replace(/[,;]/g, " "), "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  if (!c.visite) return null; const v = visitInfo(c), z = x => x.replace(/-/g, "") , p = n => String(n).padStart(2, "0");
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Gestion Locative Facile//FR", "BEGIN:VEVENT", "UID:" + c.id + "-" + v.date + "-" + v.t0.replace(":", "") + "@gestion-locative-facile", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z",
+    "DTSTART:" + z(v.date) + "T" + v.t0.replace(":", "") + "00", "DTEND:" + z(v.date) + "T" + v.t1.replace(":", "") + "00", "SUMMARY:" + icsEsc(v.title), "LOCATION:" + icsEsc(v.place), "DESCRIPTION:" + icsEsc(v.note),
+    "BEGIN:VALARM", "TRIGGER:-PT1H", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(v.title), "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
 }
 
 /* ---------- Actions ---------- */
@@ -3886,7 +3945,7 @@ document.addEventListener("click", async ev => {
       candList().push(c); const n = await candAttach(c, others); persist(); V.lsel = c.bien; V.lsub = "cand"; render(); sheetCand(c.id); toast("Fiche créée" + (n ? " avec " + n + " pièce(s)" : "") + " : vérifie les informations"); break; }
     case "cd-new": sheetCand(""); break;
     case "cd-open": sheetCand(id); break;
-    case "cd-save": { const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); break; }
+    case "cd-save": { const prev = id ? ((candGet(id) || {}).visite || "") : ""; const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); if (c.visite && c.visite !== prev && c.statut !== "ref" && c.statut !== "ret") setTimeout(() => sheetVisite(c.id), 400); break; }
     case "cd-mail": { const c = cdSave(id); if (!c) break; sheetMail(id, ""); break; }
     case "cm-send": { const c = candGet(id); if (!c) break; location.href = "mailto:" + encodeURIComponent(c.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent($("#cm-sub").value) + "&body=" + encodeURIComponent($("#cm-msg").value); break; }
     case "cm-sms": { const c = candGet(id); if (!c) break; location.href = "sms:" + c.tel + "?&body=" + encodeURIComponent($("#cm-msg").value); break; }
