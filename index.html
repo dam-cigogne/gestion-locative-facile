@@ -627,6 +627,7 @@ function viewHome(){
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
   ${matelasHome()}${bourseCard()}${placeCard(null)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
+  ${feHome()}
   <div class="card"><h2>Bénéfice ${y}</h2>
     ${kv("Recettes encaissées", eur(st.recP))}${kv("Dépenses payées", "− " + eur(st.depP))}
     <div class="kv tot"><span>Bénéfice réalisé</span><span class="num ${signCl(st.benef)}">${eur(st.benef)}</span></div>
@@ -997,10 +998,10 @@ function viewSet(){
              : `<div class="btns"><button class="btn ghost" data-act="wipe">Tout effacer</button></div>`}</div>`;
   const ver = `<div class="ver">Gestion Locative Facile · version ${APP_VERSION}</div>`;
   const SECS = [
-    ["biens", "Biens", biensCard() + agendaCard() + matelasCardSet() + bourseCardSet() + modelesCard()],
+    ["biens", "Biens", biensCard() + plCfgCard() + agendaCard() + matelasCardSet() + bourseCardSet() + modelesCard()],
     ["data", "Données", sync + dirCard() + archCard() + secCard() + wipe],
     ["look", "Aspect", themeCard() + confortCard()],
-    ["regl", "Règles", guideCard() + rulesCard() + legalCard() + ficheCard()],
+    ["regl", "Règles", guideCard() + factureCard() + rulesCard() + sourcesCard() + legalCard() + ficheCard()],
     ["aide", "Aide", demoCard() + histCard()]];
   const cur = SECS.find(x => x[0] === V.sset) ? V.sset : "biens";
   return head + `<div class="seg rail">${SECS.map(([k, l]) => `<button class="${cur === k ? "on" : ""}" data-act="sset" data-v="${k}">${l}</button>`).join("")}</div>` + SECS.find(x => x[0] === cur)[2] + ver;
@@ -1187,8 +1188,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 const CHANGELOG = [
+  {v:"1.5.0", date:"2026-11-02", titre:"Permis de louer, facture électronique, sources", items:["Réglages › Règles : carte « Facture électronique » (ce que doit faire un loueur en meublé, plateforme choisie à noter avec son lien) ; sur l'accueil, un rappel tant qu'aucune plateforme n'est notée, puis un bouton « Ouvrir » vers ta plateforme et carte « Sources utilisées » (liste des pages officielles consultées, aussi envoyée à l'IA dans le fichier Word de mise à jour des règles).","Nouveau réglage « Permis de louer » (Réglages › Biens) : tu indiques les logements soumis à l'autorisation de la mairie (ex. Istres) et leur commune.","Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire : autorisation à obtenir avant la signature du bail, dossier à préparer, visite de contrôle, amende.","Le rappel affiche les coordonnées du service de la mairie (pré-remplies pour Istres, à renseigner pour une autre commune), permet de noter les rendez-vous en mairie et les visites de contrôle (avec envoi vers AgenDam ou le calendrier du téléphone) et de créer la lettre de demande en PDF.","Tu notes « Demande déposée » puis « Autorisation obtenue » ; le rappel repart à zéro quand un nouveau locataire est créé (une autorisation par locataire)."]},
   {v:"1.4.0", date:"2026-11-02", titre:"Visites : envoi vers ton agenda", items:["Quand tu programmes la visite d'un candidat, l'appli te propose de l'envoyer vers AgenDam (code à coller ou lien) ou vers le calendrier du téléphone (.ics), avec le maximum d'infos : nom, téléphone, e-mail, adresse du logement, loyer, situation, garant, emménagement souhaité, étape et note.","Le fichier du calendrier contient maintenant l'adresse, toutes ces infos et un rappel 1 h avant.","Nouveau réglage « Agenda pour les visites » (Réglages › Biens) : AgenDam par défaut, modifiable, ou aucun."]},
   {v:"1.3.3", date:"2026-11-01", titre:"Compta : vue d'ensemble et fiche à imprimer", items:["Nouveau bouton « Vue d'ensemble » dans Compta : toutes les lignes à saisir (échéances d'emprunt, dépenses, recettes), logement par logement, en petit et d'un coup d'œil. Une case par ligne pour la marquer saisie pendant que tu remplis le site, un filtre « Reste à saisir » et des boutons Dézoomer / Zoomer (100 à 60 %) pour voir beaucoup de lignes d'un coup.","« PDF à imprimer » : la même liste en fiche A4 à cocher à la main, au choix complète ou seulement ce qui reste à saisir."]},
   {v:"1.3.2", date:"2026-11-01", titre:"Onglets sur le côté et Réglages rangés", items:["Nouveau réglage « Onglets » (Réglages › Aspect) : en haut comme avant, ou en intercalaires verticaux sur le côté droit, comme dans AgenDam. Il s'applique à Pointage, Compta, Biens, Mise en location et Réglages.","Réglages rangés en 5 onglets (Biens, Données, Aspect, Règles, Aide) : plus besoin de faire défiler une longue page."]},
@@ -1305,6 +1307,7 @@ const HELP = {
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
     "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
+    "Permis de louer : si ton logement est dans une commune qui l'impose (Istres, centre ancien), active-le dans Réglages › Biens › Permis de louer. Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire.",
     "3. Visite : note la date et l'heure. L'appli te propose aussitôt de l'envoyer vers AgenDam ou vers le calendrier du téléphone, avec le maximum d'infos (bouton « Visite vers un agenda » pour le refaire). « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
     "4. Dossier complet : le candidat y dépose chaque pièce (identité, domicile, contrat de travail, bulletins, avis d'imposition, garant…). Les fichiers portent leur vrai nom. Enregistre-les dans Fichiers, puis colle le texte « DOSSIER » et joins les fichiers : les pièces se cochent toutes seules.",
     "5. La note compare les revenus au loyer charges comprises (3 fois = vert). Elle est indicative : ne refuse jamais pour un motif discriminatoire.",
@@ -2750,6 +2753,94 @@ document.addEventListener("click", async ev => {
   }
 });
 
+/* ---------- Permis de louer : rappel avant de relouer (réglage par logement) ---------- */
+const PL_LINKS = [["Permis de louer à Istres (Métropole)", "https://ampmetropole.fr/wp-content/uploads/2022/12/Permis-de-louer-Istres_web.pdf"], ["Permis de louer dans les Bouches-du-Rhône (ADIL 13)", "https://www.anil.org/adil-13/notre-expertise/lhi-amelioration-habitat/guide-du-logement-decent-caf-adil13/permis-de-louer/"], ["Quelles communes ? (jedeclaremonmeuble.com)", "https://www.jedeclaremonmeuble.com/permis-de-louer/"]];
+const plOn = id => { const b = S.biens.find(x => x.id === id); return !!(b && b.permis && b.permis.on); };
+const plEtat = id => { const b = S.biens.find(x => x.id === id); return (b && b.permisEtat) || {}; };
+const permisDue = id => plOn(id) && plEtat(id).statut !== "ok";
+const PL_ISTRES = {svc:"Direction de la Politique de l'Habitat (Istres)", adr:"Trigance 4, Istres", tel:"04 42 11 28 67", mail:"", url:"https://ampmetropole.fr/wp-content/uploads/2022/12/Permis-de-louer-Istres_web.pdf", tel2:"Service Qualité de l'Habitat : 04 13 29 56 20"};
+const PL_RDV = {mairie:"RDV avec la mairie", v1:"Visite de contrôle", v2:"2e visite de contrôle"};
+function plSvc(b){ const p = b.permis || {}; if (/istres/i.test(p.ville || "") && !p.svc && !p.tel && !p.adr) return Object.assign({}, PL_ISTRES); return p; }
+function plEv(b, r){ const p = plSvc(b), d = r.date || "", dt = d.slice(0, 10), t0 = d.length > 10 ? d.slice(11, 16) : "09:00", m = (+t0.slice(0, 2)) * 60 + (+t0.slice(3, 5)) + (r.type === "mairie" ? 45 : 60);
+  const t1 = String(Math.min(23, Math.floor(m / 60))).padStart(2, "0") + ":" + String(m >= 1440 ? 59 : m % 60).padStart(2, "0"), L = [];
+  L.push((PL_RDV[r.type] || "RDV") + " · permis de louer · " + bienName(b.id)); if (r.qui) L.push("Interlocuteur : " + r.qui);
+  if (p.svc) L.push("Service : " + p.svc); if (p.tel) L.push("Téléphone : " + p.tel); if (p.mail) L.push("E-mail : " + p.mail); if (b.adresse) L.push("Logement : " + b.adresse);
+  L.push("À prévoir : dossier (Cerfa 15652*01, DPE, diagnostics, plan du logement) et pièce d'identité."); if (r.note) L.push("Note : " + r.note);
+  return {date:dt, t0, t1, title:(PL_RDV[r.type] || "RDV") + " · permis de louer · " + bienName(b.id), place:[p.svc, p.adr].filter(Boolean).join(", "), note:L.join("\n")}; }
+function plCode(v){ const o = {app:"cv", v:1, src:"glf", ev:[{title:v.title, allDay:false, start:v.date, end:v.date, startTime:v.t0, endTime:v.t1, place:v.place, note:v.note, icon:"🔑"}]};
+  const u = new TextEncoder().encode(JSON.stringify(o)); let s = ""; u.forEach(x => s += String.fromCharCode(x)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function plIcs(v, uidv){ const z = x => x.replace(/-/g, "");
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Gestion Locative Facile//FR", "BEGIN:VEVENT", "UID:" + uidv + "@gestion-locative-facile", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z", "DTSTART:" + z(v.date) + "T" + v.t0.replace(":", "") + "00", "DTEND:" + z(v.date) + "T" + v.t1.replace(":", "") + "00", "SUMMARY:" + icsEsc(v.title), "LOCATION:" + icsEsc(v.place), "DESCRIPTION:" + icsEsc(v.note), "BEGIN:VALARM", "TRIGGER:-PT1H", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(v.title), "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n"); }
+function sheetPermis(id, then, cid){
+  const b = S.biens.find(x => x.id === id); if (!b) return; const v = b.permis.ville || "ta commune", e = plEtat(id), p = plSvc(b);
+  V.plThen = {then, cid};
+  const rdv = (e.rdv || []).slice().sort((x, y) => (x.date || "").localeCompare(y.date || ""));
+  openSheet(`<div style="text-align:center;font-size:44px;line-height:1.1">🔑</div><h2 style="text-align:center">Permis de louer — ${esc(v)}</h2>
+    <div class="info" style="background:var(--warn-soft)"><b>${esc(bienName(id))}</b> : avant de relouer, il faut l'<b>autorisation de la mairie</b>, obtenue <b>avant la signature du bail</b>. Une nouvelle autorisation est nécessaire à <b>chaque changement de locataire</b>.</div>
+    <div class="small">${e.statut === "dem" ? "✅ Demande déposée le " + frDate(e.date) + ". Attends la visite de contrôle et la décision." : "⚠️ Pas encore de demande notée pour ce changement de locataire."}</div>
+    ${p.svc || p.tel || p.adr || p.mail ? `<div class="card" style="margin:8px 0"><div class="small"><b>${esc(p.svc || "Service de la mairie")}</b>${p.adr ? "<br>" + esc(p.adr) : ""}${p.tel ? `<br><a href="tel:${esc(p.tel.replace(/\s/g, ""))}">${esc(p.tel)}</a>` : ""}${p.tel2 ? "<br>" + esc(p.tel2) : ""}${p.mail ? `<br><a href="mailto:${esc(p.mail)}">${esc(p.mail)}</a>` : ""}</div></div>` : `<div class="small muted">Renseigne le service, le téléphone et l'adresse de ta mairie dans Réglages › Biens › Permis de louer.</div>`}
+    <div class="small muted" style="margin-top:6px">À préparer (exemple d'Istres, à vérifier auprès de la mairie) : formulaire Cerfa 15652*01, DPE, diagnostics selon l'âge du logement (plomb, amiante, électricité, gaz), plan du logement. Instruction sous environ 1 mois avec une visite de contrôle. Sans autorisation : amende de 5 000 à 15 000 €. L'autorisation est à annexer au bail.</div>
+    <div style="margin-top:8px"><b class="small">Rendez-vous et visites</b>${rdv.length ? rdv.map(r => `<div class="row"><div class="main"><div class="t">${esc(PL_RDV[r.type] || "RDV")}</div><div class="s">${esc(fmtVisite(r.date))}${r.qui ? " · " + esc(r.qui) : ""}${r.note ? " · " + esc(r.note) : ""}</div></div><button class="mini" data-act="pl-rdv-ag" data-id="${esc(id)}" data-r="${esc(r.id)}">Agenda</button><button class="mini" data-act="pl-rdv-del" data-id="${esc(id)}" data-r="${esc(r.id)}">✕</button></div>`).join("") : '<div class="small muted">Aucun rendez-vous noté.</div>'}
+      <div class="btns"><button class="btn sm ghost" data-act="pl-rdv" data-id="${esc(id)}" data-v="mairie">+ RDV mairie</button><button class="btn sm ghost" data-act="pl-rdv" data-id="${esc(id)}" data-v="${rdv.some(r => r.type === "v1") ? "v2" : "v1"}">+ ${rdv.some(r => r.type === "v1") ? "2e visite" : "Visite de contrôle"}</button></div></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="pl-dem" data-id="${esc(id)}">Demande déposée</button><button class="btn" style="flex:1;background:var(--ok,#1a7f4b)" data-act="pl-ok" data-id="${esc(id)}">Autorisation obtenue</button></div>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="pl-letter" data-id="${esc(id)}">Lettre de demande (PDF)</button></div>
+    <div class="btns"><button class="btn ghost" data-act="pl-go" data-id="${esc(id)}">Continuer quand même</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
+    <div class="small muted">${PL_LINKS.map(l => `<a href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("<br>")}</div>`);
+}
+function sheetRdv(id, type){
+  const b = S.biens.find(x => x.id === id); if (!b) return; V.plRdv = {id, type};
+  openSheet(`<h2>${esc(PL_RDV[type])} · ${esc(b.nom)}</h2>${dxF("pr-date", "Date et heure", "", 'type="datetime-local"')}${dxF("pr-qui", "Interlocuteur (nom de la personne)", "", "")}${dxF("pr-note", "Note", "", "")}
+    <div class="small muted">Après l'enregistrement, l'appli te propose de l'envoyer vers AgenDam ou le calendrier du téléphone.</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="pl-rdv-ok">Enregistrer</button><button class="btn ghost" data-act="pl-back" data-id="${esc(id)}">Annuler</button></div>`);
+}
+function sheetAgV(v, head){
+  const ag = agendaCfg(), au = agUrl(ag.url), code = plCode(v); V.plIcs = v;
+  openSheet(`<h2>${esc(head)}</h2><div class="info"><b>${esc(v.title)}</b><br>${esc(frDate(v.date))} · ${esc(v.t0)}–${esc(v.t1)}${v.place ? "<br>" + esc(v.place) : ""}</div>
+    <div class="small" style="white-space:pre-line;padding:8px;border-radius:10px;background:var(--bg)">${esc(v.note)}</div>
+    ${au ? `<div class="btns"><button class="btn" style="flex:1" data-act="pl-ag-copy" data-v="${code}">Copier pour ${esc(ag.nom || "mon agenda")}</button><a class="btn ghost" href="${esc(au)}#cv=${code}" target="_blank" rel="noopener">Ouvrir ${esc(ag.nom || "l'agenda")}</a></div>` : ""}
+    <div class="btns"><button class="btn ghost" data-act="pl-ics">Calendrier du téléphone (.ics)</button><button class="btn ghost" data-act="sheetclose">Plus tard</button></div>`);
+}
+function plCfgCard(){
+  const L = live(S.biens);
+  return `<div class="card"><h2>Permis de louer</h2><div class="small muted">Certaines communes imposent une autorisation de la mairie avant chaque nouvelle location. Indique ici les logements concernés : un gros rappel s'affiche avant d'accueillir un nouveau candidat ou de créer un locataire. L'appli ne peut pas savoir seule quelles communes sont concernées : vérifie auprès de ta mairie (liens ci-dessous).</div>
+    <div class="rows">${L.map(b => `<div class="row"><div class="main"><div class="t">${bienPill(b.id)}</div><div class="s">${b.permis && b.permis.on ? "Soumis au permis de louer" + (b.permis.ville ? " · " + esc(b.permis.ville) : "") + (plEtat(b.id).statut === "ok" ? " · autorisation obtenue" : "") : "Non concerné"}</div></div><button class="mini" data-act="pl-cfg" data-id="${esc(b.id)}">Modifier</button></div>`).join("")}</div>
+    <div class="small muted" style="margin-top:6px">${PL_LINKS.map(l => `<a href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("<br>")}</div></div>`;
+}
+function plCity(b){ const m = /\b\d{5}\s+([^,\n]+)/.exec(b.adresse || ""); return m ? m[1].trim() : ""; }
+document.addEventListener("click", ev => {
+  const bt = ev.target.closest("[data-act]"); if (!bt) return; const a = bt.dataset.act, id = bt.dataset.id;
+  const bien = () => S.biens.find(x => x.id === id);
+  switch (a){
+    case "pl-cfg": { const b = bien(); if (!b) break; const p = b.permis || {};
+      openSheet(`<h2>Permis de louer · ${esc(b.nom)}</h2><label class="f" style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" id="pl-on" ${p.on ? "checked" : ""}> Ce logement est soumis au permis de louer</label>${dxF("pl-ville", "Commune", p.ville || plCity(b), "")}${dxF("pl-svc", "Service de la mairie", p.svc || "", "")}${dxF("pl-tel", "Téléphone", p.tel || "", 'type="tel"')}${dxF("pl-adr", "Adresse (hôtel de ville / service)", p.adr || "", "")}${dxF("pl-mail", "E-mail", p.mail || "", 'type="email" autocapitalize="none"')}<div class="small muted">Pour Istres, laisse ces champs vides : ils sont remplis automatiquement (à vérifier). Pour une autre commune, renseigne-les d'après le site de ta mairie.</div><div class="small muted">Le rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire, tant que l'autorisation n'est pas notée « obtenue » pour le locataire en cours de recherche.</div>
+        <div class="btns"><button class="btn" style="flex:1" data-act="pl-cfg-ok" data-id="${esc(id)}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
+    case "pl-cfg-ok": { const b = bien(); if (!b) break; const on = $("#pl-on").checked; b.permis = {on, ville:$("#pl-ville").value.trim(), svc:$("#pl-svc").value.trim(), tel:$("#pl-tel").value.trim(), adr:$("#pl-adr").value.trim(), mail:$("#pl-mail").value.trim()}; b.upd = Date.now(); persist(); closeSheet(); render(); toast(on ? "Rappel activé" : "Rappel désactivé"); break; }
+    case "pl-dem": { const b = bien(); if (!b) break; b.permisEtat = Object.assign({}, b.permisEtat, {statut:"dem", date:todayIso()}); b.upd = Date.now(); persist(); toast("Demande notée"); sheetPermis(id, (V.plThen || {}).then, (V.plThen || {}).cid); break; }
+    case "pl-ok": { const b = bien(); if (!b) break; b.permisEtat = Object.assign({}, b.permisEtat, {statut:"ok", date:todayIso()}); b.upd = Date.now(); persist(); toast("Autorisation notée : pense à l'annexer au bail"); plGo(id); break; }
+    case "pl-go": plGo(id); break;
+    case "pl-back": sheetPermis(id, (V.plThen || {}).then, (V.plThen || {}).cid); break;
+    case "pl-rdv": sheetRdv(id, bt.dataset.v); break;
+    case "pl-rdv-ok": { const q = V.plRdv; if (!q) break; const b = S.biens.find(x => x.id === q.id); if (!b) break; const d = $("#pr-date").value; if (!d) return toast("Indique la date et l'heure");
+      const r = {id:uid(), type:q.type, date:d, qui:$("#pr-qui").value.trim(), note:$("#pr-note").value.trim()}; b.permisEtat = b.permisEtat || {}; (b.permisEtat.rdv = b.permisEtat.rdv || []).push(r); b.upd = Date.now(); persist(); toast("Rendez-vous noté"); sheetAgV(plEv(b, r), "Mettre dans un agenda"); break; }
+    case "pl-rdv-ag": { const b = bien(); const r = b && (plEtat(id).rdv || []).find(x => x.id === bt.dataset.r); if (r) sheetAgV(plEv(b, r), "Mettre dans un agenda"); break; }
+    case "pl-rdv-del": { const b = bien(); if (!b || !b.permisEtat) break; b.permisEtat.rdv = (b.permisEtat.rdv || []).filter(x => x.id !== bt.dataset.r); b.upd = Date.now(); persist(); sheetPermis(id, (V.plThen || {}).then, (V.plThen || {}).cid); break; }
+    case "pl-ag-copy": { const t = "CVPOCHE:" + bt.dataset.v; let ok = false; navigator.clipboard.writeText(t).then(() => toast("Code copié : colle-le dans " + (agendaCfg().nom || "ton agenda")), () => toast("Copie impossible")); break; }
+    case "pl-ics": { const v = V.plIcs; if (v) saveFile("rdv-permis-de-louer-" + v.date + ".ics", new TextEncoder().encode(plIcs(v, "pl-" + v.date + v.t0.replace(":", ""))), "text/calendar"); break; }
+    case "pl-letter": { const b = bien(); if (!b) break; const p = plSvc(b), bi = bailleurInfo(), d = new PdfDoc("Demande d'autorisation de mise en location"), M = d.M, R = d.W - M, P = (t, g) => { d.para(t, 10.5, g || 15); d.y -= 4; };
+      d.text(M, d.y, bi.nom || "(bailleur)", {size:10.5, bold:true}); d.y -= 14; d.text(M, d.y, bi.adr || "", {size:10}); d.y -= 26;
+      d.text(R, d.y, p.svc || "Mairie de " + (b.permis.ville || "………"), {size:10.5, bold:true, right:true}); d.y -= 14; if (p.adr) { d.text(R, d.y, p.adr, {size:10, right:true}); d.y -= 14; } d.y -= 16;
+      d.text(R, d.y, ((S.cfg && S.cfg.ville) ? S.cfg.ville + ", le " : "Le ") + frDate(todayIso()), {size:10.5, right:true}); d.y -= 28;
+      d.text(M, d.y, "Objet : demande d'autorisation préalable de mise en location", {size:10.5, bold:true}); d.y -= 26;
+      P("Madame, Monsieur,");
+      P("Je suis propriétaire du logement situé " + (b.adresse || "………") + ", que je souhaite mettre en location comme résidence principale. Conformément au dispositif d'autorisation préalable de mise en location en vigueur sur votre commune, je vous prie de trouver ci-joint ma demande d'autorisation (formulaire Cerfa n° 15652*01).");
+      P("Pièces jointes : dossier de diagnostic technique (diagnostic de performance énergétique, et selon l'âge du logement : constat de risque d'exposition au plomb, état de l'installation intérieure d'électricité et de gaz, état relatif à la présence d'amiante) et plan détaillé du logement.");
+      P("Je vous remercie de bien vouloir m'adresser le récépissé de dépôt, et de m'indiquer les disponibilités pour la visite de contrôle du logement. Je reste joignable pour convenir d'un rendez-vous.");
+      P("Dans l'attente de votre décision, je vous prie d'agréer, Madame, Monsieur, mes salutations distinguées."); d.y -= 20; d.text(R, d.y, bi.nom || "", {size:10.5, right:true});
+      saveFile("demande-permis-de-louer-" + id + "-" + todayIso() + ".pdf", d.finish("Demande d'autorisation de mise en location"), "application/pdf"); break; }
+  }
+});
+function plGo(id){ const t = V.plThen || {}; V.plThen = null; closeSheet(); if (t.then === "cand") sheetCand(""); else if (t.then === "keep") sheetKeep(t.cid); else render(); }
+
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
 
 /* ---------- Photos : stockées dans IndexedDB (jamais dans les données principales) ---------- */
@@ -3943,7 +4034,7 @@ document.addEventListener("click", async ev => {
       const dup = candList().find(x => !x.del && x.bien === c.bien && ((c.email && x.email && x.email.toLowerCase() === c.email.toLowerCase()) || x.nom.toLowerCase() === c.nom.toLowerCase()));
       if (dup){ const n = await candAttach(dup, others); if (isDos && (dup.statut === "dem" || dup.statut === "vis")) dup.statut = "dos"; dup.upd = Date.now(); persist(); V.lsel = dup.bien; V.lsub = "cand"; render(); toast(n ? n + " pièce(s) ajoutée(s) à la fiche de " + dup.nom : "Ce candidat est déjà dans la liste"); sheetCand(dup.id); break; }
       candList().push(c); const n = await candAttach(c, others); persist(); V.lsel = c.bien; V.lsub = "cand"; render(); sheetCand(c.id); toast("Fiche créée" + (n ? " avec " + n + " pièce(s)" : "") + " : vérifie les informations"); break; }
-    case "cd-new": sheetCand(""); break;
+    case "cd-new": if (permisDue(V.lsel)) sheetPermis(V.lsel, "cand"); else sheetCand(""); break;
     case "cd-open": sheetCand(id); break;
     case "cd-save": { const prev = id ? ((candGet(id) || {}).visite || "") : ""; const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); if (c.visite && c.visite !== prev && c.statut !== "ref" && c.statut !== "ret") setTimeout(() => sheetVisite(c.id), 400); break; }
     case "cd-mail": { const c = cdSave(id); if (!c) break; sheetMail(id, ""); break; }
@@ -3951,12 +4042,12 @@ document.addEventListener("click", async ev => {
     case "cm-sms": { const c = candGet(id); if (!c) break; location.href = "sms:" + c.tel + "?&body=" + encodeURIComponent($("#cm-msg").value); break; }
     case "cm-copy": { const t = $("#cm-msg").value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Message copié")).catch(() => { $("#cm-msg").select(); toast("Sélectionné : copie-le"); }); break; }
     case "cd-ics": { const c = candGet(id); const ics = c && candIcs(c); if (!ics) return toast("Pas de date de visite"); saveFile("visite-" + (c.nom || "candidat").replace(/\s+/g, "-") + ".ics", ics, "text/calendar"); break; }
-    case "cd-keep": { const c = cdSave(id); if (!c) break; sheetKeep(id); break; }
+    case "cd-keep": { const c = cdSave(id); if (!c) break; if (permisDue(c.bien)) sheetPermis(c.bien, "keep", id); else sheetKeep(id); break; }
     case "cd-keep-ok": { const c = candGet(id); if (!c) break; const num = i => { const x = parseNum($("#" + i).value); return x == null ? 0 : x; };
       const debut = dxV("kp-debut") || todayIso(), loyer = num("kp-loyer"), depot = num("kp-depot");
       if (loyer && depot > 2 * loyer + 0.005){ toast("Dépôt supérieur à 2 mois de loyer hors charges"); return; }
       const t = {id:uid(), bien:c.bien, nom:c.nom, tel:c.tel, email:c.email, debut, fin:"", loyer, charges:num("kp-chg"), depot, note:"Issu d'une candidature du " + frDate(c.dateDem || todayIso()), upd:Date.now()};
-      S.locataires.push(t); c.statut = "ret"; c.loc = t.id; c.upd = Date.now();
+      S.locataires.push(t); c.statut = "ret"; c.loc = t.id; c.upd = Date.now(); { const bb = S.biens.find(x => x.id === c.bien); if (bb && bb.permis && bb.permis.on){ bb.permisEtat = {}; bb.upd = Date.now(); } }
       const an = annOf(c.bien); an.statut = "louee"; an.upd = Date.now(); S.annonces = S.annonces || {}; S.annonces[c.bien] = an;
       const r = mvtRec(c.bien, "arr"); r.done.dos = r.done.dos || todayIso(); r.upd = Date.now();
       persist(); closeSheet(); V.tab = "bld"; V.bsel = c.bien; V.bsub = "mvt"; render(); toast("Locataire créé : prépare maintenant l'arrivée"); break; }
@@ -4388,7 +4479,7 @@ document.addEventListener("click", async ev => {
 });
 
 /* ---------- Mise à jour des règles avec une IA (export Word → réponse de l'IA → import validé ligne par ligne) ---------- */
-const RULE_HOSTS = ["legifrance.gouv.fr", "service-public.fr", "impots.gouv.fr", "bofip.impots.gouv.fr", "anil.org", "economie.gouv.fr", "urssaf.fr", "vie-publique.fr"];
+const RULE_HOSTS = ["legifrance.gouv.fr", "service-public.fr", "impots.gouv.fr", "bofip.impots.gouv.fr", "anil.org", "economie.gouv.fr", "urssaf.fr", "vie-publique.fr", "ampmetropole.fr"];
 const RULES = [
   {id:"seuilMicroFoncier", prop:"seuilMicro", div:1, titre:"Seuil du micro-foncier (revenus bruts annuels de location vide)", unite:"€", def:15000, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
   {id:"abattMicroFoncier", prop:"abattMicro", div:100, titre:"Abattement forfaitaire du micro-foncier", unite:"%", def:30, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
@@ -4406,6 +4497,23 @@ const rgOfficial = u => { const h = rgHost(u); return !!h && RULE_HOSTS.some(x =
 const rgNum = s => { const n = parseFloat(String(s || "").replace(/\s| | /g, "").replace(",", ".").replace(/[^\d.]/g, "")); return isFinite(n) && n >= 0 ? n : null; };
 const rgDate = () => { const d = new Date(); return MOIS[d.getMonth()].toLowerCase() + " " + d.getFullYear(); };
 
+const RG_SRC = [
+  ["Fiscalité location vide (micro-foncier, 2044, déficit)", "BOFiP · notice 2044", "https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306", 1],
+  ["Fiscalité location vide (déficit foncier)", "BOFiP déficits fonciers", "https://bofip.impots.gouv.fr/export/pdf/7391", 1],
+  ["Déclaration des revenus fonciers (2044)", "impots.gouv.fr · formulaire 2044", "https://www.impots.gouv.fr/formulaire/2044/declaration-des-revenus-fonciers", 1],
+  ["Bail, dépôt de garantie, préavis, loyers", "service-public.fr · fiches bailleur", "https://www.service-public.fr/particuliers/vosdroits/N31", 1],
+  ["Textes de loi (bail meublé, décrets, articles)", "Légifrance", "https://www.legifrance.gouv.fr/", 1],
+  ["Bail : contrat type en vigueur (décret n° 2026-596 du 6 juillet 2026)", "Légifrance", "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000054393114", 1],
+  ["Permis de louer à Istres (autorisation préalable, centre ancien)", "Métropole Aix-Marseille-Provence", "https://ampmetropole.fr/wp-content/uploads/2022/12/Permis-de-louer-Istres_web.pdf", 1],
+  ["Permis de louer : règles générales (articles L.635-1 et suivants du code de la construction et de l'habitation)", "ANIL · ADIL 13", "https://www.anil.org/adil-13/notre-expertise/lhi-amelioration-habitat/guide-du-logement-decent-caf-adil13/permis-de-louer/", 1],
+  ["Facture électronique : calendrier et obligations (décret n° 2024-266 du 25 mars 2024 ; articles 289 bis et 1737 du CGI)", "economie.gouv.fr · impots.gouv.fr (fiche loueurs en meublé)", "https://www.economie.gouv.fr/facturation-electronique-entreprises", 1],
+  ["Permis de louer : liste de communes (pour comprendre, à confirmer en mairie)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/permis-de-louer/", 0],
+  ["Facture électronique et LMNP (explications, à confirmer sur la fiche de l'administration)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/facturation-electronique-lmnp-obligations/", 0]
+];
+const RG_POINTS = [
+  ["texte-permis-de-louer", "Permis de louer : dans le centre ancien d'Istres, une autorisation préalable de mise en location est obligatoire pour les logements de plus de 15 ans loués comme résidence principale ; elle doit être obtenue avant la signature du bail, pour chaque nouveau locataire ; dossier : Cerfa 15652*01, DPE et diagnostics, plan ; instruction d'environ un mois avec visite de contrôle ; amende de 5 000 à 15 000 € ; périmètre et application aux meublés à confirmer avec la mairie."],
+  ["texte-facture-electronique", "Facture électronique : depuis le 1er septembre 2026, les loueurs en meublé (avec un numéro SIREN, même exonérés de TVA) doivent pouvoir recevoir les factures électroniques de leurs fournisseurs professionnels via une plateforme agréée et déclarer leur adresse de réception dans l'annuaire ; l'émission obligatoire ne concerne que les loueurs soumis à la TVA, à partir du 1er septembre 2027 ; les loyers d'habitation facturés à des particuliers ne sont pas concernés ; sanction pour défaut de réception : mise en demeure de trois mois puis amende de 500 €, puis 1 000 €."]
+];
 function rgPrompt(){
   const dt = frDate(todayIso());
   return [
@@ -4415,7 +4523,7 @@ function rgPrompt(){
 "",
 "MISSION : vérifier, point par point, chaque règle et chaque chiffre des parties « POINTS CHIFFRÉS » et « TEXTES DU GUIDE » ci-dessous, et dire s'il est encore exact aujourd'hui.",
 "",
-"SOURCES AUTORISÉES (uniquement) : legifrance.gouv.fr, service-public.fr, impots.gouv.fr, bofip.impots.gouv.fr, anil.org, economie.gouv.fr, urssaf.fr, vie-publique.fr.",
+"SOURCES AUTORISÉES (uniquement) : legifrance.gouv.fr, service-public.fr, impots.gouv.fr, bofip.impots.gouv.fr, anil.org, economie.gouv.fr, urssaf.fr, vie-publique.fr, ampmetropole.fr (permis de louer de la Métropole Aix-Marseille-Provence). Une liste de pages à consulter en priorité, par sujet, figure dans la partie « SOURCES À CONSULTER EN PRIORITÉ » du document.",
 "INTERDIT : blogs, forums, agences immobilières, sites de comptables ou commerciaux, articles de presse, autres IA, ta mémoire sans source.",
 "",
 "MÉTHODE (obligatoire, dans cet ordre) :",
@@ -4458,6 +4566,10 @@ async function rgExport(){
   for (const l of rgPrompt().split("\n")) lines.push(par(l));
   lines.push(par("POINTS CHIFFRÉS (à vérifier un par un)", {h:1}));
   for (const r of RULES) lines.push(par("id: " + r.id, {b:1}), par("point: " + r.titre), par("valeur actuelle: " + rgVal(r) + " " + r.unite), par("source de départ: " + r.src + " · " + r.url), par("dernière vérification: " + FONC_REGLES.verif), par(" "));
+  lines.push(par("SOURCES À CONSULTER EN PRIORITÉ (par sujet)", {h:1}));
+  for (const s of RG_SRC) lines.push(par(s[0] + " → " + s[1] + (s[3] ? "" : " (source non officielle : ne l'utilise pas comme preuve)") + " : " + s[2]));
+  lines.push(par("AUTRES POINTS À VÉRIFIER (utilise l'id indiqué)", {h:1}));
+  for (const p of RG_POINTS) lines.push(par("id: " + p[0], {b:1}), par("texte actuel: " + p[1]), par(" "));
   lines.push(par("TEXTES DU GUIDE (à vérifier ; en cas de différence, utilise id: texte-<sujet>)", {h:1}));
   for (const l of rgGuideText().split("\n")) lines.push(par(l));
   const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + lines.join("") + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>';
@@ -4496,6 +4608,25 @@ function rgShow(list){
     <div class="btns"><button class="btn ghost" data-act="rg-done" style="flex:1">Terminer</button></div>`);
 }
 function rgRecord(x, applied){ S.regles = S.regles || {vals:{}, hist:[]}; S.regles.hist = S.regles.hist || []; S.regles.hist.unshift({ts:Date.now(), id:x.id, titre:x.r ? x.r.titre : x.id, ancien:x.ancien || "", nouveau:x.nouveau || "", source:x.source || "", pourquoi:x.pourquoi || "", applied}); S.regles.hist = S.regles.hist.slice(0, 60); }
+function sourcesCard(){
+  return `<div class="card"><h2>Sources utilisées</h2><div class="small muted">Les pages où l'appli (et l'IA de mise à jour des règles) vont chercher. Les sources officielles sont envoyées à l'IA dans le fichier Word. Les sources « non officielles » servent seulement à comprendre : elles ne prouvent rien.</div>
+    <div class="rows">${RG_SRC.map(s => `<div class="row"><div class="main"><div class="t">${esc(s[0])}</div><div class="s">${esc(s[1])}${s[3] ? "" : " · non officielle"}</div></div><a class="mini" target="_blank" rel="noopener" href="${esc(s[2])}">Ouvrir</a></div>`).join("")}</div>
+    <div class="small muted" style="margin-top:6px">Sites acceptés par la mise à jour : ${RULE_HOSTS.map(esc).join(", ")}.</div></div>`;
+}
+function factureCard(){
+  const f = (S.cfg && S.cfg.factElec) || {};
+  return `<div class="card"><h2>Facture électronique</h2><div class="small">Ce que j'ai compris (sources de l'administration relayées par la presse, à confirmer sur la fiche « loueurs en meublé » de impots.gouv.fr) :</div>
+    <div class="small" style="margin-top:6px">• Depuis le 1er septembre 2026, un loueur en meublé qui a un <b>numéro SIREN</b> (ce qui est le cas en LMNP déclaré au guichet unique) doit pouvoir <b>recevoir</b> les factures électroniques de ses fournisseurs professionnels, <b>même s'il est exonéré de TVA</b>.<br>• Il faut pour cela choisir une <b>plateforme agréée</b> (certaines offrent la réception gratuite) et déclarer son adresse de réception.<br>• Les <b>loyers</b> d'un locataire particulier ne sont pas concernés : tu continues avec les quittances.<br>• L'<b>émission</b> obligatoire concerne seulement les loueurs soumis à la TVA, à partir du 1er septembre 2027.<br>• Sans plateforme : mise en demeure de 3 mois, puis amende de 500 €, puis 1 000 €.</div>
+    <div class="small muted" style="margin-top:6px">À faire : 1. vérifier ton SIREN · 2. choisir une plateforme agréée · 3. déclarer l'adresse de réception · 4. prévenir tes fournisseurs (syndic, artisans, ménage…) et ton comptable · 5. garder les factures et accusés.</div>
+    ${dxF("fe-pa", "Plateforme choisie (nom)", f.pa || "", "")}${dxF("fe-url", "Lien du site de la plateforme", f.url || "", 'type="url" inputmode="url" autocapitalize="off" placeholder="https://"')}${dxF("fe-date", "Inscrit le", f.date || "", 'type="date"')}
+    <div class="btns"><button class="btn sm" data-act="fe-save">Enregistrer</button>${agUrl(f.url) ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(agUrl(f.url))}">Ouvrir ma plateforme</a>` : ""}<a class="btn sm ghost" target="_blank" rel="noopener" href="https://www.economie.gouv.fr/facturation-electronique-entreprises">Page officielle</a></div>
+    <div class="small muted">${f.pa ? "✅ Plateforme notée : " + esc(f.pa) + (f.date ? " (" + frDate(f.date) + ")" : "") : "⚠️ Aucune plateforme notée pour le moment."} Je ne suis pas conseiller fiscal : confirme avec ton comptable ou ton service des impôts.</div></div>`;
+}
+function feHome(){
+  const f = (S.cfg && S.cfg.factElec) || {}; if (f.skip) return "";
+  if (f.pa || f.url){ const u = agUrl(f.url); return `<div class="card"><div class="top"><h2>Mes factures électroniques</h2>${u ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(u)}">Ouvrir</a>` : `<button class="btn sm ghost" data-act="fe-go">Ajouter le lien</button>`}</div><div class="small">Plateforme : <b>${esc(f.pa || u)}</b>${f.date ? " · inscrit le " + frDate(f.date) : ""}</div></div>`; }
+  return `<div class="card" style="border-color:var(--warn,#c77d00)"><h2>⚠️ Facture électronique</h2><div class="small">Depuis le 1er septembre 2026, tu dois pouvoir <b>recevoir</b> les factures de tes fournisseurs via une plateforme agréée. Aucune plateforme n'est notée.</div><div class="btns"><button class="btn sm" data-act="fe-go">Voir quoi faire</button><button class="btn sm ghost" data-act="fe-skip">Je ne suis pas concerné</button></div></div>`;
+}
 function rulesCard(){
   const h = (S.regles && S.regles.hist) || [];
   return `<div class="card"><h2>Mise à jour des règles</h2><div class="small muted">Les chiffres fiscaux et les règles changent. Exporte-les en Word, donne le fichier à une IA qui cherche sur internet (le prompt est dans le fichier), puis importe sa réponse : l'appli te montre ce qui change, pourquoi, avec la source, et n'applique rien sans ton accord. Dernière vérification des règles chiffrées : ${esc(FONC_REGLES.verif)}.</div>
@@ -4520,6 +4651,9 @@ document.addEventListener("click", async ev => {
       persist(); x.kind = "done"; toast(x.r ? "Appliqué" : "Gardé en note"); rgShow(V.rg.filter(y => y.kind !== "done").map(y => y)); render(); break; }
     case "rg-ign": { const x = V.rg && V.rg[+b.dataset.i]; if (!x) break; x.kind = "done"; rgShow(V.rg.filter(y => y.kind !== "done")); break; }
     case "rg-done": closeSheet(); render(); break;
+    case "fe-go": V.tab = "set"; V.sset = "regl"; render(); window.scrollTo(0, 0); break;
+    case "fe-skip": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.factElec = Object.assign({}, S.cfg.factElec, {skip:true}); persist(); render(); toast("Rappel masqué (Réglages › Règles pour le revoir)"); break;
+    case "fe-save": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.factElec = Object.assign({}, S.cfg.factElec, {pa:$("#fe-pa").value.trim(), url:agUrl($("#fe-url").value), date:$("#fe-date").value, skip:false}); persist(); toast("Enregistré"); render(); break;
   }
 });
 
