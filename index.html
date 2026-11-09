@@ -1189,8 +1189,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.3";
+const APP_VERSION = "1.7.4";
 const CHANGELOG = [
+  {v:"1.7.4", date:"2026-11-09", titre:"Relevé : soldes lus dans le PDF, écart cohérent", items:["Import de relevé PDF : l’appli lit toute seule la ligne « Solde au … » (et le solde de début s’il y en a un) et remplit « Trouver mon écart ».","« Trouver mon écart » part maintenant du même « Solde calculé » que le reste de l’appli, donc le même écart que dans « Comparer avec le relevé de banque »."]},
   {v:"1.7.3", date:"2026-11-09", titre:"Relevé plus précis, visite guidée à jour", items:["Import de relevé : repère une ligne qui ressemble à une opération de l’appli avec un montant ou une date légèrement faux et propose de la corriger ; bouton « Mettre la date du relevé » ; « Trouver mon écart » accepte aussi le solde de la banque au début du relevé pour séparer ce qui vient d’avant.","Visite guidée (100 étapes) : nouvelles étapes pour le bouton de mise à jour, la carte « Comptes des biens » du Pointage, l’import de relevé, « Trouver mon écart » et l’ajout des lignes oubliées."]},
   {v:"1.7.2", date:"2026-11-09", titre:"Trouver mon écart", items:["Après l’import d’un relevé, carte « Trouver mon écart » : tu tapes le solde réel de la banque à la date du relevé, l’appli le compare à son solde et détaille d’où vient la différence (lignes absentes, non pointées, pointées en trop, ajustements passés) et ce qui reste inexpliqué (avant le début du relevé)."]},
   {v:"1.7.1", date:"2026-11-09", titre:"Bouton de mise à jour, import de relevé plus clair", items:["Import de relevé : retrouve aussi une opération saisie à une autre date (même montant) ; résumé en phrases simples, et pour chaque ligne absente de l’appli un bouton « Ajouter » (avec sa catégorie) ou « Ignorer ».","Un bouton de mise à jour (flèches circulaires) à côté de la roue de Réglages : il vide le cache de l’appli et recharge la dernière version. Tes données ne sont pas touchées."]},
@@ -2918,11 +2919,11 @@ async function rlBuf(buf, name){
 }
 /* --- PDF (extrait de compte) : lecture avec pdf.js chargé à la demande, colonnes Débit / Crédit reconnues par leur position --- */
 async function rlPdf(buf){
-  const lib = await loadPdfJs(), doc = await lib.getDocument({data:new Uint8Array(buf)}).promise, out = []; let dbR = null, crR = null, allText = [];
+  const lib = await loadPdfJs(), doc = await lib.getDocument({data:new Uint8Array(buf)}).promise, out = []; let dbR = null, crR = null, allText = [], bal = [];
   for (let p = 1; p <= doc.numPages; p++){
     const tc = await (await doc.getPage(p)).getTextContent(), its = tc.items.filter(i => i.str && i.str.trim()).map(i => ({s:i.str.trim(), x:i.transform[4], y:i.transform[5], w:i.width || 0}));
     const lines = []; its.sort((a, b) => b.y - a.y || a.x - b.x); for (const it of its){ const L = lines.find(l => Math.abs(l.y - it.y) < 3); if (L) L.it.push(it); else lines.push({y:it.y, it:[it]}); }
-    for (const L of lines){ L.it.sort((a, b) => a.x - b.x); const txt = L.it.map(i => i.s).join(" "); allText.push(txt);
+    for (const L of lines){ L.it.sort((a, b) => a.x - b.x); const txt = L.it.map(i => i.s).join(" "); allText.push(txt); { const bm = txt.match(/\bsolde\b[^\d]*(\d{2}[\/.]\d{2}[\/.]\d{2,4})\s+([+\-−]?\d[\d\s.]*,\d{2})\s*(?:EUR|€)?\s*$/i); if (bm){ const bd = rlDate(bm[1]), bv = rlAmt(bm[2]); if (bd && bv !== null) bal.push({d:bd, v:bv}); } }
       const dh = L.it.find(i => /^d[ée]bit$/i.test(i.s)), ch = L.it.find(i => /^cr[ée]dit$/i.test(i.s)); if (dh && ch){ dbR = dh.x + dh.w; crR = ch.x + ch.w; continue; }
       const d = rlDate(L.it[0].s); if (!d) continue; const am = [], lib = [];
       for (const i of L.it.slice(1)){ const t = i.s.replace(/\s*(EUR|€)$/i, ""); if (/^[+\-−]?\d[\d\s.,]*$/.test(t) && rlAmt(t) !== null) am.push({v:rlAmt(t), c:i.x + i.w / 2}); else if (!/^(EUR|€)$/i.test(i.s)) lib.push(i.s); }
@@ -2930,7 +2931,7 @@ async function rlPdf(buf){
       if (dbR !== null){ const credit = a.c > dbR + 4; m = credit ? Math.abs(a.v) : -Math.abs(a.v); }
       out.push({d, lib:lib.join(" ").replace(/\s+/g, " ") || "(sans libellé)", m:Math.round(m * 100) / 100, hasCols:dbR !== null}); }
   }
-  if (out.length) return out;
+  if (out.length){ out.bal = bal; return out; }
   return rlText(allText.join("\n"));
 }
 /* --- comparaison --- */
@@ -2974,21 +2975,22 @@ function rlCatOpts(l, cur){
 }
 function rlEcart(R, c){
   const real = R.real; if (real === undefined || real === null || real === "") return null;
-  const b = S.biens.find(x => x.id === R.bien), D = c.hi, app = J().filter(j => j.bien === R.bien && j.compte !== "Perso" && !isArch(j));
-  const calc = r2(N(b && b.solde0) + sum(app.filter(j => j.date <= D).map(impact))), ecart = r2(real - calc), items = [];
-  const calc0 = r2(N(b && b.solde0) + sum(app.filter(j => j.date < c.lo).map(impact))), has0 = !(R.real0 === undefined || R.real0 === null || R.real0 === "");
+  const b = S.biens.find(x => x.id === R.bien), D = R.at || c.hi, app = J().filter(j => j.bien === R.bien && j.compte !== "Perso" && !isArch(j)), items = [];
+  const calc = soldeBien(R.bien), ecart = r2(real - calc), matched = new Set(c.ok.concat(c.pt).map(x => x.j.id));
+  const cut0 = R.at0 || null, before0 = j => cut0 ? j.date <= cut0 : j.date < c.lo;
+  const calc0 = r2(N(b && b.solde0) + sum(app.filter(before0).map(impact))), has0 = !(R.real0 === undefined || R.real0 === null || R.real0 === "");
   const gap0 = has0 ? r2(R.real0 - calc0) : null;
   const add = (txt, v, det) => { v = r2(v); if (Math.abs(v) >= 0.005) items.push({txt, v, det: det || ""}); };
-  if (has0) add("Avant le relevé : solde de départ de l'appli (" + eur(calc0) + ") différent de celui de la banque", gap0, "vient de l'ancien historique, de ajustements anciens ou du solde de départ du bien");
+  if (has0) add("Avant le début du relevé : le solde de départ de l'appli (" + eur(calc0) + ") n'est pas celui de la banque (" + eur(R.real0) + ")", gap0, "vient de l'ancien historique, d'opérations anciennes oubliées ou du solde de départ du bien");
   add("Lignes du relevé absentes de l'appli", sum(c.miss.map(x => x.l.m)), c.miss.map(x => x.l.lib + " " + frDate(x.l.d) + " " + eur(x.l.m)).join(" ; "));
   add("Lignes du relevé que tu as ignorées (elles comptent quand même sur le compte)", sum(c.ign.map(x => x.l.m)), c.ign.map(x => x.l.lib + " " + frDate(x.l.d)).join(" ; "));
   add("Lignes dans l'appli mais pas pointées", sum(c.pt.map(x => x.l.m)), c.pt.map(x => x.l.lib + " " + frDate(x.l.d)).join(" ; "));
   add("Pointées dans l'appli mais absentes du relevé", -sum(c.extra.map(rlSigned)), c.extra.map(j => (j.lib || j.cat) + " " + frDate(j.date) + " " + eur(rlSigned(j))).join(" ; "));
-  const late = c.ok.filter(x => x.j.date > D); add("Pointées dans l'appli avec une date après le relevé (le solde du relevé ne les compte pas encore)", sum(late.map(x => x.l.m)), late.map(x => (x.j.lib || x.j.cat) + " " + frDate(x.j.date)).join(" ; "));
-  const adj = app.filter(j => j.cat === "Écart de rapprochement" && j.pointe === "x" && j.date >= c.lo && j.date <= D); add("Ajustements passés pendant la période du relevé", -sum(adj.map(rlSigned)), adj.map(j => frDate(j.date) + " " + eur(rlSigned(j))).join(" ; "));
+  const late = app.filter(j => j.pointe === "x" && j.date > D && !matched.has(j.id) && j.cat !== "Écart de rapprochement"); add("Pointées dans l'appli avec une date après le relevé (la banque ne les a pas encore)", -sum(late.map(rlSigned)), late.map(j => (j.lib || j.cat) + " " + frDate(j.date) + " " + eur(rlSigned(j))).join(" ; "));
+  const adj = app.filter(j => j.cat === "Écart de rapprochement" && j.pointe === "x" && j.date >= c.lo); add("Ajustements passés depuis le début du relevé", -sum(adj.map(rlSigned)), adj.map(j => frDate(j.date) + " " + eur(rlSigned(j))).join(" ; "));
   const adjOld = app.filter(j => j.cat === "Écart de rapprochement" && j.pointe === "x" && j.date < c.lo);
-  const rest = r2(ecart - sum(items.map(x => x.v))), ids0 = items.length;
-  const bankMove = has0 ? r2(real - R.real0) : null, lines = r2(sum(R.lines.filter(l => l.d <= D).map(l => l.m)));
+  const rest = r2(ecart - sum(items.map(x => x.v)));
+  const bankMove = has0 ? r2(real - R.real0) : null, lines = r2(sum(R.lines.filter(l => l.d > (cut0 || "") && l.d <= D).map(l => l.m)));
   return {calc, calc0, has0, gap0, ecart, items, rest, D, adjOld:adjOld.length, sumAdjOld:r2(sum(adjOld.map(rlSigned))), moveGap: has0 ? r2(bankMove - lines) : null};
 }
 function rlCard(){
@@ -3002,10 +3004,10 @@ function rlCard(){
     ${c.miss.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.miss.length}</b> sont sur le relevé mais <b>pas du tout dans l'appli</b> (${sg(c.sumMiss)}) : pour chacune, touche « Ajouter » (elle est créée et pointée) ou « Ignorer » (elle ne te sera plus proposée).</div>` : ""}
     ${c.extra.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.extra.length}</b> sont pointées dans l'appli mais <b>absentes du relevé</b> (${sg(c.sumExtra)}) : à vérifier plus bas.</div>` : ""}
     ${!c.pt.length && !c.miss.length && !c.extra.length ? '<div class="info" style="margin-top:8px">Tout correspond : rien d\'oublié sur cette période.</div>' : ""}</div>
-  ${(() => { const e = rlEcart(R, c), sg2 = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x)); return `<div class="card"><h2>Trouver mon écart</h2><div class="small muted">Tape le solde réel de ton compte <b>à la fin du relevé (${frDate(c.hi)})</b>, tel que ta banque l'indique. L'appli le compare à son propre solde et cherche d'où vient la différence.</div>
-    <label class="small" style="display:block;margin-top:8px">Solde réel de la banque au ${frDate(c.hi)} (€)</label><input id="rl-real" inputmode="decimal" placeholder="ex. 5 308,72" value="${R.real === undefined || R.real === null ? "" : String(R.real).replace(".", ",")}">
-    <label class="small" style="display:block;margin-top:8px">Facultatif : solde réel de la banque <b>au début</b> du relevé, avant la 1re ligne du ${frDate(c.lo)} (€)</label><input id="rl-real0" inputmode="decimal" placeholder="ex. 3 120,40 (ligne « ancien solde » du relevé)" value="${R.real0 === undefined || R.real0 === null ? "" : String(R.real0).replace(".", ",")}">
-    ${e ? `${kv("Solde de l'appli à cette date", eur(e.calc))}${kv("Solde réel de la banque", eur(R.real))}${kv("<b>Écart</b>", `<b>${sg2(e.ecart)}</b>`, Math.abs(e.ecart) < 0.005 ? "" : "neg")}
+  ${(() => { const e = rlEcart(R, c), sg2 = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x)); return `<div class="card"><h2>Trouver mon écart</h2><div class="small muted">Tape le solde réel de ton compte <b>à la fin du relevé (${frDate(R.at || c.hi)})</b>, tel que ta banque l'indique.${R.fromPdf ? ' <b>Ici, l\'appli l\'a lu dans ton PDF.</b>' : ''} L'appli le compare à son propre solde et cherche d'où vient la différence.</div>
+    <label class="small" style="display:block;margin-top:8px">Solde réel de la banque au ${frDate(R.at || c.hi)} (€)</label><input id="rl-real" inputmode="decimal" placeholder="ex. 5 308,72" value="${R.real === undefined || R.real === null ? "" : String(R.real).replace(".", ",")}">
+    <label class="small" style="display:block;margin-top:8px">Facultatif : solde réel de la banque <b>au début</b> du relevé, avant la 1re ligne du ${frDate(c.lo)} (€)${R.at0 ? " — lu dans le PDF au " + frDate(R.at0) : ""}</label><input id="rl-real0" inputmode="decimal" placeholder="ex. 3 120,40 (ligne « ancien solde » du relevé)" value="${R.real0 === undefined || R.real0 === null ? "" : String(R.real0).replace(".", ",")}">
+    ${e ? `${kv("Solde de l'appli (le même que « Solde calculé » plus bas)", eur(e.calc))}${kv("Solde réel de la banque", eur(R.real))}${kv("<b>Écart</b>", `<b>${sg2(e.ecart)}</b>`, Math.abs(e.ecart) < 0.005 ? "" : "neg")}
     ${Math.abs(e.ecart) < 0.005 ? '<div class="info" style="margin-top:8px">Aucun écart : l\'appli et la banque sont d\'accord ✓</div>' : `<div class="small muted" style="margin-top:8px">Voilà ce qui explique cet écart :</div>
     ${e.items.map(x => `<div class="kv" style="align-items:flex-start"><span class="small">${esc(x.txt)}${x.det ? `<br><span class="muted">${esc(x.det)}</span>` : ""}</span><span class="num small">${sg2(x.v)}</span></div>`).join("")}
     ${Math.abs(e.rest) >= 0.005 ? (e.has0 ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">Reste inexpliqué : <b>${sg2(e.rest)}</b>. Les soldes de début et de fin sont ceux de la banque, donc il manque probablement des lignes dans le relevé importé (page non lue ?) ou une ligne est mal lue.${e.moveGap !== null && Math.abs(e.moveGap) >= 0.005 ? ` La banque dit que le compte a bougé de ${sg2(r2(R.real - R.real0))} sur la période, mais les lignes importées totalisent ${sg2(r2(R.real - R.real0 - e.moveGap))} (différence ${sg2(e.moveGap)}).` : ""}</div>` : `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">Reste inexpliqué : <b>${sg2(e.rest)}</b>. Cela vient de <b>avant le ${frDate(c.lo)}</b> : une opération ancienne oubliée ou mal saisie, ou le solde de départ du bien.${e.adjOld ? ` Ton appli contient ${e.adjOld} ajustement(s) ancien(s) avant cette date, au total ${sg2(e.sumAdjOld)}.` : ""} <b>Astuce :</b> tape le solde de la banque au début du relevé (champ facultatif ci-dessus) pour séparer ce qui vient d'avant de ce qui vient du relevé.</div>`) : '<div class="info" style="margin-top:8px">Tout l\'écart est expliqué ✓ (traite les lignes ci-dessus).</div>'}`}` : ""}</div>`; })()}
@@ -3035,9 +3037,9 @@ function sheetRl(bien){
     <div class="btns"><button class="btn" style="flex:1" data-act="rl-paste-ok">Analyser le texte</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
 function rlLoad(lines, fname){
-  const bien = V.rlTarget; lines = lines.filter(l => l.d && l.m).slice(0, 1500);
+  const bien = V.rlTarget, bal = (lines.bal || []).slice().sort((a, b) => a.d.localeCompare(b.d)); lines = lines.filter(l => l.d && l.m).slice(0, 1500);
   if (!lines.length){ toast("Aucune ligne reconnue : vérifie que le fichier contient une date et un montant par ligne"); return; }
-  V.rl = {bien, fname, lines, sel:{}, cat:{}}; closeSheet(); V.tab = "bld"; V.bsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
+  V.rl = {bien, fname, lines, sel:{}, cat:{}}; if (bal.length){ const last = bal[bal.length - 1], first = bal[0], lo = lines.map(l => l.d).sort()[0]; V.rl.real = last.v; V.rl.at = last.d; V.rl.fromPdf = true; if (bal.length > 1 && first.d <= lo){ V.rl.real0 = first.v; V.rl.at0 = first.d; } } closeSheet(); V.tab = "bld"; V.bsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
 }
 const rlRefreshBtns = () => { const n = Object.values((V.rl && V.rl.sel) || {}).filter(Boolean).length; ["rl-add-b", "rl-ign-b"].forEach((id, k) => { const b = document.getElementById(id); if (b) b.textContent = (k ? "Ignorer" : "Ajouter") + " la sélection (" + n + ")"; }); };
 document.addEventListener("change", async ev => {
