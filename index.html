@@ -282,8 +282,8 @@ const TYPE_LAB = {"Recette":"Recette","Dépense":"Dépense","Sortie":"Épargne (
 const CATS = {
   "Recette":["Loyer","Remboursement","Autre recette"],
   "Dépense":["Crédit (mensualité)","Assurance PNO","Assurance GMPA","Syndic / copropriété","Eau","Électricité","Taxe foncière","CFE","Comptabilité","CGA / OGA","Abonnement Rendement locatif","Entretien / réparations","Mobilier / équipement","Diagnostics","Frais bancaires / cotisations","Divers"],
-  "Sortie":["Bourse","Livret A","PEL","Autre placement","Assurance vie","Placement","Prêt","Transfert entre comptes","Achat personnel","Remboursement","Écart de rapprochement","Autre"],
-  "Entrée":["Bourse","Livret A","PEL","Autre placement","Intérêts placement","Assurance vie","Placement","Prêt","Transfert entre comptes","Achat personnel","Remboursement","Écart de rapprochement","Autre"]
+  "Sortie":["Bourse","Livret A","PEL","Autre placement","Assurance vie","Placement","Prêt","Transfert entre comptes","Virement entre biens","Apport perso","Retrait vers le perso","Achat personnel","Remboursement","Écart de rapprochement","Caution rendue","Caution reçue","Autre"],
+  "Entrée":["Bourse","Livret A","PEL","Autre placement","Intérêts placement","Assurance vie","Placement","Prêt","Transfert entre comptes","Virement entre biens","Apport perso","Retrait vers le perso","Achat personnel","Remboursement","Écart de rapprochement","Caution reçue","Caution rendue","Autre"]
 };
 const FAMILLE = {"Crédit (mensualité)":"Crédit","Assurance PNO":"Assurances","Assurance GMPA":"Assurances","Taxe foncière":"Taxes","CFE":"Taxes","Comptabilité":"Compta & gestion","CGA / OGA":"Compta & gestion","Abonnement Rendement locatif":"Compta & gestion","Syndic / copropriété":"Copropriété & énergie","Eau":"Copropriété & énergie","Électricité":"Copropriété & énergie","Entretien / réparations":"Travaux & équipement","Mobilier / équipement":"Travaux & équipement","Diagnostics":"Travaux & équipement","Frais bancaires / cotisations":"Divers","Divers":"Divers"};
 const BIEN_COL0 = {"STUDIO":"#1B7F79", "T2":"#B03060"}, BIEN_PAL = ["#1B7F79","#B03060","#B8741A","#3B6FB6","#7A4FB3","#4C8A2E","#B5473A","#2F7F9E"];
@@ -291,7 +291,8 @@ const BIEN_COL = new Proxy({}, {get:(_, id) => { if (typeof id !== "string") ret
 const BOURSE_COL = "#7030A0";
 const PARTAGE_CAT = {"CFE":"CFE","Comptabilité":"Comptabilité","CGA / OGA":"CGA / OGA","Rendement locatif":"Abonnement Rendement locatif"};
 const POSTES_TARIF = ["Loyer","Crédit (mensualité)","Assurance GMPA","Assurance PNO"];
-const NO_EPARGNE = ["Écart de rapprochement","Transfert entre comptes","Intérêts placement"];
+const CAUTION_CATS = ["Caution reçue","Caution rendue"];   // groupe « Caution » : compte dans la banque, jamais dans la compta
+const NO_EPARGNE = ["Écart de rapprochement","Transfert entre comptes","Intérêts placement","Virement entre biens","Apport perso","Retrait vers le perso"].concat(CAUTION_CATS);
 
 /* ============ Utilitaires ============ */
 const $ = s => document.querySelector(s);
@@ -1194,8 +1195,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.9";
+const APP_VERSION = "1.7.10";
 const CHANGELOG = [
+  {v:"1.7.10", date:"2026-11-09", titre:"Cautions, hors compta dans l’import", items:["Rapprochement › lignes « Pas dans l’appli » : une case « Hors compta » sur chaque ligne et un bouton « Tout ajouter en hors compta ».","Nouveau groupe « Caution » dans la liste des catégories : « Caution reçue » et « Caution rendue ». Elles comptent dans le solde de la banque mais jamais dans la compta, le bénéfice ni « À saisir ». Une ligne du relevé qui contient « caution » ou « dépôt de garantie » est proposée dans ce groupe.","Nouvelles catégories d’épargne / virement : « Virement entre biens », « Apport perso » et « Retrait vers le perso » (comptent dans la banque, pas dans le bénéfice)."]},
   {v:"1.7.9", date:"2026-11-09", titre:"Hors compta et import de plusieurs relevés", items:["Nouveau bouton « Hors compta » sur une dépense ou une recette. L’opération compte dans le solde du compte (l’écart avec la banque reste juste) mais disparaît de « À saisir en compta », des totaux de la compta, de la liasse, du bénéfice et du bilan. Dans les listes, elle a une ligne violette et l’étiquette « hors compta ». Exporté dans le journal Excel (colonne HorsCompta).","Rapprochement : tu peux choisir plusieurs relevés d’un coup. Ils sont rangés du plus ancien au plus récent, une ligne présente dans deux relevés qui se chevauchent n’est pas comptée deux fois, et le solde de début et de fin est lu dans le premier et le dernier PDF."]},
   {v:"1.7.8", date:"2026-11-09", titre:"Reprise de l’historique en compta", items:["Pointage › Saisie en compta : carte « Reprise de l’historique ». Tout ce qui est daté jusqu’à la fin de l’année de ta dernière liasse fiscale (ou l’année que tu choisis) est marqué d’un coup comme déjà saisi, échéances d’emprunt comprises, avec un bouton « Annuler ». Ensuite, tu continues mois par mois."]},
   {v:"1.7.7", date:"2026-11-09", titre:"Écart expliqué en une phrase", items:["Rapprochement et « Trouver mon écart » : sous l’écart, une phrase dit ce que ça veut dire (par exemple « La banque a 12,00 € de moins que l’appli : il manque probablement une dépense de 12,00 € dans l’appli », ou l’inverse pour un écart positif)."]},
@@ -1365,7 +1367,7 @@ const HELP = {
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
     "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
     "Trouver l'écart : après l'import, tape le solde réel de la banque à la date du relevé ; l'appli liste les causes de la différence. S'il reste un montant inexpliqué, il vient d'avant le début du relevé : importe un relevé plus ancien.",
-    "Importer un relevé : choisis le bien, puis le ou les fichiers de la banque (PDF, Excel, CSV, OFX ; plusieurs d'un coup pour une remise à niveau depuis le début) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
+    "Lignes « Pas dans l'appli » : case « Hors compta » par ligne, « Tout ajouter en hors compta », et groupe « Caution » (reçue / rendue) dans la liste des catégories. Importer un relevé : choisis le bien, puis le ou les fichiers de la banque (PDF, Excel, CSV, OFX ; plusieurs d'un coup pour une remise à niveau depuis le début) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
@@ -2972,6 +2974,7 @@ const rlDays = (a, b) => Math.abs(Math.round((new Date(a + "T12:00:00") - new Da
 const rlKey = l => l.d + "|" + rlCents(l.m) + "|" + rlNorm(l.lib).slice(0, 40);
 function rlGuess(l){
   const t = rlNorm(l.lib), neg = l.m < 0;
+  if (/caution|depot de garantie/.test(t)) return neg ? "Sortie|Caution rendue" : "Entrée|Caution reçue";
   if (!neg){ if (/loyer|caf |apl|locataire|loc\b/.test(t)) return "Recette|Loyer"; if (/rembours|sinistre|assur/.test(t)) return "Recette|Remboursement"; if (/livret|virement.*(epargne|perso)|vir.*propre/.test(t)) return "Entrée|Transfert entre comptes"; return "Recette|Autre recette"; }
   if (/pret|credit|echeance|emprunt/.test(t)) return "Dépense|Crédit (mensualité)"; if (/pno|assurance|axa|maif|matmut|gmpa|gan |allianz/.test(t)) return "Dépense|Assurance PNO";
   if (/syndic|copro|foncia|nexity|citya|laforet|loiselet/.test(t)) return "Dépense|Syndic / copropriété"; if (/edf|engie|electric|total ?energ|enedis/.test(t)) return "Dépense|Électricité"; if (/veolia|suez|saur|eau /.test(t)) return "Dépense|Eau";
@@ -3002,7 +3005,9 @@ function rlCompare(bien, lines){
 /* --- affichage --- */
 function rlCatOpts(l, cur){
   const types = l.m > 0 ? ["Recette", "Entrée"] : ["Dépense", "Sortie"];
-  return types.map(t => `<optgroup label="${t === "Entrée" || t === "Sortie" ? "Épargne / virement" : t}">${allCats(t).map(c => `<option value="${esc(t + "|" + c)}" ${cur === t + "|" + c ? "selected" : ""}>${esc(c)}</option>`).join("")}</optgroup>`).join("");
+  const opt = (t, c) => `<option value="${esc(t + "|" + c)}" ${cur === t + "|" + c ? "selected" : ""}>${esc(c)}</option>`;
+  return types.map(t => { const A = allCats(t), ep = t === "Entrée" || t === "Sortie";
+    return `<optgroup label="${ep ? "Épargne / virement" : t}">${A.filter(c => !ep || !CAUTION_CATS.includes(c)).map(c => opt(t, c)).join("")}</optgroup>` + (ep ? `<optgroup label="Caution">${A.filter(c => CAUTION_CATS.includes(c)).map(c => opt(t, c)).join("")}</optgroup>` : ""); }).join("");
 }
 function ecartPhrase(ec){
   ec = r2(ec); if (!ec) return "L'appli et la banque sont d'accord ✓";
@@ -3055,8 +3060,8 @@ function rlCard(){
   ${c.miss.length ? `<div class="card"><div class="top"><h2>Pas dans l'appli (${c.miss.length})</h2></div><div class="small muted">Ces lignes sont sur ton relevé mais tu ne les as pas saisies. Choisis la catégorie puis « Ajouter », ou « Ignorer » si elle ne t'intéresse pas.</div>
     <div class="rows">${c.miss.map(x => `<div class="row" style="flex-wrap:wrap;align-items:flex-start"><div class="main"><div class="t">${esc(x.l.lib)}</div><div class="s">${frDate(x.l.d)}</div></div><div class="amt num ${x.l.m > 0 ? "pos" : ""}">${sg(x.l.m)}</div>
       ${c.simOf[x.i] ? `<div style="flex-basis:100%" class="info">Ressemble à une ligne de l'appli : <b>${esc(c.simOf[x.i].lib || c.simOf[x.i].cat)}</b> du ${frDate(c.simOf[x.i].date)}, ${sg(rlSigned(c.simOf[x.i]))}. C'est peut-être la même avec une erreur de montant ou de date.<div class="btns" style="margin-top:6px"><button class="btn sm" data-act="rl-fix" data-i="${x.i}" data-id="${esc(c.simOf[x.i].id)}">Corriger l'appli (montant ${eur(Math.abs(x.l.m))}, date ${frDate(x.l.d)})</button></div></div>` : ""}
-      <div style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><select data-rl-cat="${x.i}" style="max-width:100%">${rlCatOpts(x.l, (R.cat || {})[x.i] || rlGuess(x.l))}</select><button class="btn sm" data-act="rl-add1" data-i="${x.i}">Ajouter</button><button class="btn ghost sm" data-act="rl-ign1" data-i="${x.i}">Ignorer</button></div></div>`).join("")}</div>
-    ${c.miss.length > 1 ? `<div class="btns"><button class="btn ghost sm" data-act="rl-addall">Tout ajouter avec ces catégories</button></div>` : ""}</div>` : ""}
+      <div style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><select data-rl-cat="${x.i}" style="max-width:100%">${rlCatOpts(x.l, (R.cat || {})[x.i] || rlGuess(x.l))}</select><label class="small" style="display:flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" data-rl-hc="${x.i}" ${(R.hc || {})[x.i] ? "checked" : ""}>Hors compta</label><button class="btn sm" data-act="rl-add1" data-i="${x.i}">Ajouter</button><button class="btn ghost sm" data-act="rl-ign1" data-i="${x.i}">Ignorer</button></div></div>`).join("")}</div>
+    ${c.miss.length > 1 ? `<div class="btns"><button class="btn ghost sm" data-act="rl-addall">Tout ajouter avec ces catégories</button><button class="btn ghost sm" data-act="rl-addallhc">Tout ajouter en hors compta</button></div>` : ""}</div>` : ""}
   ${c.extra.length ? `<div class="card"><h2>Pointées dans l'appli, absentes du relevé (${c.extra.length})</h2><div class="small muted">Total ${sg(c.sumExtra)}. À vérifier : opération pointée trop tôt, mauvais montant ou autre compte. « Dépointer » la remet en attente.</div>
     <div class="rows">${c.extra.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)} · ${esc(j.cat || "")}</div>${c.simBy[j.id] ? `<div class="s"><b>Ressemble à la ligne du relevé :</b> ${esc(c.simBy[j.id].l.lib)} ${frDate(c.simBy[j.id].l.d)} ${sg(c.simBy[j.id].l.m)} (voir « Pas dans l'appli »)</div>` : ""}</div><div class="amt num ${isIn(j) ? "pos" : ""}">${sg(rlSigned(j))}</div><button class="mini" data-act="rl-unpoint1" data-id="${esc(j.id)}">Dépointer</button></div>`).join("")}</div></div>` : ""}
   ${c.ign.length ? `<div class="small muted" style="padding:4px 4px 10px">${c.ign.length} ligne(s) ignorée(s) · <button class="mini" data-act="rl-unign">Les remettre</button></div>` : ""}`;
@@ -3096,6 +3101,7 @@ document.addEventListener("change", async ev => {
   if (t.id === "rl-real" && V.rl){ const x = parseNum(t.value); V.rl.real = t.value.trim() === "" || x === null ? undefined : x; render(); return; }
   if (t.dataset && t.dataset.rlSel !== undefined && V.rl){ V.rl.sel[t.dataset.rlSel] = t.checked; rlRefreshBtns(); return; }
   if (t.dataset && t.dataset.rlCat !== undefined && V.rl){ V.rl.cat[t.dataset.rlCat] = t.value; }
+  if (t.dataset && t.dataset.rlHc !== undefined && V.rl){ (V.rl.hc = V.rl.hc || {})[t.dataset.rlHc] = t.checked; }
 });
 document.addEventListener("click", ev => {
   const bt = ev.target.closest("[data-act^=rl-]"); if (!bt) return; const a = bt.dataset.act, R = V.rl;
@@ -3109,12 +3115,13 @@ document.addEventListener("click", ev => {
     case "rl-point": { if (!R) break; const c = rlCompare(R.bien, R.lines); c.pt.forEach(x => { x.j.pointe = "x"; x.j.upd = Date.now(); }); persist(); toast(c.pt.length + " opération(s) pointée(s)"); render(); break; }
     case "rl-point1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = "x"; j.upd = Date.now(); persist(); render(); } break; }
     case "rl-unpoint1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = ""; j.upd = Date.now(); persist(); toast("Remise en attente de pointage"); render(); } break; }
+    case "rl-addallhc": if (R){ R.hc = Object.fromEntries(rlCompare(R.bien, R.lines).miss.map(x => [x.i, true])); } /* fallthrough */
     case "rl-addall": if (R) R.sel = Object.fromEntries(rlCompare(R.bien, R.lines).miss.map(x => [x.i, true]));
     // fallthrough
     case "rl-add1": if (bt.dataset.i != null && R) R.sel = {[bt.dataset.i]: true};
     // fallthrough
     case "rl-add": { if (!R) break; const c = rlCompare(R.bien, R.lines), pick = c.miss.filter(x => R.sel[x.i]); if (!pick.length) return toast("Coche d'abord au moins une ligne");
-      for (const x of pick){ const [type, cat] = ((R.cat || {})[x.i] || rlGuess(x.l)).split("|"); S.journal.push({id:uid(), date:x.l.d, bien:R.bien, type, cat, lib:x.l.lib.slice(0, 80), montant:Math.abs(x.l.m), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Ajouté depuis le relevé", upd:Date.now()}); R.sel[x.i] = false; }
+      for (const x of pick){ const [type, cat] = ((R.cat || {})[x.i] || rlGuess(x.l)).split("|"); S.journal.push({id:uid(), date:x.l.d, bien:R.bien, type, cat, lib:x.l.lib.slice(0, 80), montant:Math.abs(x.l.m), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Ajouté depuis le relevé", upd:Date.now(), hc:(type === "Dépense" || type === "Recette") && (R.hc || {})[x.i] ? "x" : ""}); R.sel[x.i] = false; }
       persist(); toast(pick.length + " opération(s) ajoutée(s) et pointée(s)"); render(); break; }
     case "rl-ign1": if (R) R.sel = {[bt.dataset.i]: true};
     // fallthrough
