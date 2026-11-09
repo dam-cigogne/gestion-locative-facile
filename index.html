@@ -1189,8 +1189,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.1";
+const APP_VERSION = "1.7.2";
 const CHANGELOG = [
+  {v:"1.7.2", date:"2026-11-09", titre:"Trouver mon écart", items:["Après l’import d’un relevé, carte « Trouver mon écart » : tu tapes le solde réel de la banque à la date du relevé, l’appli le compare à son solde et détaille d’où vient la différence (lignes absentes, non pointées, pointées en trop, ajustements passés) et ce qui reste inexpliqué (avant le début du relevé)."]},
   {v:"1.7.1", date:"2026-11-09", titre:"Bouton de mise à jour, import de relevé plus clair", items:["Import de relevé : retrouve aussi une opération saisie à une autre date (même montant) ; résumé en phrases simples, et pour chaque ligne absente de l’appli un bouton « Ajouter » (avec sa catégorie) ou « Ignorer ».","Un bouton de mise à jour (flèches circulaires) à côté de la roue de Réglages : il vide le cache de l’appli et recharge la dernière version. Tes données ne sont pas touchées."]},
   {v:"1.7.0", date:"2026-11-09", titre:"Import de relevé de banque", items:["Dans Biens › Rapprochement, importe l’extrait de compte d’un bien (PDF de la banque, Excel, CSV, OFX ou texte collé) : l’appli le compare avec tes opérations et te montre ce qui n’est pas pointé et ce qui n’a pas été saisi. Tu coches ce que tu veux ajouter ou pointer, et tu ignores les lignes sans intérêt.","Pointage : nouvelle carte « Comptes des biens » avec, pour chaque bien, le solde pointé, les opérations pas encore pointées et l’écart avec le dernier solde saisi."]},
   {v:"1.6.1", date:"2026-11-09", titre:"Visite guidée : arrivée/départ et documents développés", items:["Visite guidée (94 étapes) : nouveau chapitre « Arrivée et départ » qui détaille chaque étape des deux check-lists, chapitre « Documents » développé (états des lieux d’entrée et de sortie, inventaire du mobilier, PDF et signature), étape « Locataire actuel » et dépenses sur deux étapes."]},
@@ -1349,6 +1350,7 @@ const HELP = {
     "Tape le solde réel du relevé. L'écart = réel − calculé.",
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
     "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
+    "Trouver l'écart : après l'import, tape le solde réel de la banque à la date du relevé ; l'appli liste les causes de la différence. S'il reste un montant inexpliqué, il vient d'avant le début du relevé : importe un relevé plus ancien.",
     "Importer un relevé : choisis le bien, puis le fichier de la banque (PDF, Excel, CSV, OFX) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
@@ -2965,6 +2967,20 @@ function rlCatOpts(l, cur){
   const types = l.m > 0 ? ["Recette", "Entrée"] : ["Dépense", "Sortie"];
   return types.map(t => `<optgroup label="${t === "Entrée" || t === "Sortie" ? "Épargne / virement" : t}">${allCats(t).map(c => `<option value="${esc(t + "|" + c)}" ${cur === t + "|" + c ? "selected" : ""}>${esc(c)}</option>`).join("")}</optgroup>`).join("");
 }
+function rlEcart(R, c){
+  const real = R.real; if (real === undefined || real === null || real === "") return null;
+  const b = S.biens.find(x => x.id === R.bien), D = c.hi, app = J().filter(j => j.bien === R.bien && j.compte !== "Perso" && !isArch(j));
+  const calc = r2(N(b && b.solde0) + sum(app.filter(j => j.date <= D).map(impact))), ecart = r2(real - calc), items = [];
+  const add = (txt, v, det) => { v = r2(v); if (Math.abs(v) >= 0.005) items.push({txt, v, det: det || ""}); };
+  add("Lignes du relevé absentes de l'appli", sum(c.miss.map(x => x.l.m)), c.miss.map(x => x.l.lib + " " + frDate(x.l.d)).join(" ; "));
+  add("Lignes du relevé que tu as ignorées (elles comptent quand même sur le compte)", sum(c.ign.map(x => x.l.m)), c.ign.map(x => x.l.lib + " " + frDate(x.l.d)).join(" ; "));
+  add("Lignes dans l'appli mais pas pointées", sum(c.pt.map(x => x.l.m)), c.pt.map(x => x.l.lib + " " + frDate(x.l.d)).join(" ; "));
+  add("Pointées dans l'appli mais absentes du relevé", -sum(c.extra.map(rlSigned)), c.extra.map(j => (j.lib || j.cat) + " " + frDate(j.date)).join(" ; "));
+  const late = c.ok.filter(x => x.j.date > D); add("Pointées dans l'appli avec une date après le relevé (le solde du relevé ne les compte pas encore)", sum(late.map(x => x.l.m)) , late.map(x => (x.j.lib || x.j.cat) + " " + frDate(x.j.date)).join(" ; "));
+  const adj = app.filter(j => j.cat === "Écart de rapprochement" && j.pointe === "x" && j.date <= D); add("Ajustements déjà passés dans l'appli (anciens « écarts de rapprochement »)", -sum(adj.map(rlSigned)), adj.map(j => frDate(j.date) + " " + eur(rlSigned(j))).join(" ; "));
+  const rest = r2(ecart - sum(items.map(x => x.v)));
+  return {calc, ecart, items, rest, D};
+}
 function rlCard(){
   const R = V.rl; if (!R || !R.lines || !R.lines.length) return "";
   const c = rlCompare(R.bien, R.lines), sel = R.sel || {}, nsel = c.miss.filter(x => sel[x.i]).length, sg = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x));
@@ -2976,6 +2992,12 @@ function rlCard(){
     ${c.miss.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.miss.length}</b> sont sur le relevé mais <b>pas du tout dans l'appli</b> (${sg(c.sumMiss)}) : pour chacune, touche « Ajouter » (elle est créée et pointée) ou « Ignorer » (elle ne te sera plus proposée).</div>` : ""}
     ${c.extra.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.extra.length}</b> sont pointées dans l'appli mais <b>absentes du relevé</b> (${sg(c.sumExtra)}) : à vérifier plus bas.</div>` : ""}
     ${!c.pt.length && !c.miss.length && !c.extra.length ? '<div class="info" style="margin-top:8px">Tout correspond : rien d\'oublié sur cette période.</div>' : ""}</div>
+  ${(() => { const e = rlEcart(R, c), sg2 = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x)); return `<div class="card"><h2>Trouver mon écart</h2><div class="small muted">Tape le solde réel de ton compte <b>à la fin du relevé (${frDate(c.hi)})</b>, tel que ta banque l'indique. L'appli le compare à son propre solde et cherche d'où vient la différence.</div>
+    <label class="small" style="display:block;margin-top:8px">Solde réel de la banque au ${frDate(c.hi)} (€)</label><input id="rl-real" inputmode="decimal" placeholder="ex. 5 308,72" value="${R.real === undefined || R.real === null ? "" : String(R.real).replace(".", ",")}">
+    ${e ? `${kv("Solde de l'appli à cette date", eur(e.calc))}${kv("Solde réel de la banque", eur(R.real))}${kv("<b>Écart</b>", `<b>${sg2(e.ecart)}</b>`, Math.abs(e.ecart) < 0.005 ? "" : "neg")}
+    ${Math.abs(e.ecart) < 0.005 ? '<div class="info" style="margin-top:8px">Aucun écart : l\'appli et la banque sont d\'accord ✓</div>' : `<div class="small muted" style="margin-top:8px">Voilà ce qui explique cet écart :</div>
+    ${e.items.map(x => `<div class="kv" style="align-items:flex-start"><span class="small">${esc(x.txt)}${x.det ? `<br><span class="muted">${esc(x.det)}</span>` : ""}</span><span class="num small">${sg2(x.v)}</span></div>`).join("")}
+    ${Math.abs(e.rest) >= 0.005 ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">Reste inexpliqué : <b>${sg2(e.rest)}</b>. Cela vient de <b>avant le ${frDate(c.lo)}</b> (début du relevé) : une opération ancienne oubliée, mal saisie ou mal pointée, ou le solde de départ du bien. Importe un relevé plus ancien (ou plusieurs mois) pour la trouver.</div>` : '<div class="info" style="margin-top:8px">Tout l\'écart est expliqué ✓ (traite les lignes ci-dessus).</div>'}`}` : ""}</div>`; })()}
   ${c.pt.length ? `<div class="card"><div class="top"><h2>Dans l'appli, pas encore pointées (${c.pt.length})</h2><button class="btn sm" data-act="rl-point">Tout pointer</button></div><div class="small muted">Ces lignes sont bien passées sur ton compte (${sg(c.sumPt)}) mais pas cochées dans l'appli : c'est souvent la cause de l'écart.</div>
     <div class="rows">${c.pt.map(x => row({l:x.l, sel:x.far ? `<div class="s">Dans l'appli à une autre date : ${frDate(x.j.date)}</div>` : ""}, `<button class="chk" data-act="rl-point1" data-id="${esc(x.j.id)}" aria-label="Pointer">${ICON.check}</button>`)).join("")}</div></div>` : ""}
   ${c.miss.length ? `<div class="card"><div class="top"><h2>Pas dans l'appli (${c.miss.length})</h2></div><div class="small muted">Ces lignes sont sur ton relevé mais tu ne les as pas saisies. Choisis la catégorie puis « Ajouter », ou « Ignorer » si elle ne t'intéresse pas.</div>
@@ -3007,6 +3029,7 @@ const rlRefreshBtns = () => { const n = Object.values((V.rl && V.rl.sel) || {}).
 document.addEventListener("change", async ev => {
   const t = ev.target; if (!t) return;
   if (t.id === "rl-file" && t.files && t.files[0]){ const f = t.files[0]; try { rlLoad(await rlBuf(await f.arrayBuffer(), f.name), f.name); } catch(e){ toast("Lecture impossible : " + (e.message || e)); } return; }
+  if (t.id === "rl-real" && V.rl){ const x = parseNum(t.value); V.rl.real = t.value.trim() === "" || x === null ? undefined : x; render(); return; }
   if (t.dataset && t.dataset.rlSel !== undefined && V.rl){ V.rl.sel[t.dataset.rlSel] = t.checked; rlRefreshBtns(); return; }
   if (t.dataset && t.dataset.rlCat !== undefined && V.rl){ V.rl.cat[t.dataset.rlCat] = t.value; }
 });
