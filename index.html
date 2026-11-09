@@ -683,7 +683,7 @@ function viewMonth(){
   const mseg = `<div class="seg"><button class="${V.mf==="mois"?"on":""}" data-act="mf" data-v="mois">Ce mois</button><button class="${V.mf==="todo"?"on":""}" data-act="mf" data-v="todo">À pointer</button><button class="${V.mf==="compta"?"on":""}" data-act="mf" data-v="compta">À saisir en compta</button></div>`;
   const summary = V.mf === "mois" ? `<div class="card"><h2>Bilan du mois</h2>${kv("Recettes", eur(rec))}${kv("Dépenses", "− " + eur(dep))}<div class="kv tot"><span>Résultat</span><span class="num ${signCl(rec-dep)}">${eur(rec - dep)}</span></div></div>` : "";
   const help = V.mf === "compta" ? `<div class="small muted">Dépenses déjà payées mais pas encore saisies sur ton site de compta. Touche la ligne, puis « Saisi en compta ».</div>` : "";
-  return topbar("Pointage", V.mf === "mois" ? monthNav() : "") + mseg + bienSeg("bf", V.bf, true) + monthActions() + summary + `
+  return topbar("Pointage", V.mf === "mois" ? monthNav() : "") + mseg + bienSeg("bf", V.bf, true) + monthActions() + summary + (V.mf === "mois" ? soldesCard() : "") + `
   <div class="card"><div class="top"><h2>${V.mf==="mois" ? "Opérations" : V.mf==="todo" ? "À pointer" : "À saisir en compta"} (${L.length})</h2>
     ${V.mf !== "compta" && todo.length ? `<button class="btn sm" data-act="pointall">Tout pointer (${todo.length})</button>` : ""}</div>${help}${na ? `<div class="small muted">${na} ligne(s) archivée(s) masquée(s) · <button class="mini" data-act="arch-view">Voir</button></div>` : ""}
     <div class="rows">${L.length ? L.map(j => jRow(j, V.bf === "all")).join("") : '<div class="empty">Rien ici.</div>'}</div></div>`;
@@ -861,7 +861,7 @@ function viewTarifs(){
 }
 function viewRapp(){
   const ids = bienIds(), hist = J().filter(j => j.cat === "Écart de rapprochement").sort((a,b) => b.date.localeCompare(a.date));
-  return `<div class="card"><h2>Comparer avec le relevé de banque</h2><div class="small muted">Saisis le solde réel du relevé. Si l'écart n'est pas nul, enregistre l'ajustement : une ligne datée est ajoutée au Journal (elle compte dans le solde, pas dans le bénéfice).</div>
+  return rlHome() + `<div class="card"><h2>Comparer avec le relevé de banque</h2><div class="small muted">Saisis le solde réel du relevé. Si l'écart n'est pas nul, enregistre l'ajustement : une ligne datée est ajoutée au Journal (elle compte dans le solde, pas dans le bénéfice).</div>
     ${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null;
       return `<div class="env" style="padding:8px 0;gap:6px"><div class="top">${bienPill(id)}<span class="num">${eur(calc)}</span></div><div class="small muted">Solde calculé</div>
         <label class="f">Solde réel du relevé (€)<input id="rp-${esc(id)}" data-bien="${esc(id)}" inputmode="decimal" value="${has ? fmtNum(reel) : ""}" placeholder="0,00"></label>
@@ -1188,8 +1188,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.6.1";
+const APP_VERSION = "1.7.0";
 const CHANGELOG = [
+  {v:"1.7.0", date:"2026-11-09", titre:"Import de relevé de banque", items:["Dans Biens › Rapprochement, importe l’extrait de compte d’un bien (PDF de la banque, Excel, CSV, OFX ou texte collé) : l’appli le compare avec tes opérations et te montre ce qui n’est pas pointé et ce qui n’a pas été saisi. Tu coches ce que tu veux ajouter ou pointer, et tu ignores les lignes sans intérêt.","Pointage : nouvelle carte « Comptes des biens » avec, pour chaque bien, le solde pointé, les opérations pas encore pointées et l’écart avec le dernier solde saisi."]},
   {v:"1.6.1", date:"2026-11-09", titre:"Visite guidée : arrivée/départ et documents développés", items:["Visite guidée (94 étapes) : nouveau chapitre « Arrivée et départ » qui détaille chaque étape des deux check-lists, chapitre « Documents » développé (états des lieux d’entrée et de sortie, inventaire du mobilier, PDF et signature), étape « Locataire actuel » et dépenses sur deux étapes."]},
   {v:"1.6.0", date:"2026-11-08", titre:"Visite guidée plein écran", items:["Nouvelle visite guidée plein écran (Réglages › Aide › « Visite guidée », ou la page visite.html) : 76 étapes avec des captures de l'appli, un cadre jaune sur ce qu'il faut toucher et une bulle d'explication, de l'installation jusqu'aux réglages.","Mode téléphone ou présentation (iPad, ordinateur, vidéoprojecteur), menu des chapitres, plein écran, flèches du clavier.","Nouveau « Guide à lire » (page guide.html) : 15 cas concrets pas à pas avec les vrais écrans, de l'installation à la facture électronique (Réglages › Aide › « Guide à lire »).","La fiche de l'appli propose aussi les boutons « Visite guidée » et « Guide à lire »."]},
   {v:"1.5.0", date:"2026-11-02", titre:"Permis de louer, facture électronique, sources", items:["Réglages › Règles : carte « Facture électronique » (ce que doit faire un loueur en meublé, plateforme choisie à noter avec son lien) ; sur l'accueil, un rappel tant qu'aucune plateforme n'est notée, puis un bouton « Ouvrir » vers ta plateforme et carte « Sources utilisées » (liste des pages officielles consultées, aussi envoyée à l'IA dans le fichier Word de mise à jour des règles).","Nouveau réglage « Permis de louer » (Réglages › Biens) : tu indiques les logements soumis à l'autorisation de la mairie (ex. Istres) et leur commune.","Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire : autorisation à obtenir avant la signature du bail, dossier à préparer, visite de contrôle, amende.","Le rappel affiche les coordonnées du service de la mairie (pré-remplies pour Istres, à renseigner pour une autre commune), permet de noter les rendez-vous en mairie et les visites de contrôle (avec envoi vers AgenDam ou le calendrier du téléphone) et de créer la lettre de demande en PDF.","Tu notes « Demande déposée » puis « Autorisation obtenue » ; le rappel repart à zéro quand un nouveau locataire est créé (une autorisation par locataire)."]},
@@ -1278,6 +1279,7 @@ const HELP = {
   month:{t:"Pointage", p:"Le mois, ligne par ligne.", l:[
     "« Saisie en compta » : coche une ligne, un mois entier ou « Tout sélectionner » (filtre Dépenses / Recettes / catégorie), puis « Marquer comme saisi ». Une erreur ? Touche « Annuler » dans la bannière, ou « Déjà saisi » pour remettre des lignes à saisir.",
     "Touche le rond d'une ligne pour la pointer quand tu la vois passer sur le relevé de banque.",
+    "Carte « Comptes des biens » (vue Mois) : solde pointé de chaque bien, opérations pas encore pointées et écart avec ton dernier solde saisi ; « Comparer avec le relevé » importe l'extrait de compte.",
     "« À pointer » regroupe tout ce qui est passé mais pas encore vérifié. « À saisir en compta » : dépenses payées, pas encore saisies sur ton site de compta.",
     "Rechercher : un mot, un montant, une date ou un mois, dans tout le journal.",
     "Exporter : le bilan d'un mois ou d'une année complète, en Excel ou en PDF.",
@@ -1344,7 +1346,8 @@ const HELP = {
   "bld-rapp":{t:"Biens › Rapprochement", p:"Comparer l'appli avec le relevé de banque.", l:[
     "Tape le solde réel du relevé. L'écart = réel − calculé.",
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
-    "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne."]},
+    "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
+    "Importer un relevé : choisis le bien, puis le fichier de la banque (PDF, Excel, CSV, OFX) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; tu coches, tu ajoutes ou tu ignores. Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
@@ -2844,6 +2847,188 @@ document.addEventListener("click", ev => {
 });
 document.addEventListener("click", ev => { const bt = ev.target.closest("[data-act=visite]"); if (bt) window.open("visite.html", "_blank"); const gw = ev.target.closest("[data-act=guideweb]"); if (gw) window.open("guide.html", "_blank"); });
 function plGo(id){ const t = V.plThen || {}; V.plThen = null; closeSheet(); if (t.then === "cand") sheetCand(""); else if (t.then === "keep") sheetKeep(t.cid); else render(); }
+
+/* ---------- Relevé de banque : import, comparaison avec l'appli, lignes oubliées ---------- */
+const rlNorm = s => String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
+const rlP2 = n => String(n).padStart(2, "0");
+function rlDate(x){
+  if (x == null || x === "") return "";
+  if (x instanceof Date) return isNaN(x) ? "" : x.getFullYear() + "-" + rlP2(x.getMonth() + 1) + "-" + rlP2(x.getDate());
+  if (typeof x === "number"){ if (x > 20000 && x < 80000) return new Date(Math.round((x - 25569) * 86400000)).toISOString().slice(0, 10); return ""; }
+  const s = String(x).trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[1] + "-" + m[2] + "-" + m[3];
+  if ((m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})(?!\d)/))){ let y = +m[3]; if (y < 100) y += 2000; const d = +m[1], mo = +m[2]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return ""; return y + "-" + rlP2(mo) + "-" + rlP2(d); }
+  if ((m = s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/))){ const mo = +m[2], d = +m[3]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return ""; return m[1] + "-" + m[2] + "-" + m[3]; }
+  return "";
+}
+function rlAmt(x){
+  if (typeof x === "number") return isFinite(x) ? x : null;
+  let s = String(x == null ? "" : x).replace(/[\s  €]/g, "").replace(/[−–]/g, "-"); if (!s) return null;
+  let neg = false; if (/^\(.*\)$/.test(s)){ neg = true; s = s.slice(1, -1); } if (/-$/.test(s)){ neg = true; s = s.slice(0, -1); } if (/^\+/.test(s)) s = s.slice(1);
+  if (/^-/.test(s)){ neg = !neg; s = s.slice(1); } s = s.replace(/(EUR|CR|DB)$/i, "");
+  const lc = s.lastIndexOf(","), ld = s.lastIndexOf(".");
+  if (lc >= 0 && ld >= 0) s = lc > ld ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, ""); else if (lc >= 0) s = s.replace(/,/g, "."); else if ((s.match(/\./g) || []).length > 1) s = s.replace(/\./g, "");
+  if (!/^\d+(\.\d+)?$/.test(s)) return null; const v = parseFloat(s); return neg ? -v : v;
+}
+function rlCsv(txt){
+  const first = txt.split(/\r?\n/).filter(l => l.trim()).slice(0, 6).join("\n"), ds = [";", "\t", ","].map(d => [d, first.split(d).length - 1]).sort((a, b) => b[1] - a[1]), D = ds[0][1] > 0 ? ds[0][0] : ";";
+  const rows = []; let r = [], f = "", q = false;
+  for (let i = 0; i < txt.length; i++){ const c = txt[i];
+    if (q){ if (c === '"'){ if (txt[i + 1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true; else if (c === D){ r.push(f); f = ""; } else if (c === "\n"){ r.push(f); rows.push(r); r = []; f = ""; } else if (c !== "\r") f += c; }
+  if (f || r.length){ r.push(f); rows.push(r); } return rows.map(x => x.map(c => c.trim()));
+}
+function rlRows(rows){
+  rows = rows.map(r => r.map(c => c == null ? "" : c)); let h = -1, ci = {};
+  for (let i = 0; i < Math.min(30, rows.length) && h < 0; i++){ const r = rows[i].map(c => rlNorm(c));
+    const di = r.findIndex(x => /date/.test(x) && !/valeur/.test(x)), di2 = di >= 0 ? di : r.findIndex(x => /date/.test(x)), mi = r.findIndex(x => /^(montant|amount|somme)/.test(x)), db = r.findIndex(x => /debit/.test(x)), cr = r.findIndex(x => /credit/.test(x));
+    if (di2 >= 0 && (mi >= 0 || db >= 0 || cr >= 0)){ h = i; ci = {d:di2, m:mi, db, cr, lib:r.map((x, k) => /libelle|description|operation|intitule|detail|objet|motif|reference|tiers|beneficiaire/.test(x) ? k : -1).filter(k => k >= 0).slice(0, 3)}; } }
+  const out = [];
+  const push = (d, lib, m) => { if (!d || m === null || !isFinite(m) || !m) return; out.push({d, lib:String(lib || "").replace(/\s+/g, " ").trim() || "(sans libellé)", m:Math.round(m * 100) / 100}); };
+  if (h >= 0){
+    for (const r of rows.slice(h + 1)){ const d = rlDate(r[ci.d]); if (!d) continue; let m = null;
+      if (ci.m >= 0) m = rlAmt(r[ci.m]);
+      if ((m === null || !m) && (ci.db >= 0 || ci.cr >= 0)){ const a = ci.db >= 0 ? rlAmt(r[ci.db]) : null, b = ci.cr >= 0 ? rlAmt(r[ci.cr]) : null; m = (b ? Math.abs(b) : 0) - (a ? Math.abs(a) : 0); }
+      push(d, ci.lib.map(k => r[k]).filter(Boolean).join(" ") || r.filter((c, k) => k !== ci.d && k !== ci.m && k !== ci.db && k !== ci.cr && typeof c === "string" && rlAmt(c) === null && !rlDate(c)).join(" "), m); }
+  } else {
+    for (const r of rows){ const di = r.findIndex(c => rlDate(c)); if (di < 0) continue; const nums = []; r.forEach((c, k) => { if (k !== di && c !== "" && rlAmt(c) !== null && !rlDate(c) && /^[\d\s.,+\-−–()€]*$/.test(String(c))) nums.push(k); });
+      if (!nums.length) continue; push(rlDate(r[di]), r.filter((c, k) => k !== di && !nums.includes(k)).join(" "), rlAmt(r[nums[nums.length - 1]])); }
+  }
+  return out;
+}
+function rlText(txt){
+  txt = String(txt || "").replace(/^﻿/, "");
+  if (/<STMTTRN>/i.test(txt)){ const out = []; for (const b of txt.split(/<STMTTRN>/i).slice(1)){ const g = k => { const m = b.match(new RegExp("<" + k + ">([^<\\r\\n]*)", "i")); return m ? m[1].trim() : ""; }; const d = rlDate(g("DTPOSTED")), m = rlAmt(g("TRNAMT")); if (d && m) out.push({d, lib:(g("NAME") + " " + g("MEMO")).trim() || "(sans libellé)", m}); } return out; }
+  if (/^!Type:/im.test(txt)){ const out = []; for (const b of txt.split(/^\^/m)){ let d = "", m = null, lib = []; for (const l of b.split(/\r?\n/)){ const c = l[0], v = l.slice(1).trim(); if (c === "D") d = rlDate(v); else if (c === "T" || c === "U") m = rlAmt(v); else if (c === "P" || c === "M") lib.push(v); } if (d && m) out.push({d, lib:lib.join(" ") || "(sans libellé)", m}); } return out; }
+  let res = rlRows(rlCsv(txt));
+  if (!res.length){ for (const l of txt.split(/\r?\n/)){ const m = l.trim().match(/^(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{4}-\d{2}-\d{2})\s+(.*?)\s+([+\-−–]?\s?\d[\d\s.,]*\d|[+\-−–]?\d)\s*(?:€|EUR)?\s*$/i); if (m){ const a = rlAmt(m[3]); if (a) res.push({d:rlDate(m[1]), lib:m[2].replace(/\s+/g, " "), m:a}); } } }
+  return res;
+}
+async function rlBuf(buf, name){
+  if (/\.pdf$/i.test(name || "")) return await rlPdf(buf);
+  if (/\.(xlsx|xls)$/i.test(name || "")){ if (typeof XLSX === "undefined") throw new Error("la lecture Excel n'est pas disponible hors connexion : enregistre le relevé en CSV"); const wb = XLSX.read(new Uint8Array(buf), {type:"array", cellDates:true}), ws = wb.Sheets[wb.SheetNames[0]]; return rlRows(XLSX.utils.sheet_to_json(ws, {header:1, defval:"", raw:true})); }
+  let txt = new TextDecoder("utf-8").decode(new Uint8Array(buf)); if (txt.includes("�")) txt = new TextDecoder("windows-1252").decode(new Uint8Array(buf));
+  return rlText(txt);
+}
+/* --- PDF (extrait de compte) : lecture avec pdf.js chargé à la demande, colonnes Débit / Crédit reconnues par leur position --- */
+async function rlPdf(buf){
+  const lib = await loadPdfJs(), doc = await lib.getDocument({data:new Uint8Array(buf)}).promise, out = []; let dbR = null, crR = null, allText = [];
+  for (let p = 1; p <= doc.numPages; p++){
+    const tc = await (await doc.getPage(p)).getTextContent(), its = tc.items.filter(i => i.str && i.str.trim()).map(i => ({s:i.str.trim(), x:i.transform[4], y:i.transform[5], w:i.width || 0}));
+    const lines = []; its.sort((a, b) => b.y - a.y || a.x - b.x); for (const it of its){ const L = lines.find(l => Math.abs(l.y - it.y) < 3); if (L) L.it.push(it); else lines.push({y:it.y, it:[it]}); }
+    for (const L of lines){ L.it.sort((a, b) => a.x - b.x); const txt = L.it.map(i => i.s).join(" "); allText.push(txt);
+      const dh = L.it.find(i => /^d[ée]bit$/i.test(i.s)), ch = L.it.find(i => /^cr[ée]dit$/i.test(i.s)); if (dh && ch){ dbR = dh.x + dh.w; crR = ch.x + ch.w; continue; }
+      const d = rlDate(L.it[0].s); if (!d) continue; const am = [], lib = [];
+      for (const i of L.it.slice(1)){ const t = i.s.replace(/\s*(EUR|€)$/i, ""); if (/^[+\-−]?\d[\d\s.,]*$/.test(t) && rlAmt(t) !== null) am.push({v:rlAmt(t), c:i.x + i.w / 2}); else if (!/^(EUR|€)$/i.test(i.s)) lib.push(i.s); }
+      if (!am.length) continue; const a = am[am.length - 1]; let m = a.v;
+      if (dbR !== null){ const credit = a.c > dbR + 4; m = credit ? Math.abs(a.v) : -Math.abs(a.v); }
+      out.push({d, lib:lib.join(" ").replace(/\s+/g, " ") || "(sans libellé)", m:Math.round(m * 100) / 100, hasCols:dbR !== null}); }
+  }
+  if (out.length) return out;
+  return rlText(allText.join("\n"));
+}
+/* --- comparaison --- */
+const rlSigned = j => (isIn(j) ? 1 : -1) * N(j.montant);
+const rlCents = v => Math.round(Math.abs(v) * 100) * (v < 0 ? -1 : 1);
+const rlDays = (a, b) => Math.abs(Math.round((new Date(a + "T12:00:00") - new Date(b + "T12:00:00")) / 86400000));
+const rlKey = l => l.d + "|" + rlCents(l.m) + "|" + rlNorm(l.lib).slice(0, 40);
+function rlGuess(l){
+  const t = rlNorm(l.lib), neg = l.m < 0;
+  if (!neg){ if (/loyer|caf |apl|locataire|loc\b/.test(t)) return "Recette|Loyer"; if (/rembours|sinistre|assur/.test(t)) return "Recette|Remboursement"; if (/livret|virement.*(epargne|perso)|vir.*propre/.test(t)) return "Entrée|Transfert entre comptes"; return "Recette|Autre recette"; }
+  if (/pret|credit|echeance|emprunt/.test(t)) return "Dépense|Crédit (mensualité)"; if (/pno|assurance|axa|maif|matmut|gmpa|gan |allianz/.test(t)) return "Dépense|Assurance PNO";
+  if (/syndic|copro|foncia|nexity|citya|laforet|loiselet/.test(t)) return "Dépense|Syndic / copropriété"; if (/edf|engie|electric|total ?energ|enedis/.test(t)) return "Dépense|Électricité"; if (/veolia|suez|saur|eau /.test(t)) return "Dépense|Eau";
+  if (/taxe fonc|fonciere/.test(t)) return "Dépense|Taxe foncière"; if (/\bcfe\b/.test(t)) return "Dépense|CFE"; if (/compta|expert|cga|oga/.test(t)) return "Dépense|Comptabilité";
+  if (/frais|cotis|commission|carte|tenue de compte|agios/.test(t)) return "Dépense|Frais bancaires / cotisations"; if (/livret|virement.*(epargne|perso)|vir.*propre/.test(t)) return "Sortie|Transfert entre comptes";
+  if (/leroy|castorama|brico|ikea|travaux|plomb|electric|peintre/.test(t)) return "Dépense|Entretien / réparations"; return "Dépense|Divers";
+}
+function rlCompare(bien, lines){
+  const ign = new Set(((S.rapIgn || {})[bien]) || []), ds = lines.map(l => l.d).sort(), lo = ds[0], hi = ds[ds.length - 1];
+  const app = J().filter(j => j.bien === bien && j.compte !== "Perso" && !isArch(j)), used = new Set(), res = {lo, hi, ok:[], pt:[], miss:[], ign:[], extra:[]};
+  const order = lines.map((l, i) => i).sort((a, b) => lines[a].d.localeCompare(lines[b].d));
+  for (const i of order){ const l = lines[i], c = rlCents(l.m); let best = null, bd = 99;
+    for (const j of app){ if (used.has(j.id) || rlCents(rlSigned(j)) !== c) continue; const dd = rlDays(j.date, l.d); if (dd <= 10 && (dd < bd || (dd === bd && j.pointe === "x" && best && best.pointe !== "x"))){ best = j; bd = dd; } }
+    if (best){ used.add(best.id); (best.pointe === "x" ? res.ok : res.pt).push({i, l, j:best}); }
+    else if (ign.has(rlKey(l))) res.ign.push({i, l}); else res.miss.push({i, l}); }
+  res.extra = app.filter(j => !used.has(j.id) && j.pointe === "x" && j.date >= lo && j.date <= hi && j.cat !== "Écart de rapprochement");
+  res.sumRel = r2(sum(lines.map(l => l.m))); res.sumMiss = r2(sum(res.miss.map(x => x.l.m))); res.sumPt = r2(sum(res.pt.map(x => x.l.m))); res.sumExtra = r2(sum(res.extra.map(rlSigned)));
+  return res;
+}
+/* --- affichage --- */
+function rlCatOpts(l, cur){
+  const types = l.m > 0 ? ["Recette", "Entrée"] : ["Dépense", "Sortie"];
+  return types.map(t => `<optgroup label="${t === "Entrée" || t === "Sortie" ? "Épargne / virement" : t}">${allCats(t).map(c => `<option value="${esc(t + "|" + c)}" ${cur === t + "|" + c ? "selected" : ""}>${esc(c)}</option>`).join("")}</optgroup>`).join("");
+}
+function rlCard(){
+  const R = V.rl; if (!R || !R.lines || !R.lines.length) return "";
+  const c = rlCompare(R.bien, R.lines), sel = R.sel || {}, nsel = c.miss.filter(x => sel[x.i]).length, sg = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x));
+  const row = (x, extra) => `<div class="row" style="align-items:flex-start">${extra || ""}<div class="main"><div class="t">${esc(x.l.lib)}</div><div class="s">${frDate(x.l.d)}</div>${x.sel || ""}</div><div class="amt num ${x.l.m > 0 ? "pos" : ""}">${sg(x.l.m)}</div></div>`;
+  return `<div class="card"><div class="top"><h2>Relevé · ${esc(bienName(R.bien))}</h2><div class="btns"><button class="btn ghost sm" data-act="rl-flip">Inverser les signes</button><button class="btn ghost sm" data-act="rl-close">Fermer</button></div></div>
+    <div class="small muted">${esc(R.fname || "Texte collé")} · ${R.lines.length} ligne(s) du ${frDate(c.lo)} au ${frDate(c.hi)}</div>
+    ${kv("Total du relevé sur la période", sg(c.sumRel))}${kv("Déjà dans l'appli et pointé", c.ok.length + " ligne(s)")}${kv("À pointer", c.pt.length + " ligne(s)", c.pt.length ? "neg" : "")}${kv("Absentes de l'appli", c.miss.length + " ligne(s) · " + sg(c.sumMiss), c.miss.length ? "neg" : "")}${kv("Pointées sans ligne sur le relevé", c.extra.length + " ligne(s)", c.extra.length ? "neg" : "")}
+    ${!c.pt.length && !c.miss.length && !c.extra.length ? '<div class="info">Tout correspond : rien d\'oublié sur cette période.</div>' : ""}</div>
+  ${c.pt.length ? `<div class="card"><div class="top"><h2>Dans l'appli, pas encore pointées (${c.pt.length})</h2><button class="btn sm" data-act="rl-point">Tout pointer</button></div><div class="small muted">Ces lignes sont bien passées sur ton compte (${sg(c.sumPt)}) mais pas cochées dans l'appli : c'est souvent la cause de l'écart.</div>
+    <div class="rows">${c.pt.map(x => row({l:x.l}, `<button class="chk" data-act="rl-point1" data-id="${esc(x.j.id)}" aria-label="Pointer">${ICON.check}</button>`)).join("")}</div></div>` : ""}
+  ${c.miss.length ? `<div class="card"><div class="top"><h2>Sur le relevé, pas dans l'appli (${c.miss.length})</h2></div><div class="small muted">Coche celles que tu veux ajouter (la catégorie proposée se change), ignore celles qui ne t'intéressent pas.</div>
+    <div class="btns"><button class="btn ghost sm" data-act="rl-all">Tout cocher</button><button class="btn sm" data-act="rl-add" id="rl-add-b">Ajouter la sélection (${nsel})</button><button class="btn ghost sm" data-act="rl-ign" id="rl-ign-b">Ignorer la sélection (${nsel})</button></div>
+    <div class="rows">${c.miss.map(x => row({l:x.l, sel:`<select data-rl-cat="${x.i}" style="margin-top:4px;max-width:100%">${rlCatOpts(x.l, (R.cat || {})[x.i] || rlGuess(x.l))}</select>`}, `<input type="checkbox" data-rl-sel="${x.i}" ${sel[x.i] ? "checked" : ""} style="margin:6px 10px 0 0;width:22px;height:22px;flex:none" aria-label="Choisir">`)).join("")}</div></div>` : ""}
+  ${c.extra.length ? `<div class="card"><h2>Pointées dans l'appli, absentes du relevé (${c.extra.length})</h2><div class="small muted">Total ${sg(c.sumExtra)}. À vérifier : opération pointée trop tôt, mauvais montant ou autre compte. « Dépointer » la remet en attente.</div>
+    <div class="rows">${c.extra.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)} · ${esc(j.cat || "")}</div></div><div class="amt num ${isIn(j) ? "pos" : ""}">${sg(rlSigned(j))}</div><button class="mini" data-act="rl-unpoint1" data-id="${esc(j.id)}">Dépointer</button></div>`).join("")}</div></div>` : ""}
+  ${c.ign.length ? `<div class="small muted" style="padding:4px 4px 10px">${c.ign.length} ligne(s) ignorée(s) · <button class="mini" data-act="rl-unign">Les remettre</button></div>` : ""}`;
+}
+function rlHome(){
+  const ids = bienIds();
+  return `<div class="card"><h2>Importer un relevé de banque</h2><div class="small muted">Importe l'extrait de compte d'un bien (PDF, CSV, Excel, OFX ou texte collé) : l'appli le compare avec tes opérations et te montre ce qui n'est pas pointé ou pas saisi. Rien n'est enregistré avant que tu choisisses.</div>
+    <div class="btns">${ids.map(id => `<button class="btn ${V.rl && V.rl.bien === id ? "" : "ghost"}" data-act="rl-pick" data-bien="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div></div>${rlCard()}`;
+}
+function sheetRl(bien){
+  V.rlTarget = bien;
+  openSheet(`<h2>Relevé · ${esc(bienName(bien))}</h2><div class="small muted">Choisis le fichier d'extrait de compte téléchargé sur le site de ta banque (PDF, Excel, CSV ou OFX). Il reste sur ton téléphone.</div>
+    <label class="f">Fichier<input id="rl-file" type="file" accept=".pdf,.csv,.txt,.tsv,.xlsx,.xls,.ofx,.qif,application/pdf,text/csv,text/plain"></label>
+    <label class="f">… ou colle les lignes (une opération par ligne : date, libellé, montant)<textarea id="rl-txt" rows="5" placeholder="05/11/2026 VIR LOYER DUPONT 500,00"></textarea></label>
+    <div class="btns"><button class="btn" style="flex:1" data-act="rl-paste-ok">Analyser le texte</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+}
+function rlLoad(lines, fname){
+  const bien = V.rlTarget; lines = lines.filter(l => l.d && l.m).slice(0, 1500);
+  if (!lines.length){ toast("Aucune ligne reconnue : vérifie que le fichier contient une date et un montant par ligne"); return; }
+  V.rl = {bien, fname, lines, sel:{}, cat:{}}; closeSheet(); V.tab = "bld"; V.bsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
+}
+const rlRefreshBtns = () => { const n = Object.values((V.rl && V.rl.sel) || {}).filter(Boolean).length; ["rl-add-b", "rl-ign-b"].forEach((id, k) => { const b = document.getElementById(id); if (b) b.textContent = (k ? "Ignorer" : "Ajouter") + " la sélection (" + n + ")"; }); };
+document.addEventListener("change", async ev => {
+  const t = ev.target; if (!t) return;
+  if (t.id === "rl-file" && t.files && t.files[0]){ const f = t.files[0]; try { rlLoad(await rlBuf(await f.arrayBuffer(), f.name), f.name); } catch(e){ toast("Lecture impossible : " + (e.message || e)); } return; }
+  if (t.dataset && t.dataset.rlSel !== undefined && V.rl){ V.rl.sel[t.dataset.rlSel] = t.checked; rlRefreshBtns(); return; }
+  if (t.dataset && t.dataset.rlCat !== undefined && V.rl){ V.rl.cat[t.dataset.rlCat] = t.value; }
+});
+document.addEventListener("click", ev => {
+  const bt = ev.target.closest("[data-act^=rl-]"); if (!bt) return; const a = bt.dataset.act, R = V.rl;
+  switch (a){
+    case "rl-pick": sheetRl(bt.dataset.bien); break;
+    case "rl-go": V.tab = "bld"; V.bsub = "rapp"; render(); sheetRl(bt.dataset.bien); break;
+    case "rl-paste-ok": { const x = $("#rl-txt").value; if (!x.trim()) return toast("Colle d'abord les lignes"); try { rlLoad(rlText(x), ""); } catch(e){ toast("Lecture impossible"); } break; }
+    case "rl-flip": if (R){ R.lines.forEach(l => l.m = -l.m); R.sel = {}; R.cat = {}; render(); toast("Signes inversés"); } break;
+    case "rl-close": V.rl = null; render(); break;
+    case "rl-all": if (R){ const c = rlCompare(R.bien, R.lines); const all = c.miss.every(x => R.sel[x.i]); c.miss.forEach(x => R.sel[x.i] = !all); render(); } break;
+    case "rl-point": { if (!R) break; const c = rlCompare(R.bien, R.lines); c.pt.forEach(x => { x.j.pointe = "x"; x.j.upd = Date.now(); }); persist(); toast(c.pt.length + " opération(s) pointée(s)"); render(); break; }
+    case "rl-point1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = "x"; j.upd = Date.now(); persist(); render(); } break; }
+    case "rl-unpoint1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = ""; j.upd = Date.now(); persist(); toast("Remise en attente de pointage"); render(); } break; }
+    case "rl-add": { if (!R) break; const c = rlCompare(R.bien, R.lines), pick = c.miss.filter(x => R.sel[x.i]); if (!pick.length) return toast("Coche d'abord au moins une ligne");
+      for (const x of pick){ const [type, cat] = ((R.cat || {})[x.i] || rlGuess(x.l)).split("|"); S.journal.push({id:uid(), date:x.l.d, bien:R.bien, type, cat, lib:x.l.lib.slice(0, 80), montant:Math.abs(x.l.m), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Ajouté depuis le relevé", upd:Date.now()}); R.sel[x.i] = false; }
+      persist(); toast(pick.length + " opération(s) ajoutée(s) et pointée(s)"); render(); break; }
+    case "rl-ign": { if (!R) break; const c = rlCompare(R.bien, R.lines), pick = c.miss.filter(x => R.sel[x.i]); if (!pick.length) return toast("Coche d'abord au moins une ligne");
+      S.rapIgn = S.rapIgn || {}; const arr = S.rapIgn[R.bien] = S.rapIgn[R.bien] || []; pick.forEach(x => { arr.push(rlKey(x.l)); R.sel[x.i] = false; }); persist(); toast(pick.length + " ligne(s) ignorée(s)"); render(); break; }
+    case "rl-unign": if (R){ S.rapIgn = S.rapIgn || {}; S.rapIgn[R.bien] = []; persist(); render(); } break;
+  }
+});
+/* --- Pointage : soldes des comptes des biens --- */
+function soldesCard(){
+  const ids = V.bf === "all" ? bienIds() : [V.bf]; if (!ids.length) return "";
+  const att = id => J().filter(j => j.bien === id && j.compte !== "Perso" && j.pointe !== "x" && j.date <= todayIso() && !isArch(j)), sg = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x));
+  return `<div class="card"><h2>Comptes des biens</h2>${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null, a = att(id), sa = r2(sum(a.map(rlSigned)));
+      return `<div class="env" style="padding:8px 0;gap:4px"><div class="top">${bienPill(id)}<span class="num"><b>${eur(calc)}</b></span></div><div class="small muted">Solde d'après les opérations pointées</div>
+        ${a.length ? `<div class="kv"><span class="small">Pas encore pointées (${a.length})</span><span class="num small">${sg(sa)}</span></div>` : ""}${has ? `<div class="kv"><span class="small">Dernier solde saisi du relevé</span><span class="num small">${eur(reel)}</span></div><div class="kv"><span class="small">Écart</span><span class="num small ${ec ? "neg" : "pos"}">${ec ? sg(ec) : "aucun"}</span></div>` : ""}
+        <button class="btn ghost sm" data-act="rl-go" data-bien="${esc(id)}">Comparer avec le relevé</button></div>`; }).join("")}
+    ${ids.length > 1 ? kv("Total des comptes", `<b>${eur(r2(sum(ids.map(id => soldeBien(id)))))}</b>`) : ""}</div>`;
+}
 
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
 
