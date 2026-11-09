@@ -1188,8 +1188,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 const CHANGELOG = [
+  {v:"1.6.0", date:"2026-11-08", titre:"Visite guidée plein écran", items:["Nouvelle visite guidée plein écran (Réglages › Aide › « Visite guidée », ou la page visite.html) : 76 étapes avec des captures de l'appli, un cadre jaune sur ce qu'il faut toucher et une bulle d'explication, de l'installation jusqu'aux réglages.","Mode téléphone ou présentation (iPad, ordinateur, vidéoprojecteur), menu des chapitres, plein écran, flèches du clavier.","Nouveau « Guide à lire » (page guide.html) : 15 cas concrets pas à pas avec les vrais écrans, de l'installation à la facture électronique (Réglages › Aide › « Guide à lire »).","La fiche de l'appli propose aussi les boutons « Visite guidée » et « Guide à lire »."]},
   {v:"1.5.0", date:"2026-11-02", titre:"Permis de louer, facture électronique, sources", items:["Réglages › Règles : carte « Facture électronique » (ce que doit faire un loueur en meublé, plateforme choisie à noter avec son lien) ; sur l'accueil, un rappel tant qu'aucune plateforme n'est notée, puis un bouton « Ouvrir » vers ta plateforme et carte « Sources utilisées » (liste des pages officielles consultées, aussi envoyée à l'IA dans le fichier Word de mise à jour des règles).","Nouveau réglage « Permis de louer » (Réglages › Biens) : tu indiques les logements soumis à l'autorisation de la mairie (ex. Istres) et leur commune.","Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire : autorisation à obtenir avant la signature du bail, dossier à préparer, visite de contrôle, amende.","Le rappel affiche les coordonnées du service de la mairie (pré-remplies pour Istres, à renseigner pour une autre commune), permet de noter les rendez-vous en mairie et les visites de contrôle (avec envoi vers AgenDam ou le calendrier du téléphone) et de créer la lettre de demande en PDF.","Tu notes « Demande déposée » puis « Autorisation obtenue » ; le rappel repart à zéro quand un nouveau locataire est créé (une autorisation par locataire)."]},
   {v:"1.4.0", date:"2026-11-02", titre:"Visites : envoi vers ton agenda", items:["Quand tu programmes la visite d'un candidat, l'appli te propose de l'envoyer vers AgenDam (code à coller ou lien) ou vers le calendrier du téléphone (.ics), avec le maximum d'infos : nom, téléphone, e-mail, adresse du logement, loyer, situation, garant, emménagement souhaité, étape et note.","Le fichier du calendrier contient maintenant l'adresse, toutes ces infos et un rappel 1 h avant.","Nouveau réglage « Agenda pour les visites » (Réglages › Biens) : AgenDam par défaut, modifiable, ou aucun."]},
   {v:"1.3.3", date:"2026-11-01", titre:"Compta : vue d'ensemble et fiche à imprimer", items:["Nouveau bouton « Vue d'ensemble » dans Compta : toutes les lignes à saisir (échéances d'emprunt, dépenses, recettes), logement par logement, en petit et d'un coup d'œil. Une case par ligne pour la marquer saisie pendant que tu remplis le site, un filtre « Reste à saisir » et des boutons Dézoomer / Zoomer (100 à 60 %) pour voir beaucoup de lignes d'un coup.","« PDF à imprimer » : la même liste en fiche A4 à cocher à la main, au choix complète ou seulement ce qui reste à saisir."]},
@@ -1244,6 +1245,7 @@ const HELP = {
     "Le locataire est facultatif : tu peux l'ajouter plus tard dans Biens › Locataires.",
     "Si tu as déjà le classeur Excel, importe plutôt export_appli.xlsx : tout est repris tel quel."]},
   home:{t:"Accueil", p:"Le résumé de tes deux biens en un coup d'œil.", l:[
+    "Pour découvrir toute l'appli pas à pas : Réglages › Aide › « Visite guidée plein écran ».",
     "Le gros chiffre est le solde de tes comptes appartements. En dessous : un solde par bien.",
     "Le bandeau violet Bourse montre l'argent placé, pas dépensé, qu'il reste à récupérer. Le bouton enregistre un remboursement.",
     "Les trois tuiles (retard, à pointer, à saisir en compta) sont cliquables.",
@@ -2839,6 +2841,7 @@ document.addEventListener("click", ev => {
       saveFile("demande-permis-de-louer-" + id + "-" + todayIso() + ".pdf", d.finish("Demande d'autorisation de mise en location"), "application/pdf"); break; }
   }
 });
+document.addEventListener("click", ev => { const bt = ev.target.closest("[data-act=visite]"); if (bt) window.open("visite.html", "_blank"); const gw = ev.target.closest("[data-act=guideweb]"); if (gw) window.open("guide.html", "_blank"); });
 function plGo(id){ const t = V.plThen || {}; V.plThen = null; closeSheet(); if (t.then === "cand") sheetCand(""); else if (t.then === "keep") sheetKeep(t.cid); else render(); }
 
 /* ============ Documents : bases (photos, PDF images, modèles, solde locataire, performance) ============ */
@@ -3630,6 +3633,8 @@ function demoCard(){
   return `<div class="card"><h2>Démo et aide</h2><div class="rows">
     ${DEMO ? row("exitdemo", "Quitter le mode démo", "") : row("demo", "Voir le mode démo", "Avec des données d'exemple")}
     ${!DEMO && S.demo && back ? row("demo-back", "Retrouver mes données", "Quitter la démo") : ""}
+    ${row("visite", "Visite guidée plein écran", "De A à Z, pas à pas, avec des captures")}
+    ${row("guideweb", "Guide à lire (page web)", "Pas à pas, avec les vrais écrans")}
     ${row("guide", "Mode d'emploi", "Le guide, expliqué simplement")}
     ${row("tour", "Parcours guidé", "Les grandes étapes en quelques écrans")}</div></div>`;
 }
