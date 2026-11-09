@@ -76,6 +76,7 @@ button{cursor:pointer}
 .small{font-size:13px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .top .app{font-family:var(--font-display);font-weight:700;font-size:20px}
+.ver{font-size:11px;color:var(--muted);white-space:nowrap}
 .topr{display:flex;align-items:center;gap:8px;margin-left:auto}
 .nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
 .nav button{border:0;background:none;width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;color:var(--ink)}
@@ -98,6 +99,8 @@ body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;to
 .rows{display:flex;flex-direction:column}
 .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);min-width:0}
 .row:first-child{border-top:0}
+.row.hc{background:color-mix(in srgb,#8b5cf6 12%,transparent);border-left:3px solid #8b5cf6;padding-left:8px;border-radius:6px}
+.chip.hcc{background:#8b5cf6;color:#fff}
 .row .main{flex:1;min-width:0}
 .row .t{font-weight:500;overflow-wrap:anywhere}
 .row .s{font-size:12.5px;color:var(--muted)}
@@ -403,6 +406,7 @@ const live = a => a.filter(x => !x.del);
 const bienName = id => { const b = S.biens.find(x => x.id === id); return b ? b.nom : id; };
 const bienIds = () => { const ids = live(S.biens).map(b => b.id); for (const j of S.journal) if (j.bien && !ids.includes(j.bien)) ids.push(j.bien); return ids; };
 const J = () => S.journal.filter(j => !j.del && j.date);
+const HC = j => j.hc === "x";   // « hors compta » : compte dans le solde de la banque, pas dans la compta/bénéfice/bilan
 const yr = j => +j.date.slice(0,4);
 const mo = j => +j.date.slice(5,7) - 1;
 const isIn = j => j.type === "Recette" || j.type === "Entrée";
@@ -417,7 +421,7 @@ function soldeAvant(id, y){
   return r2(N(b && b.solde0) + sum(J().filter(j => j.bien === id && yr(j) < y).map(impact)));
 }
 function stats(id, y){   // id = null → tous les biens
-  const L = J().filter(j => (id == null || j.bien === id) && yr(j) === y);
+  const L = J().filter(j => (id == null || j.bien === id) && yr(j) === y && !HC(j));
   const rec = sum(L.filter(j => j.type === "Recette").map(j => j.montant)), dep = sum(L.filter(j => j.type === "Dépense").map(j => j.montant));
   const recP = sum(L.filter(j => j.type === "Recette" && j.pointe === "x").map(j => j.montant)), depP = sum(L.filter(j => j.type === "Dépense" && j.pointe === "x").map(j => j.montant));
   const ep = sum(L.filter(j => j.type === "Sortie" && !NO_EPARGNE.includes(j.cat)).map(j => j.montant)) - sum(L.filter(j => j.type === "Entrée" && !NO_EPARGNE.includes(j.cat)).map(j => j.montant));
@@ -425,7 +429,7 @@ function stats(id, y){   // id = null → tous les biens
   return {rec:r2(rec), dep:r2(dep), cf:r2(rec - dep), recP:r2(recP), depP:r2(depP), benef:r2(recP - depP), ep:r2(ep), bourse:r2(bourse)};
 }
 function counts(y){
-  const L = J().filter(j => yr(j) === y);
+  const L = J().filter(j => yr(j) === y && !HC(j));
   return { retard: J().filter(j => statut(j) === "En retard").length, pointer: J().filter(j => statut(j) === "À pointer").length,
            compta: L.filter(j => j.type === "Dépense" && j.pointe === "x" && !j.compta).length };
 }
@@ -508,7 +512,7 @@ function parseEchange(wb){
   if (t){ out.tarifs = t.filter(o => str(o.bien) && str(o.poste)).map(o => ({bien:str(o.bien), poste:str(o.poste), date:anyToIso(o.apartirdu), montant:numOf(o.montant), note:str(o.note)})); }
   if (j) for (const o of j){ const id = str(o.id), date = anyToIso(o.date); if (!id || !date) continue;
     out.journal.push({id, date, bien:str(o.bien), type:str(o.type), cat:str(o.categorie), lib:str(o.libelle), montant:numOf(o.montant), compte:str(o.compte) || "Bien", pointe:truthy(o.pointe) ? "x" : "",
-      compta:comptaOf(o.saisicompta), justif:truthy(o.justif) ? "x" : "", fourn:str(o.fournisseur), note:str(o.note), upd:Number(o.modifie) || 0, del:truthy(o.supprime)}); }
+      compta:comptaOf(o.saisicompta), justif:truthy(o.justif) ? "x" : "", fourn:str(o.fournisseur), note:str(o.note), upd:Number(o.modifie) || 0, del:truthy(o.supprime), hc:truthy(o.horscompta) ? "x" : ""}); }
   if (f) for (const o of f){ const id = str(o.id); if (!id || !str(o.fournisseur)) continue;
     out.factures.push({id, fourn:str(o.fournisseur), num:str(o.numfacture), date:anyToIso(o.date), cat:str(o.categorie), desc:str(o.description), prix:numOf(o.prix), jdmm:truthy(o.enregistrejdmm) ? "x" : "", scan:truthy(o.scanne) ? "x" : "", upd:Number(o.modifie) || 0, del:truthy(o.supprime)}); }
   if (l) for (const o of l){ const id = str(o.id); if (!id) continue;
@@ -537,8 +541,8 @@ function buildEchange(){
   const sheet = (name, head, rows, dateCols) => { const ws = XLSX.utils.aoa_to_sheet([head].concat(rows));
     for (let r = 1; r <= rows.length; r++) for (const c of dateCols){ const a = ws[c + (r + 1)]; if (a && isNum(a.v)){ a.t = "n"; a.z = "dd/mm/yyyy"; } }
     ws["!cols"] = head.map(h => ({wch:Math.max(10, h.length + 2)})); XLSX.utils.book_append_sheet(wb, ws, name); };
-  sheet("Journal_appli", ["ID","Date","Bien","Type","Categorie","Libelle","Montant","Compte","Pointe","SaisiCompta","Justif","Fournisseur","Note","Modifie","Supprime"],
-    S.journal.map(j => [j.id, dt(j.date), j.bien, j.type, j.cat, j.lib, j.montant, j.compte || "Bien", j.pointe, j.compta === "x" ? "x" : dt(j.compta), j.justif, j.fourn, j.note, j.upd || 0, j.del ? 1 : ""]), ["B","J"]);
+  sheet("Journal_appli", ["ID","Date","Bien","Type","Categorie","Libelle","Montant","Compte","Pointe","SaisiCompta","Justif","Fournisseur","Note","Modifie","Supprime","HorsCompta"],
+    S.journal.map(j => [j.id, dt(j.date), j.bien, j.type, j.cat, j.lib, j.montant, j.compte || "Bien", j.pointe, j.compta === "x" ? "x" : dt(j.compta), j.justif, j.fourn, j.note, j.upd || 0, j.del ? 1 : "", HC(j) ? "x" : ""]), ["B","J"]);
   sheet("Factures_appli", ["ID","Fournisseur","NumFacture","Date","Categorie","Description","Prix","EnregistreJDMM","Scanne","Modifie","Supprime"],
     S.factures.map(f => [f.id, f.fourn, f.num, dt(f.date), f.cat, f.desc, f.prix, f.jdmm, f.scan, f.upd || 0, f.del ? 1 : ""]), ["D"]);
   sheet("Locataires_appli", ["ID","Bien","Nom","Telephone","Email","DebutBail","FinBail","LoyerCC","DepotGarantie","Note","Modifie","Supprime","Charges"],
@@ -596,7 +600,7 @@ function renderTabs(){
 const yearNav = () => `<div class="nav"><button data-act="yprev" aria-label="Année précédente">‹</button><span>${V.y}</span><button data-act="ynext" aria-label="Année suivante">›</button></div>`;
 const monthNav = () => `<div class="nav"><button data-act="mprev" aria-label="Mois précédent">‹</button><span>${MOIS[V.m]} ${V.y}</span><button data-act="mnext" aria-label="Mois suivant">›</button></div>`;
 function topbar(title, nav){
-  return `<div class="top"><div class="app">${title}</div><div class="topr">${nav || ""}<button class="q" data-act="help" aria-label="Aide">?</button><button class="gear" data-act="app-update" aria-label="Mettre à jour l'appli" title="Mettre à jour l'appli">${ICON.refresh}</button><button class="gear" data-act="tab" data-v="set" aria-label="Réglages">${ICON.set}</button></div></div>` +
+  return `<div class="top"><div class="app">${title}</div><div class="topr">${nav || ""}<button class="q" data-act="help" aria-label="Aide">?</button><button class="gear" data-act="app-update" aria-label="Mettre à jour l'appli" title="Mettre à jour l'appli">${ICON.refresh}</button><button class="gear" data-act="tab" data-v="set" aria-label="Réglages">${ICON.set}</button><span class="ver">v${APP_VERSION}</span></div></div>` +
     (S.demo ? `<div class="banner">Données d'exemple. Importe le fichier <b>export_appli.xlsx</b> dans <b>Réglages</b> pour travailler avec tes vrais biens.</div>` : "");
 }
 const kv = (l, v, cl) => `<div class="kv"><span>${l}</span><span class="num ${cl || ""}">${v}</span></div>`;
@@ -608,9 +612,9 @@ const chipJ = (j, st) => st === "À pointer" ? `<span class="chip warn">${isIn(j
 const chipFor = st => `<span class="chip ${st==="En retard"?"bad":st==="À pointer"?"warn":st==="Pointé"?"ok":""}">${st}</span>`;
 function jRow(j, showBien){
   const st = statut(j), sign = isIn(j) ? 1 : -1;
-  return `<div class="row"><button class="chk ${j.pointe==="x"?"on":""}" data-act="jtoggle" data-id="${j.id}" aria-label="Pointer">${ICON.check}</button>
+  return `<div class="row${HC(j) ? " hc" : ""}"><button class="chk ${j.pointe==="x"?"on":""}" data-act="jtoggle" data-id="${j.id}" aria-label="Pointer">${ICON.check}</button>
     <button class="rowbtn" data-act="jedit" data-id="${j.id}"><div class="t">${esc(j.lib || j.cat || j.type)}</div>
-    <div class="s">${frDate(j.date)}${showBien ? " " + bienPill(j.bien) : ""} · <span class="cdot" style="background:${catColor(j.cat)};margin-right:4px"></span>${esc(j.cat || TYPE_LAB[j.type] || j.type)}${j.compte==="Perso" ? " · perso" : ""} ${st !== "Pointé" ? chipJ(j, st) : ""}</div></button>
+    <div class="s">${frDate(j.date)}${showBien ? " " + bienPill(j.bien) : ""} · <span class="cdot" style="background:${catColor(j.cat)};margin-right:4px"></span>${esc(j.cat || TYPE_LAB[j.type] || j.type)}${j.compte==="Perso" ? " · perso" : ""} ${HC(j) ? '<span class="chip hcc">hors compta</span> ' : ""}${st !== "Pointé" ? chipJ(j, st) : ""}</div></button>
     <div class="amt num ${sign>0?"pos":""}">${sign>0?"+":"−"} ${eur(j.montant)}</div></div>`;
 }
 
@@ -671,7 +675,7 @@ function monthListAll(){
   let L = J();
   if (V.bf !== "all") L = L.filter(j => j.bien === V.bf);
   if (V.mf === "todo") return L.filter(j => statut(j) === "À pointer" || statut(j) === "En retard");
-  if (V.mf === "compta") return L.filter(j => j.type === "Dépense" && j.pointe === "x" && !j.compta);
+  if (V.mf === "compta") return L.filter(j => j.type === "Dépense" && j.pointe === "x" && !j.compta && !HC(j));
   return L.filter(j => yr(j) === V.y && mo(j) === V.m);
 }
 function monthList(){ return monthListAll().filter(j => !isArch(j)); }
@@ -693,9 +697,9 @@ function viewMonth(){
 /* ---------- Ajouter / modifier ---------- */
 function newDraft(extra){
   const bs = bienIds();
-  return Object.assign({type:"Recette", bien:bs[0] || "", date:todayIso(), cat:"Loyer", lib:"", mont:"", montAuto:true, compte:"Bien", pt:true, fourn:"", note:"", compta:false, justif:false}, extra || {});
+  return Object.assign({type:"Recette", bien:bs[0] || "", date:todayIso(), cat:"Loyer", lib:"", mont:"", montAuto:true, compte:"Bien", pt:true, fourn:"", note:"", compta:false, justif:false, hc:false}, extra || {});
 }
-function draftFrom(j){ return {type:j.type, bien:j.bien, date:j.date, cat:j.cat, lib:j.lib, mont:fmtNum(j.montant), montAuto:false, compte:j.compte || "Bien", pt:j.pointe === "x", fourn:j.fourn, note:j.note, compta:!!j.compta, justif:j.justif === "x"}; }
+function draftFrom(j){ return {type:j.type, bien:j.bien, date:j.date, cat:j.cat, lib:j.lib, mont:fmtNum(j.montant), montAuto:false, compte:j.compte || "Bien", pt:j.pointe === "x", fourn:j.fourn, note:j.note, compta:!!j.compta, justif:j.justif === "x", hc:HC(j)}; }
 function viewAdd(){
   const ed = V.editId ? S.journal.find(j => j.id === V.editId) : null;
   const d = V.draft || (ed ? draftFrom(ed) : newDraft()); V.draft = d;
@@ -717,6 +721,7 @@ function viewAdd(){
     <label class="f">Note<input id="f-note" value="${esc(d.note)}"></label>
     <div class="seg"><button class="${d.pt?"on":""}" data-act="dtog" data-v="pt">${d.type==="Recette" ? "Encaissé" : "Pointé (passé sur le compte)"}</button>
       ${d.type === "Dépense" ? `<button class="${d.compta?"on":""}" data-act="dtog" data-v="compta">Saisi en compta</button><button class="${d.justif?"on":""}" data-act="dtog" data-v="justif">Justificatif</button>` : ""}</div>
+    ${d.type === "Dépense" || d.type === "Recette" ? `<div class="seg"><button class="${d.hc?"on":""}" data-act="dtog" data-v="hc">Hors compta (compte dans la banque, pas dans la compta)</button></div>` : ""}
     <div id="f-info"></div>
     <div class="btns"><button class="btn" data-act="save" style="flex:1">Enregistrer</button>
       ${ed ? `<button class="btn ghost" data-act="jdup">Dupliquer</button><button class="btn danger" data-act="jdel">Supprimer</button>` : `<button class="btn ghost" data-act="clear">Effacer</button><button class="btn ghost" data-act="md-open">Enregistrer comme modèle</button>`}</div>
@@ -753,7 +758,7 @@ function saveOp(){
   if (!mt || mt <= 0) return toast("Saisis un montant supérieur à 0");
   const lib = d.lib.trim() || (d.cat === "Loyer" ? "Loyer " + MOIS[+d.date.slice(5,7)-1].toLowerCase() : d.cat);
   const base = {date:d.date, type:d.type, cat:d.cat, lib, montant:r2(mt), compte:d.type === "Dépense" ? d.compte : (d.cat === "Intérêts placement" ? "Perso" : "Bien"), pointe:d.pt ? "x" : "",
-    compta:d.type === "Dépense" && d.compta ? ((ed && ed.compta) || "x") : "", justif:d.type === "Dépense" && d.justif ? "x" : "", fourn:d.fourn.trim(), note:d.note.trim(), upd:Date.now()};
+    compta:d.type === "Dépense" && d.compta ? ((ed && ed.compta) || "x") : "", justif:d.type === "Dépense" && d.justif ? "x" : "", hc:(d.type === "Dépense" || d.type === "Recette") && d.hc ? "x" : "", fourn:d.fourn.trim(), note:d.note.trim(), upd:Date.now()};
   if (ed){ Object.assign(ed, base, {bien:d.bien}); toast("Opération modifiée"); }
   else if (d.bien === "both"){
     const ids = bienIds().slice(0, 2), h = r2(mt / 2);
@@ -793,7 +798,7 @@ function catBars(rows, max, restKey){
 }
 function viewBienVue(){
   const id = V.bsel, y = V.y, s = stats(id, y), b = S.biens.find(x => x.id === id);
-  const L = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense"), cats = {};
+  const L = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && !HC(j)), cats = {};
   for (const j of L){ const c = cats[j.cat || "Autre"] || (cats[j.cat || "Autre"] = {n:j.cat || "Autre", v:0, reste:0}); c.v += j.montant; if (j.pointe !== "x") c.reste += j.montant; }
   const rows = Object.values(cats).sort((a,b) => b.v - a.v);
   const ops = J().filter(j => j.bien === id && yr(j) === y).sort((a,b) => b.date.localeCompare(a.date));
@@ -817,7 +822,7 @@ function partagesCard(){
       return `<div class="row"><div class="main"><div class="t">${esc(p.frais)}</div><div class="s">Total ${eur(p.total)} · Studio ${Math.round(p.partStudio*100)} % (${eur(a)}) · T2 ${eur(b)}</div></div><button class="mini" data-act="partage" data-v="${esc(p.frais)}">Saisir</button></div>`; }).join("")}</div></div>`;
 }
 function viewBienDep(){
-  const id = V.bsel, y = V.y, L = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense"), cats = {};
+  const id = V.bsel, y = V.y, L = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && !HC(j)), cats = {};
   for (const j of L){ const k = j.cat || "Autre"; const c = cats[k] || (cats[k] = {n:k, v:0, reste:0}); c.v += j.montant; if (j.pointe !== "x") c.reste += j.montant; }
   const rows = Object.values(cats).sort((a, b) => b.v - a.v), total = sum(rows.map(r => r.v)), reste = sum(rows.map(r => r.reste));
   const next = J().filter(j => j.bien === id && statut(j) === "Prévu" && j.type === "Dépense").sort((a, b) => a.date.localeCompare(b.date)).slice(0, 8);
@@ -1101,7 +1106,7 @@ document.addEventListener("click", ev => {
     case "rent-add": { const m = +b.dataset.m, bien = b.dataset.bien; V.back = "bld"; V.bsub = "loyers"; V.bsel = bien; V.editId = null; V.draft = newDraft({bien, date: V.y + "-" + pad(m + 1) + "-01", cat:"Loyer", pt:false}); V.tab = "add"; render(); autoSuggest(true); break; }
     case "pointall": { const L = monthList().filter(j => j.pointe !== "x" && j.date <= todayIso()); openSheet(`<h2>Tout pointer ?</h2><div class="small muted">${L.length} opération(s) seront marquées comme passées sur le compte.</div><div class="btns"><button class="btn" data-act="pointall-ok" style="flex:1">Pointer ${L.length} ligne(s)</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
     case "pointall-ok": { const t = Date.now(); monthList().filter(j => j.pointe !== "x" && j.date <= todayIso()).forEach(j => { j.pointe = "x"; j.upd = t; onPointe(j); }); persist(); closeSheet(); toast("Pointé"); render(); break; }
-    case "dtype": collectDraft(); V.draft.type = v; V.draft.cat = v === "Recette" ? "Loyer" : ""; V.draft.montAuto = true; if (v !== "Dépense"){ V.draft.compta = false; V.draft.justif = false; V.draft.compte = "Bien"; } render(); autoSuggest(true); break;
+    case "dtype": collectDraft(); V.draft.type = v; V.draft.cat = v === "Recette" ? "Loyer" : ""; V.draft.montAuto = true; if (v !== "Dépense" && v !== "Recette") V.draft.hc = false; if (v !== "Dépense"){ V.draft.compta = false; V.draft.justif = false; V.draft.compte = "Bien"; } render(); autoSuggest(true); break;
     case "dbien": collectDraft(); V.draft.bien = v; render(); autoSuggest(false); break;
     case "dcompte": collectDraft(); V.draft.compte = v; render(); break;
     case "dtog": collectDraft(); V.draft[v] = !V.draft[v]; render(); break;
@@ -1189,10 +1194,12 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.7";
+const APP_VERSION = "1.7.9";
 const CHANGELOG = [
+  {v:"1.7.9", date:"2026-11-09", titre:"Hors compta et import de plusieurs relevés", items:["Nouveau bouton « Hors compta » sur une dépense ou une recette. L’opération compte dans le solde du compte (l’écart avec la banque reste juste) mais disparaît de « À saisir en compta », des totaux de la compta, de la liasse, du bénéfice et du bilan. Dans les listes, elle a une ligne violette et l’étiquette « hors compta ». Exporté dans le journal Excel (colonne HorsCompta).","Rapprochement : tu peux choisir plusieurs relevés d’un coup. Ils sont rangés du plus ancien au plus récent, une ligne présente dans deux relevés qui se chevauchent n’est pas comptée deux fois, et le solde de début et de fin est lu dans le premier et le dernier PDF."]},
+  {v:"1.7.8", date:"2026-11-09", titre:"Reprise de l’historique en compta", items:["Pointage › Saisie en compta : carte « Reprise de l’historique ». Tout ce qui est daté jusqu’à la fin de l’année de ta dernière liasse fiscale (ou l’année que tu choisis) est marqué d’un coup comme déjà saisi, échéances d’emprunt comprises, avec un bouton « Annuler ». Ensuite, tu continues mois par mois."]},
   {v:"1.7.7", date:"2026-11-09", titre:"Écart expliqué en une phrase", items:["Rapprochement et « Trouver mon écart » : sous l’écart, une phrase dit ce que ça veut dire (par exemple « La banque a 12,00 € de moins que l’appli : il manque probablement une dépense de 12,00 € dans l’appli », ou l’inverse pour un écart positif)."]},
-  {v:"1.7.6", date:"2026-11-09", titre:"Visite guidée complétée", items:["Visite guidée (102 étapes) : le relevé de banque est maintenant expliqué en entier (solde lu dans le PDF, trouver mon écart avec le solde de début, erreur de montant ou de date, même opération avec une date différente)."]},
+  {v:"1.7.6", date:"2026-11-09", titre:"Visite guidée complétée", items:["Visite guidée (103 étapes) : le relevé de banque est maintenant expliqué en entier (solde lu dans le PDF, trouver mon écart avec le solde de début, erreur de montant ou de date, même opération avec une date différente)."]},
   {v:"1.7.5", date:"2026-11-09", titre:"Correction d’affichage", items:["Import de relevé : la carte « Même opération, date différente » s’affiche correctement (le libellé n’était plus écrasé)."]},
   {v:"1.7.4", date:"2026-11-09", titre:"Relevé : soldes lus dans le PDF, écart cohérent", items:["Import de relevé PDF : l’appli lit toute seule la ligne « Solde au … » (et le solde de début s’il y en a un) et remplit « Trouver mon écart ».","« Trouver mon écart » part maintenant du même « Solde calculé » que le reste de l’appli, donc le même écart que dans « Comparer avec le relevé de banque »."]},
   {v:"1.7.3", date:"2026-11-09", titre:"Relevé plus précis, visite guidée à jour", items:["Import de relevé : repère une ligne qui ressemble à une opération de l’appli avec un montant ou une date légèrement faux et propose de la corriger ; bouton « Mettre la date du relevé » ; « Trouver mon écart » accepte aussi le solde de la banque au début du relevé pour séparer ce qui vient d’avant.","Visite guidée (100 étapes) : nouvelles étapes pour le bouton de mise à jour, la carte « Comptes des biens » du Pointage, l’import de relevé, « Trouver mon écart » et l’ajout des lignes oubliées."]},
@@ -1285,6 +1292,8 @@ const HELP = {
     "Les modèles remplissent le formulaire en un appui. Ils se créent avec « Enregistrer comme modèle ».",
     "En modification, « Dupliquer » crée une copie que tu ajustes ensuite."]},
   month:{t:"Pointage", p:"Le mois, ligne par ligne.", l:[
+    "« Hors compta » (dans le formulaire d'une dépense ou d'une recette) : l'opération compte dans le solde de la banque mais pas dans la compta, le bénéfice ni le bilan. Elle apparaît en violet avec une étiquette.",
+    "« Reprise de l'historique » (en haut de « À saisir ») : marque d'un coup comme déjà saisi tout ce qui est daté jusqu'à la fin de l'année de ta dernière liasse (ou de l'année choisie). « Annuler » juste après si besoin.",
     "« Saisie en compta » : coche une ligne, un mois entier ou « Tout sélectionner » (filtre Dépenses / Recettes / catégorie), puis « Marquer comme saisi ». Une erreur ? Touche « Annuler » dans la bannière, ou « Déjà saisi » pour remettre des lignes à saisir.",
     "Touche le rond d'une ligne pour la pointer quand tu la vois passer sur le relevé de banque.",
     "Carte « Comptes des biens » (vue Mois) : solde pointé de chaque bien, opérations pas encore pointées et écart avec ton dernier solde saisi ; « Comparer avec le relevé » importe l'extrait de compte.",
@@ -1356,7 +1365,7 @@ const HELP = {
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
     "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
     "Trouver l'écart : après l'import, tape le solde réel de la banque à la date du relevé ; l'appli liste les causes de la différence. S'il reste un montant inexpliqué, il vient d'avant le début du relevé : importe un relevé plus ancien.",
-    "Importer un relevé : choisis le bien, puis le fichier de la banque (PDF, Excel, CSV, OFX) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
+    "Importer un relevé : choisis le bien, puis le ou les fichiers de la banque (PDF, Excel, CSV, OFX ; plusieurs d'un coup pour une remise à niveau depuis le début) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
@@ -1966,7 +1975,7 @@ function empYear(id, y){
 
 /* synthèse de l'année pour un bien */
 function comptaBien(id, y){
-  const L = J().filter(j => j.bien === id && yr(j) === y);
+  const L = J().filter(j => j.bien === id && yr(j) === y && !HC(j));
   const rec = L.filter(j => j.type === "Recette");
   const loyers = r2(sum(rec.filter(j => j.cat === "Loyer").map(j => j.montant)));
   const autres = r2(sum(rec.filter(j => j.cat !== "Loyer").map(j => j.montant)));
@@ -2161,14 +2170,14 @@ function cmpMerge(rows){
 }
 function cmpDepLines(y, ids){
   const rows = [];
-  for (const j of J()){ if (j.type !== "Dépense" || yr(j) !== y || !ids.includes(j.bien) || j.compte === "Perso" || j.cat === "Crédit (mensualité)") continue;
+  for (const j of J()){ if (HC(j) || j.type !== "Dépense" || yr(j) !== y || !ids.includes(j.bien) || j.compte === "Perso" || j.cat === "Crédit (mensualité)") continue;
     const art = artOf(j.cat); rows.push({k:"j:" + j.id, bien:j.bien, art, com:(j.lib || j.cat) + (j.fourn ? " - " + j.fourn : ""), montant:j.montant, date:j.date, immo:isImmoArt(art), done:!!j.compta, pointe:j.pointe === "x"}); }
   for (const id of ids){ const ey = empYear(id, y); if (ey && ey.assur > 0) rows.push({k:"a|" + id + "|" + y, bien:id, art:"Assurance emprunteur", com:"Assurance emprunteur " + y + " (" + ey.nb + " mois)", montant:ey.assur, date:y + "-12-31", immo:false, done:cdone("a|" + id + "|" + y), pointe:true}); }
   return cmpMerge(rows.sort((a, b) => a.bien.localeCompare(b.bien) || a.date.localeCompare(b.date)));
 }
 function cmpRecLines(y, ids){
   const rows = [];
-  for (const j of J()){ if (j.type !== "Recette" || yr(j) !== y || !ids.includes(j.bien)) continue;
+  for (const j of J()){ if (HC(j) || j.type !== "Recette" || yr(j) !== y || !ids.includes(j.bien)) continue;
     if (j.cat === "Loyer"){ const t = tenantFor(j.bien, j.date), chg = r2(Math.min(N(t && t.charges), j.montant));
       rows.push({k:"j:" + j.id, bien:j.bien, art:"Loyer hors charges locatives", com:j.lib || "Loyer", montant:r2(j.montant - chg), date:j.date, done:!!j.compta, pointe:j.pointe === "x"});
       if (chg > 0) rows.push({k:"j:" + j.id, bien:j.bien, art:"Provision pour charges", com:j.lib || "Loyer", montant:chg, date:j.date, done:!!j.compta, pointe:j.pointe === "x"}); }
@@ -2387,7 +2396,7 @@ const foncOf = c => FONC_CAT[c] || {s:"verif", l:"À vérifier selon la nature"}
 
 function foncierBien(id, y){
   const base = comptaBien(id, y);
-  const dep = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && (j.compta || "Bien") !== "Perso" && j.cat !== "Crédit (mensualité)");
+  const dep = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && !HC(j) && (j.compta || "Bien") !== "Perso" && j.cat !== "Crédit (mensualité)");
   const lignes = {}; let ded = 0, verif = 0, non = 0;
   for (const j of dep){ const f = foncOf(j.cat), o = lignes[j.cat] || (lignes[j.cat] = {cat:j.cat, v:0, s:f.s, l:f.l}); o.v = r2(o.v + j.montant);
     if (f.s === "ok") ded += j.montant; else if (f.s === "verif") verif += j.montant; else non += j.montant; }
@@ -2456,7 +2465,7 @@ document.addEventListener("click", ev => {
    + « Effacer la date » dans les feuilles + historique des placements (modifier / supprimer) */
 V.cs = V.cs || {}; V.sk = V.sk || "all"; V.sc = V.sc || "all"; V.sv = V.sv || "todo";
 function saisieAll(){
-  return J().filter(j => (V.bf === "all" || j.bien === V.bf) && j.pointe === "x" && (j.type === "Dépense" || j.type === "Recette") && !isArch(j));
+  return J().filter(j => (V.bf === "all" || j.bien === V.bf) && j.pointe === "x" && !HC(j) && (j.type === "Dépense" || j.type === "Recette") && !isArch(j));
 }
 function saisieList(){
   let L = saisieAll().filter(j => V.sv === "done" ? !!j.compta : !j.compta);
@@ -2487,14 +2496,28 @@ function viewSaisie(){
   const act = V.sv === "done" ? `Remettre à saisir (${nSel})` : `Marquer comme saisi (${nSel})`;
   return topbar("Pointage", "") + `<div class="seg"><button data-act="mf" data-v="mois">Ce mois</button><button data-act="mf" data-v="todo">À pointer</button><button class="on" data-act="mf" data-v="compta">Saisie en compta</button></div>` + bienSeg("bf", V.bf, true) + `
   <div class="seg"><button class="${V.sv === "todo" ? "on" : ""}" data-act="sk-view" data-v="todo">À saisir (${nTodo})</button><button class="${V.sv === "done" ? "on" : ""}" data-act="sk-view" data-v="done">Déjà saisi (${nDone})</button></div>
-  <div class="seg">${kinds.map(([k, l]) => `<button class="${V.sk === k ? "on" : ""}" data-act="sk-kind" data-v="${k}">${l}</button>`).join("")}</div>${catSeg}
+  <div class="seg">${kinds.map(([k, l]) => `<button class="${V.sk === k ? "on" : ""}" data-act="sk-kind" data-v="${k}">${l}</button>`).join("")}</div>${catSeg}${histCard()}
   <div class="card"><div class="small muted">${V.sv === "done" ? "Lignes déjà saisies sur ton site de compta. Sélectionne-en pour les remettre à saisir." : "Lignes payées ou encaissées, pas encore saisies sur ton site de compta. Coche une ligne, un mois ou tout, puis « Marquer comme saisi ». Une erreur ? Touche « Annuler »."}</div>
     <div class="skbar"><button class="sck ${allOn ? "on" : ""}" data-act="sk-all" aria-label="Tout sélectionner">${ICON.check}</button><span class="small"><b>Tout sélectionner</b> (${L.length})</span>
       <button class="btn sm" data-act="sk-do" ${nSel ? "" : "disabled"}>${act}</button></div>
     <div class="rows">${L.length ? body : '<div class="empty">Rien ici.</div>'}</div></div>`;
 }
-function saisieUndoBar(msg, ids, to){
-  V.undo = {ids, to}; let el = document.getElementById("undobar");
+/* Reprise de l'historique : tout ce qui est daté jusqu'à la dernière liasse est déjà saisi */
+function histYear(){ let y = 0; const Y = (CM().years || {}); for (const k of Object.keys(Y)){ const o = Y[k] || {}; if (o.closed || (o.liasse && o.liasse.length)) y = Math.max(y, +k); } return y; }
+function histSel(){ return V.histY || histYear() || (new Date().getFullYear() - 1); }
+function histOps(Y){ return J().filter(j => j.pointe === "x" && !HC(j) && (j.type === "Dépense" || j.type === "Recette") && !isArch(j) && !j.compta && j.date && j.date <= Y + "-12-31"); }
+function histEch(Y){ const ids = bienIds().filter(id => bkind(id) === "meuble"), out = []; try { for (let y = 2000; y <= Y; y++){ if (y < Math.min(...S.journal.map(j => +(j.date || "9999").slice(0, 4)), Y)) continue; for (const r of cmRows("ech", y, ids)) if (!r.done) out.push(r.k); } } catch(e){} return [...new Set(out)]; }
+function histCard(){
+  if (V.sv !== "todo") return "";
+  const Y = histSel(), n = histOps(Y).length, ne = histEch(Y).length, years = []; for (let y = new Date().getFullYear(); y >= 2015; y--) years.push(y);
+  if (!n && !ne && !V.histY) return "";
+  const ly = histYear();
+  return `<div class="card"><h2>Reprise de l'historique</h2><div class="small muted">${ly ? `Ta dernière liasse fiscale est celle de <b>${ly}</b>. ` : ""}Tout ce qui est daté <b>jusqu'au 31/12/${Y}</b> est déjà saisi sur ton site de compta ? Marque-le d'un coup pour ne plus voir que le reste.</div>
+    <label class="small" style="display:block;margin-top:8px">Jusqu'à la fin de l'année</label><select data-hist-y>${years.map(y => `<option value="${y}" ${y === Y ? "selected" : ""}>${y}</option>`).join("")}</select>
+    <div class="btns"><button class="btn" data-act="hist-ask" ${n || ne ? "" : "disabled"}>Marquer ${n} ligne(s)${ne ? " et " + ne + " échéance(s) d'emprunt" : ""} comme déjà saisie(s)</button></div></div>`;
+}
+function saisieUndoBar(msg, ids, to, keys){
+  V.undo = {ids, to, keys:keys || []}; let el = document.getElementById("undobar");
   if (!el){ el = document.createElement("div"); el.id = "undobar"; document.body.appendChild(el); }
   el.innerHTML = `<span>${esc(msg)}</span><button type="button" data-act="sk-undo">Annuler</button>`; el.hidden = false;
   clearTimeout(saisieUndoBar.t); saisieUndoBar.t = setTimeout(() => { el.hidden = true; V.undo = null; }, 12000);
@@ -2515,7 +2538,10 @@ document.addEventListener("click", ev => {
       persist(); V.cs = {}; render(); saisieUndoBar(ids.length + " ligne(s) " + (to ? "marquée(s) saisie(s)" : "remise(s) à saisir"), ids, to); break; }
     case "sk-undo": { const u = V.undo; if (!u) break; const t = Date.now();
       for (const k of u.ids){ const j = S.journal.find(x => x.id === k); if (j){ j.compta = u.to ? "" : "x"; j.upd = t; } }
+      for (const k of (u.keys || [])) cmSetDone(k, u.to ? false : true);
       persist(); V.undo = null; const el = document.getElementById("undobar"); if (el) el.hidden = true; toast("Annulé"); render(); break; }
+    case "hist-ask": { const Y = histSel(), n = histOps(Y).length, ne = histEch(Y).length; openSheet(`<h2>Tout est déjà saisi jusqu'au 31/12/${Y} ?</h2><p>${n} ligne(s)${ne ? " et " + ne + " échéance(s) d'emprunt" : ""} datées jusqu'à cette date vont être marquées <b>déjà saisies en compta</b>. Tu pourras les remettre à saisir (bouton « Annuler » juste après, ou dans « Déjà saisi »).</p><div class="btns"><button class="btn" data-act="hist-do">Oui, marquer comme saisi</button><button class="btn ghost" data-act="sheetclose">Non</button></div>`); break; }
+    case "hist-do": { const Y = histSel(), ops = histOps(Y), ks = histEch(Y), t = Date.now(); ops.forEach(j => { j.compta = "x"; j.upd = t; }); ks.forEach(k => cmSetDone(k, true)); persist(); closeSheet(); render(); saisieUndoBar(ops.length + " ligne(s) et " + ks.length + " échéance(s) marquée(s) saisie(s)", ops.map(j => j.id), true, ks); break; }
     case "dclr": { const i = b.previousElementSibling; if (i && i.tagName === "INPUT"){ i.value = ""; i.dispatchEvent(new Event("input", {bubbles:true})); i.dispatchEvent(new Event("change", {bubbles:true})); toast("Date effacée : enregistre pour valider"); } break; }
     case "pl-add": { const bien = b.dataset.id; V.back = "bld"; V.bsub = "vue"; V.bsel = bien; V.editId = null; V.draft = newDraft({type:"Sortie", bien, cat:b.dataset.cat || "Livret A", lib:"Mis de côté", pt:true}); V.tab = "add"; render(); break; }
   }
@@ -2524,6 +2550,8 @@ document.addEventListener("click", ev => {
 new MutationObserver(() => { const sh = document.getElementById("sheet"); if (!sh) return;
   sh.querySelectorAll('input[type="date"]').forEach(i => { if (!/(^|-)fin$|^t-debut$|-fin-|-sortie$/.test(i.id || "")) return; const n = i.nextElementSibling; if (n && n.classList.contains("dclr")) return;
     const bt = document.createElement("button"); bt.type = "button"; bt.className = "mini dclr"; bt.dataset.act = "dclr"; bt.textContent = "Effacer la date"; i.insertAdjacentElement("afterend", bt); }); }).observe(document.body, {childList:true, subtree:true});
+
+document.addEventListener("change", ev => { const t = ev.target; if (t && t.dataset && t.dataset.histY !== undefined){ V.histY = +t.value; render(); } });
 
 /* ---------- Compta v2 : année en gros, clôture, date limite + site (facultatif), saisie cochable par logement, liasse des années ---------- */
 V.cc = V.cc || {}; try { V.cz = V.cz || +localStorage.getItem("glf-cz") || 0.85; } catch(e){ V.cz = 0.85; } V.ctab = V.ctab || "dep"; V.cview = V.cview || "todo";
@@ -3040,20 +3068,30 @@ function rlHome(){
 }
 function sheetRl(bien){
   V.rlTarget = bien;
-  openSheet(`<h2>Relevé · ${esc(bienName(bien))}</h2><div class="small muted">Choisis le fichier d'extrait de compte téléchargé sur le site de ta banque (PDF, Excel, CSV ou OFX). Il reste sur ton téléphone.</div>
-    <label class="f">Fichier<input id="rl-file" type="file" accept=".pdf,.csv,.txt,.tsv,.xlsx,.xls,.ofx,.qif,application/pdf,text/csv,text/plain"></label>
+  openSheet(`<h2>Relevé · ${esc(bienName(bien))}</h2><div class="small muted">Choisis le (ou les) fichier(s) d'extrait de compte téléchargé sur le site de ta banque (PDF, Excel, CSV ou OFX). Tu peux en choisir plusieurs d'un coup (toute une année, par exemple) : l'appli les range par date. Ils restent sur ton téléphone.</div>
+    <label class="f">Fichier<input id="rl-file" type="file" multiple accept=".pdf,.csv,.txt,.tsv,.xlsx,.xls,.ofx,.qif,application/pdf,text/csv,text/plain"></label>
     <label class="f">… ou colle les lignes (une opération par ligne : date, libellé, montant)<textarea id="rl-txt" rows="5" placeholder="05/11/2026 VIR LOYER DUPONT 500,00"></textarea></label>
     <div class="btns"><button class="btn" style="flex:1" data-act="rl-paste-ok">Analyser le texte</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
+/* plusieurs relevés d'un coup : rangés du plus ancien au plus récent ; une ligne identique (date, libellé, montant) déjà vue dans un relevé précédent qui chevauche n'est pas comptée deux fois */
+function rlMerge(P){
+  P.sort((a, b) => a.lo.localeCompare(b.lo)); const out = [], bal = [], seen = new Map();
+  for (const p of P){ const ds = p.ln.map(l => l.d).filter(Boolean).sort(), hi = ds[ds.length - 1] || "", lo = ds[0] || "";
+    const prev = new Map(seen);
+    for (const l of p.ln){ const k = l.d + "|" + l.m + "|" + (l.lib || "").trim().toLowerCase(); if (prev.has(k) && prev.get(k) !== p.n){ prev.set(k, prev.get(k)); continue; } out.push(l); seen.set(k, p.n); }
+    (p.ln.bal || []).forEach(b => bal.push(b)); }
+  out.bal = bal; return out;
+}
 function rlLoad(lines, fname){
-  const bien = V.rlTarget, bal = (lines.bal || []).slice().sort((a, b) => a.d.localeCompare(b.d)); lines = lines.filter(l => l.d && l.m).slice(0, 1500);
+  const bien = V.rlTarget, bal = (lines.bal || []).slice().sort((a, b) => a.d.localeCompare(b.d)); lines = lines.filter(l => l.d && l.m).slice(0, 8000);
   if (!lines.length){ toast("Aucune ligne reconnue : vérifie que le fichier contient une date et un montant par ligne"); return; }
   V.rl = {bien, fname, lines, sel:{}, cat:{}}; if (bal.length){ const last = bal[bal.length - 1], first = bal[0], lo = lines.map(l => l.d).sort()[0]; V.rl.real = last.v; V.rl.at = last.d; V.rl.fromPdf = true; if (bal.length > 1 && first.d <= lo){ V.rl.real0 = first.v; V.rl.at0 = first.d; } } closeSheet(); V.tab = "bld"; V.bsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
 }
 const rlRefreshBtns = () => { const n = Object.values((V.rl && V.rl.sel) || {}).filter(Boolean).length; ["rl-add-b", "rl-ign-b"].forEach((id, k) => { const b = document.getElementById(id); if (b) b.textContent = (k ? "Ignorer" : "Ajouter") + " la sélection (" + n + ")"; }); };
 document.addEventListener("change", async ev => {
   const t = ev.target; if (!t) return;
-  if (t.id === "rl-file" && t.files && t.files[0]){ const f = t.files[0]; try { rlLoad(await rlBuf(await f.arrayBuffer(), f.name), f.name); } catch(e){ toast("Lecture impossible : " + (e.message || e)); } return; }
+  if (t.id === "rl-file" && t.files && t.files[0]){ try { const fs = [...t.files], P = []; if (fs.length > 1) toast("Lecture de " + fs.length + " fichiers…"); for (const f of fs){ const ln = await rlBuf(await f.arrayBuffer(), f.name); P.push({n:f.name, ln, lo:ln.map(l => l.d).filter(Boolean).sort()[0] || "9999"}); }
+      rlLoad(P.length === 1 ? P[0].ln : rlMerge(P), P.length === 1 ? P[0].n : P.length + " relevés (" + P.map(p => p.n).join(", ").slice(0, 80) + ")"); } catch(e){ toast("Lecture impossible : " + (e.message || e)); } return; }
   if (t.id === "rl-real0" && V.rl){ const x = parseNum(t.value); V.rl.real0 = t.value.trim() === "" || x === null ? undefined : x; render(); return; }
   if (t.id === "rl-real" && V.rl){ const x = parseNum(t.value); V.rl.real = t.value.trim() === "" || x === null ? undefined : x; render(); return; }
   if (t.dataset && t.dataset.rlSel !== undefined && V.rl){ V.rl.sel[t.dataset.rlSel] = t.checked; rlRefreshBtns(); return; }
