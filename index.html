@@ -74,9 +74,9 @@ button{cursor:pointer}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .muted{color:var(--muted)}
 .small{font-size:13px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .top .app{font-family:var(--font-display);font-weight:700;font-size:20px}
-.topr{display:flex;align-items:center;gap:8px}
+.topr{display:flex;align-items:center;gap:8px;margin-left:auto}
 .nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
 .nav button{border:0;background:none;width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;color:var(--ink)}
 .nav button:active{background:var(--accent-soft)}
@@ -575,6 +575,7 @@ let toastTimer;
 function toast(t){ const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.hidden = true, 2600); }
 const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICON = {
+  refresh:svg('<path d="M20 11a8 8 0 1 0-2.300 5.700"/><path d="M20 4v7h-7"/>'),
   home:svg('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
   rent:svg('<circle cx="12" cy="12" r="9"/><path d="M15.500 9a3.500 3.500 0 1 0 0 6M8 11h6M8 13.500h6"/>'),
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
@@ -595,7 +596,7 @@ function renderTabs(){
 const yearNav = () => `<div class="nav"><button data-act="yprev" aria-label="Année précédente">‹</button><span>${V.y}</span><button data-act="ynext" aria-label="Année suivante">›</button></div>`;
 const monthNav = () => `<div class="nav"><button data-act="mprev" aria-label="Mois précédent">‹</button><span>${MOIS[V.m]} ${V.y}</span><button data-act="mnext" aria-label="Mois suivant">›</button></div>`;
 function topbar(title, nav){
-  return `<div class="top"><div class="app">${title}</div><div class="topr">${nav || ""}<button class="q" data-act="help" aria-label="Aide">?</button><button class="gear" data-act="tab" data-v="set" aria-label="Réglages">${ICON.set}</button></div></div>` +
+  return `<div class="top"><div class="app">${title}</div><div class="topr">${nav || ""}<button class="q" data-act="help" aria-label="Aide">?</button><button class="gear" data-act="app-update" aria-label="Mettre à jour l'appli" title="Mettre à jour l'appli">${ICON.refresh}</button><button class="gear" data-act="tab" data-v="set" aria-label="Réglages">${ICON.set}</button></div></div>` +
     (S.demo ? `<div class="banner">Données d'exemple. Importe le fichier <b>export_appli.xlsx</b> dans <b>Réglages</b> pour travailler avec tes vrais biens.</div>` : "");
 }
 const kv = (l, v, cl) => `<div class="kv"><span>${l}</span><span class="num ${cl || ""}">${v}</span></div>`;
@@ -1188,8 +1189,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.7.1";
 const CHANGELOG = [
+  {v:"1.7.1", date:"2026-11-09", titre:"Bouton de mise à jour, import de relevé plus clair", items:["Import de relevé : retrouve aussi une opération saisie à une autre date (même montant) ; résumé en phrases simples, et pour chaque ligne absente de l’appli un bouton « Ajouter » (avec sa catégorie) ou « Ignorer ».","Un bouton de mise à jour (flèches circulaires) à côté de la roue de Réglages : il vide le cache de l’appli et recharge la dernière version. Tes données ne sont pas touchées."]},
   {v:"1.7.0", date:"2026-11-09", titre:"Import de relevé de banque", items:["Dans Biens › Rapprochement, importe l’extrait de compte d’un bien (PDF de la banque, Excel, CSV, OFX ou texte collé) : l’appli le compare avec tes opérations et te montre ce qui n’est pas pointé et ce qui n’a pas été saisi. Tu coches ce que tu veux ajouter ou pointer, et tu ignores les lignes sans intérêt.","Pointage : nouvelle carte « Comptes des biens » avec, pour chaque bien, le solde pointé, les opérations pas encore pointées et l’écart avec le dernier solde saisi."]},
   {v:"1.6.1", date:"2026-11-09", titre:"Visite guidée : arrivée/départ et documents développés", items:["Visite guidée (94 étapes) : nouveau chapitre « Arrivée et départ » qui détaille chaque étape des deux check-lists, chapitre « Documents » développé (états des lieux d’entrée et de sortie, inventaire du mobilier, PDF et signature), étape « Locataire actuel » et dépenses sur deux étapes."]},
   {v:"1.6.0", date:"2026-11-08", titre:"Visite guidée plein écran", items:["Nouvelle visite guidée plein écran (Réglages › Aide › « Visite guidée », ou la page visite.html) : 76 étapes avec des captures de l'appli, un cadre jaune sur ce qu'il faut toucher et une bulle d'explication, de l'installation jusqu'aux réglages.","Mode téléphone ou présentation (iPad, ordinateur, vidéoprojecteur), menu des chapitres, plein écran, flèches du clavier.","Nouveau « Guide à lire » (page guide.html) : 15 cas concrets pas à pas avec les vrais écrans, de l'installation à la facture électronique (Réglages › Aide › « Guide à lire »).","La fiche de l'appli propose aussi les boutons « Visite guidée » et « Guide à lire »."]},
@@ -1347,7 +1349,7 @@ const HELP = {
     "Tape le solde réel du relevé. L'écart = réel − calculé.",
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
     "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
-    "Importer un relevé : choisis le bien, puis le fichier de la banque (PDF, Excel, CSV, OFX) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; tu coches, tu ajoutes ou tu ignores. Si les signes sont inversés, bouton « Inverser les signes »."]},
+    "Importer un relevé : choisis le bien, puis le fichier de la banque (PDF, Excel, CSV, OFX) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
@@ -1760,6 +1762,7 @@ document.addEventListener("click", async ev => {
     case "aff-open": { const f = b.dataset.f, a = AFFICHES.find(x => x[0] === f); if (!a) break; openSheet(`<h2>${esc(a[1])}</h2><img src="${esc(f)}" alt="${esc(a[1])}" style="width:100%;border-radius:12px;border:1px solid var(--bd)">
       <div class="small muted">« Partager » ouvre la feuille de partage : tu peux l'envoyer, l'enregistrer dans Photos ou dans Fichiers, ou l'imprimer. Elle est mise à jour avec l'appli.</div>
       <div class="btns"><button class="btn" style="flex:1" data-act="aff-share" data-f="${esc(f)}">Partager / enregistrer</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`); break; }
+    case "app-update": { toast("Mise à jour…"); try { if (navigator.serviceWorker){ const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); } if (window.caches){ const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } } catch(x){} location.replace(location.pathname + "?maj=" + Date.now()); break; }
     case "aff-share": { const f = b.dataset.f; try { const r = await fetch(f + "?v=" + APP_VERSION), buf = await r.arrayBuffer(); await saveFile(f, buf, /\.png$/.test(f) ? "image/png" : "image/jpeg"); } catch(e){ toast("Image indisponible : vérifie ta connexion"); } break; }
     case "fiche-open": window.open(ficheUrl(), "_blank"); break;
     case "fiche-copy": try { await navigator.clipboard.writeText(ficheUrl()); toast("Lien copié"); } catch(e){ toast("Copie impossible : " + ficheUrl()); } break;
@@ -2949,6 +2952,10 @@ function rlCompare(bien, lines){
     for (const j of app){ if (used.has(j.id) || rlCents(rlSigned(j)) !== c) continue; const dd = rlDays(j.date, l.d); if (dd <= 10 && (dd < bd || (dd === bd && j.pointe === "x" && best && best.pointe !== "x"))){ best = j; bd = dd; } }
     if (best){ used.add(best.id); (best.pointe === "x" ? res.ok : res.pt).push({i, l, j:best}); }
     else if (ign.has(rlKey(l))) res.ign.push({i, l}); else res.miss.push({i, l}); }
+  /* 2e passage : même montant mais date très différente dans l'appli (ex. taxe foncière saisie au 31/12) */
+  res.miss = res.miss.filter(x => { let best = null, bd = 9999;
+    for (const j of app){ if (used.has(j.id) || rlCents(rlSigned(j)) !== rlCents(x.l.m)) continue; const dd = rlDays(j.date, x.l.d); if (dd <= 200 && dd < bd){ best = j; bd = dd; } }
+    if (!best) return true; used.add(best.id); (best.pointe === "x" ? res.ok : res.pt).push({i:x.i, l:x.l, j:best, far:true}); return false; });
   res.extra = app.filter(j => !used.has(j.id) && j.pointe === "x" && j.date >= lo && j.date <= hi && j.cat !== "Écart de rapprochement");
   res.sumRel = r2(sum(lines.map(l => l.m))); res.sumMiss = r2(sum(res.miss.map(x => x.l.m))); res.sumPt = r2(sum(res.pt.map(x => x.l.m))); res.sumExtra = r2(sum(res.extra.map(rlSigned)));
   return res;
@@ -2964,13 +2971,17 @@ function rlCard(){
   const row = (x, extra) => `<div class="row" style="align-items:flex-start">${extra || ""}<div class="main"><div class="t">${esc(x.l.lib)}</div><div class="s">${frDate(x.l.d)}</div>${x.sel || ""}</div><div class="amt num ${x.l.m > 0 ? "pos" : ""}">${sg(x.l.m)}</div></div>`;
   return `<div class="card"><div class="top"><h2>Relevé · ${esc(bienName(R.bien))}</h2><div class="btns"><button class="btn ghost sm" data-act="rl-flip">Inverser les signes</button><button class="btn ghost sm" data-act="rl-close">Fermer</button></div></div>
     <div class="small muted">${esc(R.fname || "Texte collé")} · ${R.lines.length} ligne(s) du ${frDate(c.lo)} au ${frDate(c.hi)}</div>
-    ${kv("Total du relevé sur la période", sg(c.sumRel))}${kv("Déjà dans l'appli et pointé", c.ok.length + " ligne(s)")}${kv("À pointer", c.pt.length + " ligne(s)", c.pt.length ? "neg" : "")}${kv("Absentes de l'appli", c.miss.length + " ligne(s) · " + sg(c.sumMiss), c.miss.length ? "neg" : "")}${kv("Pointées sans ligne sur le relevé", c.extra.length + " ligne(s)", c.extra.length ? "neg" : "")}
-    ${!c.pt.length && !c.miss.length && !c.extra.length ? '<div class="info">Tout correspond : rien d\'oublié sur cette période.</div>' : ""}</div>
+    <div class="info" style="margin-top:8px"><b>${c.ok.length} ligne(s) sur ${R.lines.length}</b> du relevé sont déjà dans l'appli et pointées ✓${c.ok.some(x => x.far) ? `<div class="small" style="margin-top:4px">Dont avec une date différente dans l'appli : ${c.ok.filter(x => x.far).map(x => esc(x.j.lib || x.j.cat) + " (relevé " + frDate(x.l.d) + ", appli " + frDate(x.j.date) + ")").join(" ; ")}.</div>` : ""}</div>
+    ${c.pt.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.pt.length}</b> sont dans l'appli mais <b>pas pointées</b> (${sg(c.sumPt)}) : voir plus bas, « Tout pointer ».</div>` : ""}
+    ${c.miss.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.miss.length}</b> sont sur le relevé mais <b>pas du tout dans l'appli</b> (${sg(c.sumMiss)}) : pour chacune, touche « Ajouter » (elle est créée et pointée) ou « Ignorer » (elle ne te sera plus proposée).</div>` : ""}
+    ${c.extra.length ? `<div class="info" style="margin-top:8px;background:var(--warn-soft);color:var(--ink)">➜ <b>${c.extra.length}</b> sont pointées dans l'appli mais <b>absentes du relevé</b> (${sg(c.sumExtra)}) : à vérifier plus bas.</div>` : ""}
+    ${!c.pt.length && !c.miss.length && !c.extra.length ? '<div class="info" style="margin-top:8px">Tout correspond : rien d\'oublié sur cette période.</div>' : ""}</div>
   ${c.pt.length ? `<div class="card"><div class="top"><h2>Dans l'appli, pas encore pointées (${c.pt.length})</h2><button class="btn sm" data-act="rl-point">Tout pointer</button></div><div class="small muted">Ces lignes sont bien passées sur ton compte (${sg(c.sumPt)}) mais pas cochées dans l'appli : c'est souvent la cause de l'écart.</div>
-    <div class="rows">${c.pt.map(x => row({l:x.l}, `<button class="chk" data-act="rl-point1" data-id="${esc(x.j.id)}" aria-label="Pointer">${ICON.check}</button>`)).join("")}</div></div>` : ""}
-  ${c.miss.length ? `<div class="card"><div class="top"><h2>Sur le relevé, pas dans l'appli (${c.miss.length})</h2></div><div class="small muted">Coche celles que tu veux ajouter (la catégorie proposée se change), ignore celles qui ne t'intéressent pas.</div>
-    <div class="btns"><button class="btn ghost sm" data-act="rl-all">Tout cocher</button><button class="btn sm" data-act="rl-add" id="rl-add-b">Ajouter la sélection (${nsel})</button><button class="btn ghost sm" data-act="rl-ign" id="rl-ign-b">Ignorer la sélection (${nsel})</button></div>
-    <div class="rows">${c.miss.map(x => row({l:x.l, sel:`<select data-rl-cat="${x.i}" style="margin-top:4px;max-width:100%">${rlCatOpts(x.l, (R.cat || {})[x.i] || rlGuess(x.l))}</select>`}, `<input type="checkbox" data-rl-sel="${x.i}" ${sel[x.i] ? "checked" : ""} style="margin:6px 10px 0 0;width:22px;height:22px;flex:none" aria-label="Choisir">`)).join("")}</div></div>` : ""}
+    <div class="rows">${c.pt.map(x => row({l:x.l, sel:x.far ? `<div class="s">Dans l'appli à une autre date : ${frDate(x.j.date)}</div>` : ""}, `<button class="chk" data-act="rl-point1" data-id="${esc(x.j.id)}" aria-label="Pointer">${ICON.check}</button>`)).join("")}</div></div>` : ""}
+  ${c.miss.length ? `<div class="card"><div class="top"><h2>Pas dans l'appli (${c.miss.length})</h2></div><div class="small muted">Ces lignes sont sur ton relevé mais tu ne les as pas saisies. Choisis la catégorie puis « Ajouter », ou « Ignorer » si elle ne t'intéresse pas.</div>
+    <div class="rows">${c.miss.map(x => `<div class="row" style="flex-wrap:wrap;align-items:flex-start"><div class="main"><div class="t">${esc(x.l.lib)}</div><div class="s">${frDate(x.l.d)}</div></div><div class="amt num ${x.l.m > 0 ? "pos" : ""}">${sg(x.l.m)}</div>
+      <div style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><select data-rl-cat="${x.i}" style="max-width:100%">${rlCatOpts(x.l, (R.cat || {})[x.i] || rlGuess(x.l))}</select><button class="btn sm" data-act="rl-add1" data-i="${x.i}">Ajouter</button><button class="btn ghost sm" data-act="rl-ign1" data-i="${x.i}">Ignorer</button></div></div>`).join("")}</div>
+    ${c.miss.length > 1 ? `<div class="btns"><button class="btn ghost sm" data-act="rl-addall">Tout ajouter avec ces catégories</button></div>` : ""}</div>` : ""}
   ${c.extra.length ? `<div class="card"><h2>Pointées dans l'appli, absentes du relevé (${c.extra.length})</h2><div class="small muted">Total ${sg(c.sumExtra)}. À vérifier : opération pointée trop tôt, mauvais montant ou autre compte. « Dépointer » la remet en attente.</div>
     <div class="rows">${c.extra.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)} · ${esc(j.cat || "")}</div></div><div class="amt num ${isIn(j) ? "pos" : ""}">${sg(rlSigned(j))}</div><button class="mini" data-act="rl-unpoint1" data-id="${esc(j.id)}">Dépointer</button></div>`).join("")}</div></div>` : ""}
   ${c.ign.length ? `<div class="small muted" style="padding:4px 4px 10px">${c.ign.length} ligne(s) ignorée(s) · <button class="mini" data-act="rl-unign">Les remettre</button></div>` : ""}`;
@@ -3011,9 +3022,15 @@ document.addEventListener("click", ev => {
     case "rl-point": { if (!R) break; const c = rlCompare(R.bien, R.lines); c.pt.forEach(x => { x.j.pointe = "x"; x.j.upd = Date.now(); }); persist(); toast(c.pt.length + " opération(s) pointée(s)"); render(); break; }
     case "rl-point1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = "x"; j.upd = Date.now(); persist(); render(); } break; }
     case "rl-unpoint1": { const j = S.journal.find(x => x.id === bt.dataset.id); if (j){ j.pointe = ""; j.upd = Date.now(); persist(); toast("Remise en attente de pointage"); render(); } break; }
+    case "rl-addall": if (R) R.sel = Object.fromEntries(rlCompare(R.bien, R.lines).miss.map(x => [x.i, true]));
+    // fallthrough
+    case "rl-add1": if (bt.dataset.i != null && R) R.sel = {[bt.dataset.i]: true};
+    // fallthrough
     case "rl-add": { if (!R) break; const c = rlCompare(R.bien, R.lines), pick = c.miss.filter(x => R.sel[x.i]); if (!pick.length) return toast("Coche d'abord au moins une ligne");
       for (const x of pick){ const [type, cat] = ((R.cat || {})[x.i] || rlGuess(x.l)).split("|"); S.journal.push({id:uid(), date:x.l.d, bien:R.bien, type, cat, lib:x.l.lib.slice(0, 80), montant:Math.abs(x.l.m), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Ajouté depuis le relevé", upd:Date.now()}); R.sel[x.i] = false; }
       persist(); toast(pick.length + " opération(s) ajoutée(s) et pointée(s)"); render(); break; }
+    case "rl-ign1": if (R) R.sel = {[bt.dataset.i]: true};
+    // fallthrough
     case "rl-ign": { if (!R) break; const c = rlCompare(R.bien, R.lines), pick = c.miss.filter(x => R.sel[x.i]); if (!pick.length) return toast("Coche d'abord au moins une ligne");
       S.rapIgn = S.rapIgn || {}; const arr = S.rapIgn[R.bien] = S.rapIgn[R.bien] || []; pick.forEach(x => { arr.push(rlKey(x.l)); R.sel[x.i] = false; }); persist(); toast(pick.length + " ligne(s) ignorée(s)"); render(); break; }
     case "rl-unign": if (R){ S.rapIgn = S.rapIgn || {}; S.rapIgn[R.bien] = []; persist(); render(); } break;
