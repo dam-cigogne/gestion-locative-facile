@@ -108,6 +108,7 @@ body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;to
 .mgrp{margin-top:10px}.mh2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--accent-soft);border-left:3px solid var(--accent)}
 .otw{overflow-x:auto}.ot{width:100%;border-collapse:collapse;font-size:13px}.ot th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line)}
 .ot td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:top}.ot .r{text-align:right;white-space:nowrap}.ot .nw{white-space:nowrap}.ot tr[data-act]{cursor:pointer}.ot tr[data-act]:active{opacity:.6}
+.ot.cat td{vertical-align:middle}@media(max-width:520px){.ot.cat .pc{display:none}}.ot.cat tfoot td{border-top:2px solid var(--line)}.ot.cat .chip{white-space:nowrap}
 .ot tr.mh td{background:var(--accent-soft);border-top:2px solid var(--accent);padding:8px 6px}.ot tr.hc td:first-child{border-left:3px solid #8b5cf6}
 .row .main{flex:1;min-width:0}
 .row .t{font-weight:500;overflow-wrap:anywhere}
@@ -802,8 +803,12 @@ function viewBiens(){
   if (sub === "vue") body = viewBienVue(); else if (sub === "loyers") body = viewBienLoyers(); else if (sub === "dep") body = viewBienDep(); else if (sub === "travaux") body = viewTravaux(); else if (sub === "tarifs") body = viewTarifs(); else if (sub === "rapp") body = viewRapp(); else if (sub === "docs") body = viewDocs(); else if (sub === "mvt") body = viewMvt(); else body = viewLoc();
   return topbar("Biens", nav) + seg + sel + body;
 }
-function catBars(rows, max, restKey){
-  return rows.map(r => `<div class="env" style="padding:6px 0;--c:${catColor(r.n)}"><div class="top"><span><span class="cdot" style="background:${catColor(r.n)}"></span>${esc(r.n)}</span><span class="num">${eur(r.v)}${r.reste > 0.005 ? ` <span class="chip warn">reste ${eur(r.reste)}</span>` : ` <span class="chip ok">payé ✓</span>`}</span></div><div class="bar"><i style="width:${max > 0 ? Math.round(r.v / max * 100) : 0}%"></i></div></div>`).join("");
+/* Charges par catégorie : tableau (Total / Payé / Reste). Sans info de paiement (onglet Compta), seulement le total. */
+function catBars(rows, max){
+  const pay = rows.length && rows[0].reste !== undefined, tot = r2(sum(rows.map(r => r.v))), rest = r2(sum(rows.map(r => r.reste || 0)));
+  const st = r => r.reste > 0.005 ? `<span class="chip warn">${eur(r.reste)}</span>` : '<span class="chip ok">payé ✓</span>';
+  return `<div class="otw"><table class="ot cat"><thead><tr><th>Catégorie</th><th class="r">Total</th>${pay ? '<th class="r pc">Payé</th><th class="r">Reste</th>' : ""}</tr></thead><tbody>${rows.map(r => `<tr><td><div style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${catColor(r.n)};flex:none;margin:0"></span><span>${esc(r.n)}</span></div></td><td class="r num">${eur(r.v)}</td>${pay ? `<td class="r num pc">${eur(r2(r.v - r.reste))}</td><td class="r">${st(r)}</td>` : ""}</tr>`).join("")}</tbody>
+    <tfoot><tr><td><b>Total</b></td><td class="r num"><b>${eur(tot)}</b></td>${pay ? `<td class="r num pc"><b>${eur(r2(tot - rest))}</b></td><td class="r num"><b>${rest > 0.005 ? eur(rest) : "payé ✓"}</b></td>` : ""}</tr></tfoot></table></div>`;
 }
 /* ---------- Liste des opérations d'un bien : par mois / tableau / liste, avec filtre de type ---------- */
 V.opv = V.opv || (window.innerWidth >= 700 ? "col" : "mois"); V.opt = V.opt || "all";
@@ -853,8 +858,7 @@ function viewBienDep(){
   const rows = Object.values(cats).sort((a, b) => b.v - a.v), total = sum(rows.map(r => r.v)), reste = sum(rows.map(r => r.reste));
   const next = J().filter(j => j.bien === id && statut(j) === "Prévu" && j.type === "Dépense").sort((a, b) => a.date.localeCompare(b.date)).slice(0, 8);
   const all = L.slice().sort((a, b) => b.date.localeCompare(a.date));
-  return partagesCard() + `<div class="card"><h2>Dépenses ${esc(bienName(id))} ${y}</h2>${catBars(rows, rows.length ? rows[0].v : 0)}${rows.length ? "" : '<div class="empty">Aucune dépense cette année.</div>'}
-    <div class="kv tot"><span>Total</span><span class="num">${eur(total)}</span></div>${kv("dont reste à payer", eur(reste), "muted")}</div>
+  return partagesCard() + `<div class="card"><h2>Dépenses ${esc(bienName(id))} ${y}</h2>${catBars(rows, rows.length ? rows[0].v : 0)}${rows.length ? "" : '<div class="empty">Aucune dépense cette année.</div>'}</div>
   <div class="card"><h2>Prochaines dépenses</h2><div class="rows">${next.length ? next.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)}</div></div><div class="amt num">${eur(j.montant)}</div></div>`).join("") : '<div class="empty">Rien de prévu.</div>'}</div></div>
   ${opsCard("Toutes les dépenses", all, false)}`;
 }
@@ -1221,8 +1225,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.12";
+const APP_VERSION = "1.7.13";
 const CHANGELOG = [
+  {v:"1.7.13", date:"2026-11-10", titre:"Charges par catégorie en tableau", items:["Biens › Vue et Dépenses : les barres (qui ne servaient à rien, tout étant comparé au Crédit) sont remplacées par un tableau : Catégorie, Total, Payé, Reste, avec une ligne de total. Reste = ce qui n’est pas encore payé, « payé ✓ » quand tout est réglé.","Compta › Charges par poste : même tableau (Catégorie et Total), sans colonnes de paiement, et le « payé ✓ » ne s’affiche plus à tort à cet endroit."]},
   {v:"1.7.12", date:"2026-11-10", titre:"Export au choix : biens, période, contenu", items:["Le bouton « Exporter » (Pointage et Bilan) ouvre une seule fenêtre : tu coches les biens (Studio, T2 ou les deux), tu choisis le premier et le dernier mois (un mois, plusieurs mois, plusieurs années d’un coup, avec les raccourcis Ce mois / Cette année / Année dernière / Tout) et le contenu (tout, dépenses seulement ou recettes seulement), en Excel ou en PDF.","Correction : quand un seul bien était affiché, l’export sortait quand même les deux biens. Le bien affiché est maintenant pré-coché et tu peux le changer.","Biens › Vue et Dépenses : la longue liste d’opérations est maintenant rangée par mois (un bandeau par mois avec ses recettes, ses dépenses et son résultat). Quatre présentations au choix : « Colonnes » (les mois côte à côte : 3 colonnes sur iPad en paysage, 2 en portrait, 1 sur téléphone, c’est choisi par défaut sur grand écran), « Par mois », « Tableau » (colonnes Date, Catégorie, Entrée, Sortie, Pointé, avec les totaux du mois) et « Liste ». Un filtre Tout / Dépenses / Recettes.","Charges par catégorie : une ligne entièrement payée affiche maintenant « payé ✓ » (avant, rien ne s’affichait, seul le « reste à payer » apparaissait).","Les exports choisis ont une synthèse, un « mois par mois », un « par catégorie » et la liste des opérations (avec la colonne « Hors compta »)."]},
   {v:"1.7.11", date:"2026-11-09", titre:"Barre d’onglets stable sur iPhone", items:["Correction : après avoir tapé un solde ou ouvert une liste déroulante, la barre d’onglets du bas ne remonte plus au milieu de l’écran. Les champs de saisie ont maintenant une taille de 16 px (l’iPhone ne zoome plus) et la barre est remise en bas toute seule."]},
   {v:"1.7.10", date:"2026-11-09", titre:"Cautions, hors compta dans l’import", items:["Rapprochement › lignes « Pas dans l’appli » : une case « Hors compta » sur chaque ligne et un bouton « Tout ajouter en hors compta ».","Nouveau groupe « Caution » dans la liste des catégories : « Caution reçue » et « Caution rendue ». Elles comptent dans le solde de la banque mais jamais dans la compta, le bénéfice ni « À saisir ». Une ligne du relevé qui contient « caution » ou « dépôt de garantie » est proposée dans ce groupe.","Nouvelles catégories d’épargne / virement : « Virement entre biens », « Apport perso » et « Retrait vers le perso » (comptent dans la banque, pas dans le bénéfice)."]},
