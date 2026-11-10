@@ -941,7 +941,7 @@ function viewCB(){
   else { const sel = V.cbbien && ids.includes(V.cbbien) ? V.cbbien : "all";
     const bseg = `<div class="seg rail"><button class="${sel === "all" ? "on" : ""}" data-act="cb-bien" data-v="all">Tous</button>${ids.map(id => `<button class="${sel === id ? "on" : ""}" data-act="cb-bien" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
     body = bseg + (sel === "all"
-      ? (bourseCard() + placeCard(null) || '<div class="card"><div class="info">Rien de placé pour l\'instant. Choisis un compte (Studio, T2…) puis touche « Mettre de côté ».</div></div>')
+      ? `<div class="card"><h2>Nouveau placement</h2><div class="small muted">Choisis le compte d'où part l'argent mis de côté, ou qui reçoit des intérêts.</div><div class="rows">${ids.map(id => `<div class="row"><div class="main"><div class="t">${esc(bienName(id))}</div></div><button class="mini" data-act="pl-add" data-id="${esc(id)}" data-cat="Livret A">Mettre de côté</button><button class="mini" data-act="int-add" data-id="${esc(id)}">Intérêts</button></div>`).join("")}</div></div>` + bourseCard() + placeCard(null)
       : bourseBienCard(sel) + placeCard(sel, true)); }
   return head + seg + body;
 }
@@ -1407,8 +1407,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.26";
+const APP_VERSION = "1.7.27";
 const CHANGELOG = [
+  {v:"1.7.27", date:"2026-11-10", titre:"Nouveau placement depuis la vue Tous", items:["Comptes bancaires › Placements et bourse › Tous : une carte « Nouveau placement » liste chaque compte avec « Mettre de côté » et « Intérêts », sans avoir à choisir le bien avant."]},
   {v:"1.7.26", date:"2026-11-10", titre:"Locataires, Documents et envoi au locataire", items:["Biens › Locataires réunit tout ce qui concerne le locataire : fiche, solde des loyers, états des lieux, inventaire, bail, lettres et anciens locataires.","Biens › Documents garde ce qui est lié au logement : modèles vierges à imprimer (bail, état des lieux, inventaire, lettres types), pièces à joindre au bail et documents du bien (DPE, assurance, taxe foncière…).","Nouveau bouton « Envoyer au locataire » à côté de chaque PDF (bail, état des lieux, inventaire, lettres, quittance, restitution du dépôt) : PDF en pièce jointe avec l'e-mail du locataire copié, e-mail prérempli ou SMS prérempli.","Aucune donnée n'est modifiée."]},
   {v:"1.7.25", date:"2026-11-10", titre:"Page Comptes bancaires", items:["Nouvelle page « Comptes bancaires » qui regroupe le rapprochement avec la banque et les placements (bourse, livrets, intérêts). On l'ouvre en touchant le gros solde de l'accueil, la carte violette « Bourse, pas dépensé », ou le bouton « Comptes bancaires › » du Pointage.","Biens : le sous-onglet « Rapprochement » et les grosses cartes Bourse et Placements ont disparu. Biens › Vue garde une ligne « Placements et bourse » avec « Détail › ».","L'accueil n'affiche plus la carte des intérêts : elle est dans la nouvelle page. Le bouton « ‹ Retour » du formulaire ramène à la page d'où tu viens."]},
   {v:"1.7.24", date:"2026-11-10", titre:"Signature papier : dossier signé archivé", items:["Signature papier : dès que la page signée est scannée ou photographiée, l’appli crée et range dans les documents du logement un PDF « SIGNÉ » complet : le document, sa page de signature et la page signée à la main en dernière page. C’est ce fichier unique qui est envoyé par e-mail (partage) et que tu peux archiver."]},
@@ -1601,6 +1602,7 @@ const HELP = {
     "« Nouveau tarif » ajoute une ligne. L'historique ne se modifie jamais.",
     "Les formulaires se pré-remplissent avec le tarif en vigueur."]},
   cb:{t:"Comptes bancaires", p:"Rapprochement avec ta banque, placements, bourse et intérêts : tout ce qui concerne l'argent des comptes, au même endroit. On y arrive en touchant le gros solde de l'accueil, la carte violette « Bourse », ou « Comptes bancaires › » dans Pointage.", l:[
+    "Nouveau placement : dans Placements et bourse, la vue « Tous » liste chaque compte avec « Mettre de côté » et « Intérêts ». Tu peux aussi choisir un bien en haut pour voir sa carte.",
     "Deux sous-onglets : « Rapprochement » (comparer l'appli avec le relevé) et « Placements et bourse » (argent mis de côté, remboursement, intérêts).",
     "Tape le solde réel du relevé. L'écart = réel − calculé.",
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
