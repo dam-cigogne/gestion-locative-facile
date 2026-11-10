@@ -1425,8 +1425,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.35";
+const APP_VERSION = "1.7.36";
 const CHANGELOG = [
+  {v:"1.7.36", date:"2026-11-10", titre:"Fenêtre d'envoi qui reste ouverte, inventaire en vue compacte", items:["Inventaire du mobilier : nouvelle « Vue compacte (d'ensemble) » par défaut, une ligne par article (nom, quantité, état), toutes les catégories dépliées, pour tout voir d'un coup pendant la visite. Le bouton « ＋ / 📝 » ouvre l'observation d'un article ; « Vue détaillée » revient à l'ancien affichage.","Après « Enregistrer sur l'appareil », « Autres (PDF joint) » ou « Seulement ranger dans la fiche », la fenêtre « Envoyer au locataire » reste ouverte avec un message de confirmation : tu peux enregistrer le PDF puis enchaîner avec Mail ou SMS et le joindre."]},
   {v:"1.7.35", date:"2026-11-10", titre:"Lecteur PDF : toutes les pages", items:["Dans le lecteur de l'appli, un bouton « Toutes les pages » ouvre le PDF dans le lecteur du téléphone, qui permet de défiler sur toutes les pages (l'aperçu intégré de l'iPad n'affichait que la première)."]},
   {v:"1.7.34", date:"2026-11-10", titre:"PDF de relecture lisible à l'écran", items:["Bail, état des lieux, inventaire : « PDF de relecture » ouvre le PDF dans le lecteur de l'appli pour le relire tout de suite, au lieu de la fenêtre d'envoi. Le bouton « Partager » du lecteur permet de l'envoyer.","Fenêtre d'envoi : trois boutons « Mail » (destinataire, objet et texte remplis), « SMS » (numéro et texte remplis) et « Autres » (PDF joint, partage du téléphone). Mail et SMS ne peuvent pas joindre le PDF (limite du téléphone). « Autres » ouvre une seule fois le partage du téléphone (Mail, Messages, WhatsApp, et aussi « Enregistrer dans Fichiers » pour garder un exemplaire). La case « Ranger dans la fiche » est cochée par défaut ; « Enregistrer sur l'appareil » et « Seulement ranger dans la fiche » sont des boutons à part. Fenêtre d'envoi simplifiée : un seul bouton « Envoyer le PDF » (Mail, Messages, WhatsApp…) avec le PDF toujours joint, l'e-mail ou le numéro du locataire copié. Les boutons « e-mail sans PDF » et « SMS » sans pièce jointe sont supprimés (un lien e-mail ou SMS ne peut pas joindre de fichier)."]},
   {v:"1.7.33", date:"2026-11-10", titre:"iPhone : tableaux d'emprunt ajustés, relecture envoyable", items:["Compta › Emprunt et intérêts et Échéancier : la ligne « Remboursé à ce jour » passe à la ligne et les tableaux sont plus compacts, ce qui évite que la page déborde et se réduise sur iPhone.","Le PDF de relecture s'ouvre maintenant directement à l'écran pour être lu (bouton Partager pour l'envoyer). Les boutons « Créer le bail / le PDF » (bail, lettres, état des lieux, inventaire, quittance) ouvrent maintenant tous la fenêtre « Envoyer au locataire » au lieu du partage brut ; « Enregistrer sur l'appareil (Fichiers…) » y reste proposé."]},
@@ -1593,6 +1594,7 @@ const HELP = {
     "Les papiers personnels d'un locataire (identité, contrat…) se rangent dans sa fiche, pas ici.",
     "Inventaire ou état des lieux d\'entrée : tu peux choisir un fichier (PDF, Excel, CSV) : l\'appli le recopie vierge dans la liste. « Garder comme modèle » ★ en fait ta liste standard, proposée par défaut pour chaque nouveau document.",
     "Avant de signer, « PDF de relecture » sort le document sans signature pour le relire avec le locataire.",
+    "Inventaire du mobilier : la « Vue compacte » affiche une ligne par article (nom, quantité, état) avec toutes les catégories dépliées, pratique pendant la visite. Le bouton ＋ ouvre l\'observation ; « Vue détaillée » revient à l\'affichage large.",
     "À la création d'un état des lieux ou d'un inventaire, tu peux reprendre la liste d'un autre document pour le préparer à l'avance.",
     "Le solde montre ce qui a été reçu par rapport à ce qui est dû depuis le début du bail. « Relancer » prépare le message.",
     "État des lieux : choisis les pièces, ouvre-en une, note l'état de chaque élément (Neuf, Bon, Moyen, Mauvais), ajoute des observations et des photos. Les compteurs et les clés se notent en haut.",
@@ -3914,9 +3916,17 @@ function viewEdl(e){
 }
 function viewInv(e){
   const sortie = e.type === "sortie", groups = [...new Set(e.items.map(i => i.grp || "Autres"))];
-  const open = V.doc.open = V.doc.open || {}; if (groups.length && !Object.keys(open).some(k => k.startsWith("g:"))) open["g:" + groups[0]] = 1; const nOpen = groups.filter(g => open["g:" + g]).length;
-  const body = `<div class="btns" style="margin:0 0 8px"><button class="btn sm ghost" data-act="dx-all" data-v="${nOpen === groups.length ? "0" : "1"}">${nOpen === groups.length ? "Tout replier" : "Tout déplier"}</button></div>` + groups.map(g => { const its = e.items.filter(i => (i.grp || "Autres") === g), done = its.filter(i => i.etat).length, isOpen = !!open["g:" + g];
-    const rows = !isOpen ? "" : its.map(it => `<div style="padding:8px 0;border-top:1px solid var(--line)">
+  const compact = V.doc.compact !== false, obs = V.doc.obs = V.doc.obs || {};
+  const open = V.doc.open = V.doc.open || {}; if (!V.doc.cinit){ V.doc.cinit = 1; for (const g of groups) open["g:" + g] = compact || g === groups[0] ? 1 : 0; } const nOpen = groups.filter(g => open["g:" + g]).length;
+  const body = `<div class="btns" style="margin:0 0 8px"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button><button class="btn sm ghost" data-act="dx-all" data-v="${nOpen === groups.length ? "0" : "1"}">${nOpen === groups.length ? "Tout replier" : "Tout déplier"}</button></div>` + groups.map(g => { const its = e.items.filter(i => (i.grp || "Autres") === g), done = its.filter(i => i.etat).length, isOpen = !!open["g:" + g];
+    const rows = !isOpen ? "" : compact ? its.map(it => { const showObs = !!(it.com || obs[it.id]);
+      return `<div style="padding:5px 0;border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(96px,150px) 30px;gap:6px;align-items:center">
+        <b style="font-size:13px;line-height:1.2;overflow-wrap:anywhere">${esc(it.nom)}</b>
+        <input style="padding:6px 4px;font-size:13px;text-align:center" data-dx="qte" data-i="${it.id}" inputmode="numeric" value="${esc(it.qte || "")}" aria-label="Quantité">
+        ${etatSel(it.etat, `style="padding:6px 4px;font-size:13px" data-dx="etat" data-i="${it.id}"`)}
+        <button class="mini" data-act="inv-obs" data-i="${it.id}" aria-label="Observation">${it.com ? "📝" : "＋"}</button></div>
+        ${sortie && (it.e0 || it.q0) ? `<div class="small muted" style="font-size:11px">Entrée : ${esc(it.q0 || "1")} · ${esc(it.e0 || "non noté")}</div>` : ""}
+        ${showObs ? `<div class="dxi" style="margin-top:4px"><input style="padding:6px 8px;font-size:13px" data-dx="com" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>` : ""}</div>`; }).join("") : its.map(it => `<div style="padding:8px 0;border-top:1px solid var(--line)">
       <div class="top"><b style="font-size:14px">${esc(it.nom)}</b><button class="mini" data-act="inv-delitem" data-i="${it.id}" aria-label="Supprimer">×</button></div>
       ${sortie && (it.e0 || it.q0) ? `<div class="small muted">À l'entrée : ${esc(it.q0 || "1")} · ${esc(it.e0 || "état non noté")}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}
       <div class="dxi" style="display:grid;grid-template-columns:70px 1fr;gap:8px"><input data-dx="qte" data-i="${it.id}" inputmode="numeric" value="${esc(it.qte || "")}" aria-label="Quantité">${etatSel(it.etat, `data-dx="etat" data-i="${it.id}"`)}</div>
@@ -3983,6 +3993,8 @@ document.addEventListener("click", async ev => {
     case "dx-create": dxCreate(v, b.dataset.t); break;
     case "dx-open": V.doc = {kind:v, id, open:{}}; render(); break;
     case "dx-back": V.doc = null; render(); break;
+    case "inv-compact": V.doc.compact = V.doc.compact === false; render(); break;
+    case "inv-obs": { V.doc.obs = V.doc.obs || {}; V.doc.obs[b.dataset.i] = !V.doc.obs[b.dataset.i]; render(); break; }
     case "dx-all": if (e && V.doc.kind === "inv"){ V.doc.open = V.doc.open || {}; for (const g of new Set(e.items.map(i => i.grp || "Autres"))) V.doc.open["g:" + g] = v === "1"; render(); } break;
     case "dx-room": if (e){ V.doc.open[b.dataset.p] = !V.doc.open[b.dataset.p]; render(); } break;
     case "edl-addroom": { const n = dxV("np-nom"); if (!e || !n) return toast("Donne un nom à la pièce"); const p = mkPiece(n, ["Sol", "Murs", "Plafond"]); e.pieces.push(p); dxTouch(e); V.doc.open[p.id] = 1; persist(); render(); break; }
@@ -5321,6 +5333,7 @@ function sendIntercept(name, data, mime){
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="mail">✉️ Mail${t && t.email ? " à " + esc(t.email) : ""}</button><button class="btn" style="flex:1" data-act="snd" data-v="sms">💬 SMS${t && t.tel ? " au " + esc(t.tel) : ""}</button></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">📎 Autres (PDF joint : Mail, Messages, WhatsApp…)</button></div>
     <div class="small muted">⚠️ Mail et SMS ouvrent le message avec le destinataire et le texte déjà remplis, mais <b>le téléphone ne permet pas de joindre le PDF à partir d'une appli web</b> : joins-le toi-même (trombone ▸ Fichiers, après « Enregistrer sur l'appareil »). Pour un envoi avec le PDF déjà joint, utilise « Autres » (l'e-mail ou le numéro du locataire est copié).</div>
+    <div id="snd-status" class="info" style="display:none"></div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="save">Enregistrer sur l'appareil (Fichiers…)</button>${t ? `<button class="btn ghost" style="flex:1" data-act="snd" data-v="only">Seulement ranger dans la fiche</button>` : ""}<button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
   return true;
 }
@@ -5331,16 +5344,18 @@ document.addEventListener("click", async ev => {
   const p = PEND, t = p.t;
   const fi = $("#snd-fiche");
   if (fi && fi.checked) await sendArchive(p, true);
-  if (v === "only"){ PEND = null; closeSheet(); render(); return; }
-  if (v === "save"){ PEND = null; closeSheet(); SEND = null; await saveFile(p.name, p.data, p.mime); return; }
+  const st = txt => { const e = document.getElementById("snd-status"); if (e){ e.innerHTML = "✓ " + txt; e.style.display = "block"; } };
+  if (fi && fi.checked && t) st("Copie rangée dans la fiche de " + esc(t.nom) + ".");
+  if (v === "only"){ if (!(fi && fi.checked)) toast("Coche d'abord « Ranger aussi une copie dans la fiche »"); return; }
+  if (v === "save"){ SEND = null; await saveFile(p.name, p.data, p.mime); st("Enregistrement proposé sur l'appareil." + (fi && fi.checked && t ? " Copie rangée dans la fiche de " + esc(t.nom) + "." : "") + " Tu peux maintenant choisir Mail, SMS ou Autres ci-dessus."); return; }
   if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
   if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
   if (v === "att"){
     { const cp = t && (t.email || t.tel); if (cp){ try { await navigator.clipboard.writeText(cp); toast((t.email ? "E-mail copié : " : "Numéro copié : ") + cp); } catch(e){} } }
     try { const file = new File([p.data], p.name, {type:p.mime});
-      if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.bj}); return; } }
+      if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:p.sj, text:p.bj}); st("Partage ouvert. Tu peux encore envoyer autrement, ou fermer."); return; } }
     catch(e){ if (e && e.name === "AbortError") return; }
-    PEND = null; closeSheet(); SEND = null; saveFile(p.name, p.data, p.mime, "Joins-le à ton e-mail" + (t && t.email ? " pour " + t.email : "") + ".");
+    SEND = null; saveFile(p.name, p.data, p.mime, "Joins-le à ton e-mail" + (t && t.email ? " pour " + t.email : "") + ".");
   }
 });
 /* ---------- Modèles vierges ---------- */
