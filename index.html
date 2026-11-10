@@ -1389,8 +1389,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.23";
+const APP_VERSION = "1.7.24";
 const CHANGELOG = [
+  {v:"1.7.24", date:"2026-11-10", titre:"Signature papier : dossier signé archivé", items:["Signature papier : dès que la page signée est scannée ou photographiée, l’appli crée et range dans les documents du logement un PDF « SIGNÉ » complet : le document, sa page de signature et la page signée à la main en dernière page. C’est ce fichier unique qui est envoyé par e-mail (partage) et que tu peux archiver."]},
   {v:"1.7.23", date:"2026-11-10", titre:"Compta : liste repliable", items:["Compta : la carte « À saisir sur le site de compta » a un bouton « Replier / Déplier ». Repliée, on voit tout de suite la liasse fiscale, « Détails, chiffres et export » et le reste, sans faire défiler toute la liste.","Signature papier : nouveau bouton « Photographier la page avec l’appareil photo » (en plus de « Scanner la page signée ») pour prendre la page signée directement en photo."]},
   {v:"1.7.22", date:"2026-11-10", titre:"Style Fun", items:["Nouveau réglage « Style de l’appli » (Réglages › Aspect) : Normal (par défaut, rien ne change) ou Fun ✨, plus rond et plus coloré (cartes arrondies, dégradés, boutons en pilule). Il se combine avec les couleurs et le mode clair ou sombre."]},
   {v:"1.7.21", date:"2026-11-10", titre:"Échéancier complet et reste du prêt", items:["Compta › Emprunt et intérêts : nouveau bouton « Échéancier complet » sur chaque prêt. La page montre, année par année (puis mois par mois en touchant une année), les intérêts, l’assurance, le capital remboursé et le capital restant dû. Les échéances à venir sont grisées.","Nouveau bloc « Où en est le prêt » : capital déjà remboursé, pourcentage, échéances restantes, date de fin, prochaine échéance, et graphique du capital restant dû à la fin de chaque année.","La carte Emprunt indique aussi « Remboursé à ce jour » et le nombre d’échéances restantes.","Export Excel et PDF de l’échéancier."]},
@@ -4274,7 +4275,9 @@ function sigBlock(d, ville, date, sig){
   if (sig) for (const [k, x, right] of [["bailleur", d.M, false], ["locataire", d.W - d.M - 190, true]]){ const s = sig[k]; if (!s) continue; const h = Math.min(56, 160 * s.h / s.w), w = h === 56 ? 56 * s.w / s.h : 160;
     d.image(x + 4, d.y + 3, w, h, s); d.text(x, d.y - 11, "Signé le " + hhmm(s.ts), {size:8, color:"#5C6B66"}); }
   if (PAPER && !sig){ d.y -= 30; d.text(d.M, d.y, "Paraphes (initiales) :   bailleur ______________      locataire ______________", {size:10}); d.y -= 22;
-    d.para("En signant, chaque partie confirme avoir lu toutes les pages du document portant la référence " + PAPER.ref + " et en conserve un exemplaire.", 9.5, 13.5); }
+    d.para("En signant, chaque partie confirme avoir lu toutes les pages du document portant la référence " + PAPER.ref + " et en conserve un exemplaire.", 9.5, 13.5); 
+    if (PAPER.scan){ const o2 = PAPER.scan; d.newPage(); d.text(d.M, d.y, "PAGE SIGNÉE À LA MAIN (scan) · réf. " + PAPER.ref, {size:12, bold:true, color:"#0E6B5C"}); d.y -= 16;
+      const k = Math.min((d.W - 2 * d.M) / o2.w, (d.y - 70) / o2.h), w = o2.w * k, h = o2.h * k; d.image(d.M + (d.W - 2 * d.M - w) / 2, d.y - h, w, h, o2); d.y -= h + 8; } }
 }
 function proofPage(d, sig, titre){
   d.stampSig = sig; d.newPage(); d.text(d.M, d.y, "PREUVE DE SIGNATURE ÉLECTRONIQUE", {size:15, bold:true, color:"#0E6B5C"}); d.y -= 26; d.para("Document : " + titre, 10.5, 15); d.y -= 6;
@@ -5211,7 +5214,7 @@ async function docTextOf(f){
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
 const refFmt = h => String(h || "").slice(0, 12).toUpperCase().replace(/(.{4})(?=.)/g, "$1-");
-async function withPaper(ref, fn){ const was = PAPER; PAPER = {ref}; try { return await fn(); } finally { PAPER = was; } }
+async function withPaper(ref, fn, scan){ const was = PAPER; PAPER = {ref, scan:scan || null}; try { return await fn(); } finally { PAPER = was; } }
 
 /* tampon sur chaque page : référence du document (papier) ou référence de l'empreinte (écran) + paraphes */
 function stampParaphes(d, sig){
@@ -5244,6 +5247,10 @@ function proofStep(res, f){
     <div class="btns"><button class="btn" style="flex:1" data-act="pf-ok">Continuer</button><button class="btn ghost" data-act="pf-skip">Passer</button></div>`);
 }
 const nl = "\n";
+function scanCompress(file){ return new Promise((res, rej) => { const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => { const k = Math.min(1, 1700 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res({d:c.toDataURL("image/jpeg", 0.8), w:c.width, h:c.height}); };
+  img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("image")); }; img.src = url; }); }
 function paperSteps(p){
   return `<div class="info"><b>Signature papier · réf. ${esc(p.ref)}</b></div>
     <ol class="small" style="padding-left:18px;margin:6px 0;line-height:1.55"><li>Enregistre le PDF (il est aussi gardé dans les documents du logement).</li><li>Imprime <b>uniquement la dernière page</b> (« PAGE DE SIGNATURE »), chez toi, au tabac, à la mairie ou à la médiathèque. Pas d'imprimante : le locataire peut l'imprimer de son côté.</li><li>Le bailleur et le locataire <b>signent et paraphent à la main</b> cette page.</li><li>Scanne-la avec le bouton ci-dessous, ou prends-la directement en photo avec l'appareil photo (pose-la à plat, bien éclairée, les 4 coins visibles).</li><li>Envoie le dossier (PDF complet + page signée) par e-mail.</li></ol>
@@ -5257,7 +5264,7 @@ async function paperMake(kind, build, bien, titre, name){
   const pdf = await withPaper(ref, build.run), fid = uid(), fname = name + " (réf " + ref.slice(0, 9) + ").pdf";
   await flPut(fid, {name:fname, type:"application/pdf", buf:pdf.buffer}); const dt = todayIso();
   docList("docs").push({id:fid, bien, kind:"bail", nom:titre + " à signer sur papier, réf. " + ref, fname, date:dt, type:"application/pdf", size:pdf.length, upd:Date.now()});
-  V.pp = {fid, ref, bien, titre, fname, scan:null}; persist(); render(); openSheet("<h2>Signer sur papier</h2>" + paperSteps(V.pp));
+  V.pp = {fid, ref, bien, titre, fname, scan:null, build, name, final:null}; persist(); render(); openSheet("<h2>Signer sur papier</h2>" + paperSteps(V.pp));
 }
 document.addEventListener("change", async ev => {
   const f = ev.target; if (!f || (f.id !== "pp-file" && f.id !== "pp-cam") || !f.files || !f.files[0] || !V.pp) return;
@@ -5265,8 +5272,13 @@ document.addEventListener("change", async ev => {
   const name = "Page signée réf " + p.ref.slice(0, 9) + "." + ext;
   await flPut(fid, {name, type:file.type || "image/jpeg", buf});
   docList("docs").push({id:fid, bien:p.bien, kind:"bail", nom:"Page signée à la main, réf. " + p.ref, fname:name, date:todayIso(), type:file.type || "image/jpeg", size:buf.byteLength, upd:Date.now()});
-  p.scan = {fid, name, type:file.type || "image/jpeg"}; persist(); render(); toast("Page signée enregistrée");
-  openSheet("<h2>Signer sur papier</h2>" + paperSteps(p) + '<div class="info">Page signée enregistrée : ' + esc(name) + ". Vérifie sur le scan que la référence " + esc(p.ref) + " est lisible, puis envoie le dossier.</div>");
+  p.scan = {fid, name, type:file.type || "image/jpeg"}; let fin = "";
+  if (p.build && (file.type || "").startsWith("image/")){ try { const im = await scanCompress(file), pdf = await withPaper(p.ref, p.build.run, im), ffid = uid(), fn = (p.name || "Document") + " SIGNÉ (réf " + p.ref.slice(0, 9) + ").pdf";
+      await flPut(ffid, {name:fn, type:"application/pdf", buf:pdf.buffer});
+      docList("docs").push({id:ffid, bien:p.bien, kind:"bail", nom:p.titre + " SIGNÉ (PDF + page signée à la main), réf. " + p.ref, fname:fn, date:todayIso(), type:"application/pdf", size:pdf.length, upd:Date.now()});
+      p.final = {fid:ffid, name:fn}; fin = " Le dossier signé complet (PDF + page signée) est aussi enregistré dans les documents du logement : " + esc(fn) + "."; } catch(e){ fin = ""; } }
+  persist(); render(); toast("Page signée enregistrée");
+  openSheet("<h2>Signer sur papier</h2>" + paperSteps(p) + '<div class="info">Page signée enregistrée : ' + esc(name) + ". Vérifie sur le scan que la référence " + esc(p.ref) + " est lisible, puis envoie le dossier." + fin + "</div>");
 });
 document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
@@ -5286,9 +5298,9 @@ document.addEventListener("click", async ev => {
     case "pp-save": { const p = V.pp; if (!p) break; const r = await flGet(p.fid); if (r) await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); break; }
     case "pp-send": { const p = V.pp; if (!p) break; const r = await flGet(p.fid), sc = p.scan ? await flGet(p.scan.fid) : null; if (!r) break;
       if (!sc){ toast("Scanne d'abord la page signée (étape 2)"); break; }
-      const files = [new File([r.buf], r.name, {type:"application/pdf"}), new File([sc.buf], sc.name, {type:sc.type})];
+      const fr = p.final ? await flGet(p.final.fid) : null, files = fr ? [new File([fr.buf], fr.name, {type:"application/pdf"})] : [new File([r.buf], r.name, {type:"application/pdf"}), new File([sc.buf], sc.name, {type:sc.type})];
       try { if (navigator.canShare && navigator.canShare({files})){ await navigator.share({files, title:"Document signé, réf. " + p.ref, text:"Document complet et page de signature signée à la main. Référence : " + p.ref}); break; } } catch(e){ if (e && e.name === "AbortError") break; }
-      await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); await saveFile(sc.name, new Uint8Array(sc.buf), sc.type); toast("Fichiers prêts : joins-les à ton e-mail"); break; }
+      if (fr) await saveFile(fr.name, new Uint8Array(fr.buf), "application/pdf"); else { await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); await saveFile(sc.name, new Uint8Array(sc.buf), sc.type); } toast("Fichiers prêts : joins-les à ton e-mail"); break; }
   }
 });
 
