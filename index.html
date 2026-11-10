@@ -299,7 +299,7 @@ details.h p{margin:6px 0 0;font-size:14px}details.h ul{margin:6px 0 0;padding-le
 :root[data-style="fun"] h1{font-family:var(--font-display);letter-spacing:-.02em}
 :root[data-theme="dark"][data-style="fun"]{--fun2:#FFC46B;--fun3:#9A85FF;--fun4:#FF7FA9}
 :root[data-theme="dark"][data-style="fun"] .tile,:root[data-theme="dark"][data-style="fun"] .kpi{background:linear-gradient(145deg,var(--accent-soft),var(--surface))}
-html,body,button,a,.row,.card,.sck,.seg button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html,body,*{touch-action:manipulation}body{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -1408,8 +1408,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.28";
+const APP_VERSION = "1.7.29";
 const CHANGELOG = [
+  {v:"1.7.29", date:"2026-11-10", titre:"Plus de zoom au double appui", items:["Un double appui rapide sur un bouton ou une ligne ne zoome plus sur iPad et iPhone (le zoom au pincement reste possible, et la saisie de montants n'est pas touchée)."]},
   {v:"1.7.28", date:"2026-11-10", titre:"Compta : barre de progression en couleurs", items:["Compta › À saisir : la barre de progression a trois couleurs : vert = lignes saisies, orange = lignes cochées pas encore validées, gris = ce qu'il reste à faire, avec une légende.","Le texte explique que cocher ne suffit pas : il faut toucher « Marquer comme saisi » pour valider les lignes cochées.","Les onglets Dépenses, Recettes et Échéances affichent ✓ quand tout est saisi.","Revenir en arrière : le texte explique comment remettre une ligne à saisir (onglet « Déjà saisi », coche, « Remettre à saisir »), et le bouton Annuler reste 30 secondes au lieu de 12.","Plus de zoom involontaire quand on touche deux fois vite un bouton ou une ligne (le zoom au pincement reste possible)."]},
   {v:"1.7.27", date:"2026-11-10", titre:"Nouveau placement depuis la vue Tous", items:["Comptes bancaires › Placements et bourse › Tous : une carte « Nouveau placement » liste chaque compte avec « Mettre de côté » et « Intérêts », sans avoir à choisir le bien avant."]},
   {v:"1.7.26", date:"2026-11-10", titre:"Locataires, Documents et envoi au locataire", items:["Biens › Locataires réunit tout ce qui concerne le locataire : fiche, solde des loyers, états des lieux, inventaire, bail, lettres et anciens locataires.","Biens › Documents garde ce qui est lié au logement : modèles vierges à imprimer (bail, état des lieux, inventaire, lettres types), pièces à joindre au bail et documents du bien (DPE, assurance, taxe foncière…).","Nouveau bouton « Envoyer au locataire » à côté de chaque PDF (bail, état des lieux, inventaire, lettres, quittance, restitution du dépôt) : PDF en pièce jointe avec l'e-mail du locataire copié, e-mail prérempli ou SMS prérempli.","Aucune donnée n'est modifiée."]},
@@ -5756,6 +5757,17 @@ if (secAvailable() && lsGet(ENC)){ SEC.on = true; showLock(); } else startApp();
   document.addEventListener("focusout", later, true); document.addEventListener("change", later, true);
   window.addEventListener("orientationchange", later); window.addEventListener("pageshow", later);
   if (window.visualViewport){ visualViewport.addEventListener("resize", fix); visualViewport.addEventListener("scroll", fix); }
+})();
+
+/* Pas de zoom involontaire au double appui (iOS l'ignore parfois en CSS) : le 2e appui rapproché au même endroit est absorbé. Le pincement reste possible. */
+(function(){ let t0 = 0, x0 = 0, y0 = 0;
+  document.addEventListener("touchend", e => {
+    if (e.touches.length || e.changedTouches.length !== 1) return;
+    const c = e.changedTouches[0], n = Date.now(), tg = e.target;
+    if (tg.closest && tg.closest("input,textarea,select,[contenteditable],[data-act=np],#viewer")) { t0 = 0; return; }
+    if (n - t0 < 320 && Math.abs(c.clientX - x0) < 40 && Math.abs(c.clientY - y0) < 40){ e.preventDefault(); t0 = 0; return; }
+    t0 = n; x0 = c.clientX; y0 = c.clientY;
+  }, {passive:false});
 })();
 
 </script>
