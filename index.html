@@ -905,7 +905,7 @@ function viewRapp(){
       return `<div class="env" style="padding:8px 0;gap:6px"><div class="top">${bienPill(id)}<span class="num">${eur(calc)}</span></div><div class="small muted">Solde calculé</div>
         <label class="f">Solde réel du relevé (€)<input id="rp-${esc(id)}" data-bien="${esc(id)}" inputmode="decimal" value="${has ? fmtNum(reel) : ""}" placeholder="0,00"></label>
         ${has ? `<div class="kv"><span>Écart (réel − calculé)</span><span class="num ${ec ? (ec < 0 ? "neg" : "pos") : ""}">${eur(ec)}</span></div>${ec ? `<div class="small" style="margin:2px 0 8px">${ecartPhrase(ec)}</div><button class="btn" data-act="rapp-save" data-v="${esc(id)}">Enregistrer l'ajustement de ${eur(Math.abs(ec))}</button>` : `<div class="info">Le solde est juste.</div>`}` : ""}</div>`; }).join("")}</div>
-  <div class="card"><h2>Historique des ajustements</h2><div class="rows">${hist.length ? hist.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib)}</div><div class="s">${frDate(j.date)} ${bienPill(j.bien)}${j.note ? " · " + esc(j.note) : ""}</div></div><div class="amt num ${isIn(j) ? "pos" : "neg"}">${isIn(j) ? "+" : "−"} ${eur(j.montant)}</div></div>`).join("") : '<div class="empty">Aucun ajustement.</div>'}</div></div>`;
+  <div class="card"><h2>Historique des ajustements</h2><div class="small muted">Touche une ligne pour la modifier (montant, date…) ou la supprimer.</div><div class="rows">${hist.length ? hist.map(j => `<div class="row" data-act="jedit" data-id="${esc(j.id)}" style="cursor:pointer"><div class="main"><div class="t">${esc(j.lib)}</div><div class="s">${frDate(j.date)} ${bienPill(j.bien)}${j.note ? " · " + esc(j.note) : ""}</div></div><div class="amt num ${isIn(j) ? "pos" : "neg"}">${isIn(j) ? "+" : "−"} ${eur(j.montant)}</div></div>`).join("") : '<div class="empty">Aucun ajustement.</div>'}</div></div>`;
 }
 function sheetBourse(bien){
   const ids = bienIds(), d = V.bs = Object.assign({bien:ids[0] || "", mont:"", date:todayIso(), confirm:false}, V.bs && V.bs.keep ? V.bs : {}, bien ? {bien} : {});
@@ -1005,10 +1005,49 @@ function sheetRelance(id){
 }
 
 /* ---------- Bilan ---------- */
+/* ---------- Analyse : pourquoi deux années sont différentes ---------- */
+const ONESHOT = ["Mobilier / équipement","Entretien / réparations","Travaux","Divers"];
+function anLines(y, bien){ return J().filter(j => yr(j) === y && !HC(j) && (j.type === "Recette" || j.type === "Dépense") && (bien === "all" || j.bien === bien)); }
+function anGroup(L){ const g = {}; L.forEach(j => { const k = j.type + "|" + j.cat, o = g[k] = g[k] || {type:j.type, cat:j.cat, v:0, n:0, dates:[]}; o.v += N(j.montant); o.n++; o.dates.push(j.date); }); Object.values(g).forEach(o => o.v = r2(o.v)); return g; }
+function anCf(L){ return r2(sum(L.filter(j => j.type === "Recette").map(j => N(j.montant))) - sum(L.filter(j => j.type === "Dépense").map(j => N(j.montant)))); }
+function anPrevu(L){ const P = L.filter(j => j.pointe !== "x"); return {rec:r2(sum(P.filter(j => j.type === "Recette").map(j => N(j.montant)))), dep:r2(sum(P.filter(j => j.type === "Dépense").map(j => N(j.montant)))), n:P.length}; }
+function analyseHtml(a, b, bien){
+  const L1 = anLines(a, bien), L0 = anLines(b, bien), g1 = anGroup(L1), g0 = anGroup(L0), cf1 = anCf(L1), cf0 = anCf(L0), d = r2(cf1 - cf0);
+  if (!L1.length && !L0.length) return `<div class="info">Aucune opération en ${a} ni en ${b}.</div>`;
+  const keys = [...new Set(Object.keys(g1).concat(Object.keys(g0)))];
+  const items = keys.map(k => { const x1 = g1[k], x0 = g0[k], t = (x1 || x0).type, cat = (x1 || x0).cat, v1 = x1 ? x1.v : 0, v0 = x0 ? x0.v : 0, n1 = x1 ? x1.n : 0, n0 = x0 ? x0.n : 0, eff = r2(t === "Recette" ? v1 - v0 : v0 - v1); return {t, cat, v1, v0, n1, n0, eff, d1:x1 ? x1.dates : [], d0:x0 ? x0.dates : []}; }).filter(o => Math.abs(o.eff) >= 0.5).sort((p, q) => Math.abs(q.eff) - Math.abs(p.eff));
+  const top = items.slice(0, 7), reste = r2(sum(items.slice(7).map(o => o.eff)));
+  const dts = a => a.length && a.length <= 3 ? " (" + a.map(frDate).join(", ") + ")" : "";
+  const why = o => {
+    const bits = [];
+    if (o.v0 === 0 && o.v1 > 0) bits.push(o.t === "Recette" ? `nouveau en ${a} : ${eur(o.v1)}${dts(o.d1)}` : `dépense présente en ${a} seulement : ${eur(o.v1)}${dts(o.d1)}${ONESHOT.includes(o.cat) ? ", ponctuelle" : ""}`);
+    else if (o.v1 === 0 && o.v0 > 0) bits.push(o.t === "Recette" ? `rien en ${a}, ${eur(o.v0)} en ${b}` : `${eur(o.v0)} en ${b}${dts(o.d0)}, rien en ${a}${ONESHOT.includes(o.cat) ? " (dépense ponctuelle)" : ""}`);
+    else { bits.push(`${eur(o.v1)} en ${a} contre ${eur(o.v0)} en ${b}`); if (o.n1 !== o.n0) bits.push(`${o.n1} ligne(s) contre ${o.n0}${o.n0 > o.n1 ? " : il manque " + (o.n0 - o.n1) + " paiement(s) en " + a : " : " + (o.n1 - o.n0) + " de plus en " + a}`); else if (o.n1 > 0 && Math.abs(o.v1 / o.n1 - o.v0 / o.n0) >= 0.5) bits.push(`montant moyen ${eur(r2(o.v1 / o.n1))} contre ${eur(r2(o.v0 / o.n0))}`); }
+    return bits.join(" · ");
+  };
+  const ids = bienIds(), par = bien === "all" && ids.length > 1 ? ids.map(id => kv(bienPill(id), `${eur(anCf(anLines(b, id)))} → <b>${eur(anCf(anLines(a, id)))}</b>`)).join("") : "";
+  const p1 = anPrevu(L1), p0 = anPrevu(L0), notes = [];
+  if (p1.n) notes.push(`En ${a}, ${p1.n} ligne(s) ne sont pas encore pointées (${eur(p1.rec)} de loyers, ${eur(p1.dep)} de charges) : le cash flow les compte comme prévues.`);
+  if (p0.n) notes.push(`En ${b}, ${p0.n} ligne(s) ne sont toujours pas pointées (${eur(p0.rec)} de loyers, ${eur(p0.dep)} de charges).`);
+  const mois = y => new Set(anLines(y, bien).filter(j => j.type === "Recette" && j.cat === "Loyer").map(j => mo(j))).size;
+  if (mois(a) !== mois(b)) notes.push(`Loyers : ${mois(a)} mois en ${a} contre ${mois(b)} en ${b}.`);
+  const head = Math.abs(d) < 0.5 ? `Le cash flow est le même en ${a} et en ${b}.` : `Le cash flow ${a} est <b class="${d > 0 ? "pos" : "neg"}">${d > 0 ? "plus haut" : "plus bas"} de ${eur(Math.abs(d))}</b> que celui de ${b}.`;
+  return `<div class="env" style="padding:6px 0;gap:6px"><div class="kv"><span>Cash flow ${b}</span><span class="num">${eur(cf0)}</span></div><div class="kv"><span>Cash flow ${a}</span><span class="num"><b>${eur(cf1)}</b></span></div>${par}<div class="small" style="margin:4px 0">${head}</div></div>
+    ${items.length ? `<div class="small muted" style="margin:6px 0 2px">Ce qui explique l'écart (effet sur le cash flow ${a}) :</div><div class="rows">${top.map(o => `<div class="row"><div class="main"><div class="t">${esc(o.cat)} <span class="muted small">${o.t === "Recette" ? "recette" : "charge"}</span></div><div class="s">${why(o)}</div></div><div class="amt num ${o.eff < 0 ? "neg" : "pos"}">${o.eff > 0 ? "+" : "−"} ${eur(Math.abs(o.eff))}</div></div>`).join("")}${Math.abs(reste) >= 0.5 ? `<div class="row"><div class="main"><div class="t">Autres petits écarts</div><div class="s">${items.length - 7} poste(s)</div></div><div class="amt num ${reste < 0 ? "neg" : "pos"}">${reste > 0 ? "+" : "−"} ${eur(Math.abs(reste))}</div></div>` : ""}</div>` : `<div class="info">Aucun poste ne diffère.</div>`}
+    ${notes.length ? `<div class="small muted" style="margin-top:8px">${notes.map(esc).join("<br>")}</div>` : ""}`;
+}
+function analyseCard(years){
+  const A = V.an = Object.assign({a:V.y, b:V.y - 1, bien:"all", run:false}, V.an || {}), ids = bienIds(), opt = (arr, sel) => arr.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join(""), lo = Math.min(...years, V.y - 1), hi = Math.max(...years), ys = []; for (let y = hi; y >= lo; y--) ys.push([y, y]);
+  return `<div class="card"><h2>Pourquoi mes années sont différentes ?</h2><div class="small muted">Compare le cash flow de deux années et explique l'écart poste par poste : dépense ponctuelle, paiement manquant, montant qui a changé…</div>
+    <div class="grid2"><label class="f">Année<select id="an-a">${opt(ys, A.a)}</select></label><label class="f">Comparée à<select id="an-b">${opt(ys, A.b)}</select></label></div>
+    ${ids.length > 1 ? `<label class="f">Bien<select id="an-bien">${opt([["all", "Tous les biens"]].concat(ids.map(id => [id, bienName(id)])), A.bien)}</select></label>` : ""}
+    <button class="btn" data-act="an-run">Analyser</button>
+    ${A.run && A.a !== A.b ? `<div style="margin-top:10px">${analyseHtml(+A.a, +A.b, A.bien)}</div>` : A.run ? `<div class="info" style="margin-top:10px">Choisis deux années différentes.</div>` : ""}</div>`;
+}
 function viewBilan(){
   const y = V.y, ids = bienIds(), st = stats(null, y);
   const years = [...new Set(J().map(yr).concat([now0.getFullYear()]))].sort((a,b) => a - b);
-  const months = MC.map((nm, m) => { const L = J().filter(j => yr(j) === y && mo(j) === m); return {nm, rec:sum(L.filter(j => j.type==="Recette").map(j => j.montant)), dep:sum(L.filter(j => j.type==="Dépense").map(j => j.montant))}; });
+  const months = MC.map((nm, m) => { const L = J().filter(j => yr(j) === y && mo(j) === m && !HC(j)); return {nm, rec:sum(L.filter(j => j.type==="Recette").map(j => j.montant)), dep:sum(L.filter(j => j.type==="Dépense").map(j => j.montant))}; });
   const mx = Math.max(1, ...months.map(m => Math.max(m.rec, m.dep)));
   let cum = 0; const cumBy = {}; for (const yy of years){ cum += stats(null, yy).bourse; cumBy[yy] = cum; }
   return topbar("Bilan", yearNav()) + `
@@ -1020,7 +1059,8 @@ function viewBilan(){
     ${kv("Argent mis en épargne cette année (net)", eur(st.ep), "muted")}</div>
   ${perfCard()}
   <div class="card"><h2>Mois par mois</h2>${months.map(m => `<div class="mrow"><span>${m.nm}</span><div class="bars"><div class="bar"><i style="width:${Math.round(m.rec/mx*100)}%"></i></div><div class="bar"><i class="warn" style="width:${Math.round(m.dep/mx*100)}%"></i></div></div><span class="num small ${signCl(m.rec-m.dep)}">${eur(m.rec - m.dep)}</span></div>`).join("")}
-    <div class="small muted">Bleu : loyers · orange : charges (encaissé + prévu).</div></div>
+    <div class="small muted">Bleu : loyers · orange : charges (encaissé + prévu). Le chiffre à droite est le cash flow du mois : loyers − charges.</div></div>
+  ${analyseCard(years)}
   <div class="card"><h2>Toutes les années</h2><div class="rows">${years.slice().reverse().map(yy => { const s = stats(null, yy); return `<div class="row"><div class="main"><div class="t">${yy}</div>
     <div class="s">${ids.map(id => esc(bienName(id)) + " " + eur(stats(id, yy).cf)).join(" · ")}</div><div class="s">Comptes ${eur(sum(ids.map(id => soldeBien(id, yy))))} · bourse versée (cumul) ${eur(cumBy[yy])}</div></div><div class="amt num ${signCl(s.cf)}">${eur(s.cf)}</div></div>`; }).join("")}</div></div>`;
 }
@@ -1189,6 +1229,7 @@ document.addEventListener("click", ev => {
       if (mt > reste + 0.005 && !f.confirm){ f.confirm = true; sheetBourse(f.bien); return; }
       S.journal.push({id:uid(), date:f.date, bien:f.bien, type:"Entrée", cat:f.cat || "Bourse", lib:"Remboursement " + (!f.cat || f.cat === "Bourse" ? "bourse" : f.cat), montant:r2(mt), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"", upd:Date.now()});
       V.bs = null; persist(); closeSheet(); toast("Remboursement de " + eur(mt) + " enregistré"); render(); break; }
+    case "an-run": V.an = V.an || {}; V.an.run = true; render(); break;
     case "tarif-new": sheetTarif(); break;
     case "tarif-edit": sheetTarifEdit(+b.dataset.i); break;
     case "te-save": { const t = S.tarifs[+b.dataset.i], mt = parseNum($("#te-mont").value), d = $("#te-date").value; if (!t) return; if (!mt || mt <= 0 || !d) return toast("Date et montant obligatoires");
@@ -1208,7 +1249,7 @@ document.addEventListener("click", ev => {
       [[V.pt.s1, x], [V.pt.s2, y2]].forEach(([bien, m]) => S.journal.push({id:uid(), date:d, bien, type:"Dépense", cat, lib:V.pt.frais, montant:m, compte:cpt, pointe:V.pt.pt ? "x" : "", compta:"", justif:"", fourn:"", note:"Frais partagés : total " + eur(t).replace(/[\u202f\u00a0]/g, " ") + ", part " + bienName(V.pt.s1) + " " + Math.round(pc*1000)/10 + " %", upd:now}));
       persist(); closeSheet(); toast("2 lignes créées : " + eur(x) + " + " + eur(y2)); render(); break; }
     case "rapp-save": { const reel = (S.rapp || {})[v], calc = soldeBien(v), ec = r2(reel - calc); if (!ec) return;
-      S.journal.push({id:uid(), date:todayIso(), bien:v, type:ec > 0 ? "Entrée" : "Sortie", cat:"Écart de rapprochement", lib:"Ajustement sur relevé banque du " + frDate(todayIso()), montant:Math.abs(ec), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Solde réel relevé " + eur(reel).replace(/[\u202f\u00a0]/g, " "), upd:Date.now()});
+      S.journal.push({id:uid(), date:todayIso(), bien:v, type:ec > 0 ? "Entrée" : "Sortie", cat:"Écart de rapprochement", lib:"Ajustement sur relevé banque du " + frDate(todayIso()), montant:Math.abs(ec), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Solde réel relevé " + eur(reel).replace(/[\u202f\u00a0]/g, " "), hc:"x", upd:Date.now()});
       persist(); toast("Ajustement enregistré : " + eur(Math.abs(ec))); render(); break; }
     case "fnew": sheetFacture(""); break; case "fedit": sheetFacture(id); break;
     case "ftog": { const f = S.factures.find(x => x.id === id), k = b.dataset.k; f[k] = f[k] === "x" ? "" : "x"; f.upd = Date.now(); persist(); render(); break; }
@@ -1258,6 +1299,7 @@ document.addEventListener("input", ev => {
 document.addEventListener("change", ev => {
   const t = ev.target;
   if (t.id === "file" && t.files[0]) { onFile(t.files[0]); t.value = ""; return; }
+  if (/^an-(a|b|bien)$/.test(t.id)){ V.an = V.an || {run:false}; V.an[t.id.slice(3)] = t.id === "an-bien" ? t.value : +t.value; render(); return; }
   if (/^jr-/.test(t.id) && V.jr){ const d = V.jr; if (t.id === "jr-bien"){ d.bien = t.value; } if (t.id === "jr-cat") d.cat = t.value; if (t.id === "jr-jour") d.jour = t.value; if (t.id === "jr-from") d.from = t.value || d.from; if (t.id === "jr-pt") d.pointees = t.checked; sheetJour(); return; }
   if (/^rp-/.test(t.id)){ const x = parseNum(t.value); S.rapp = S.rapp || {}; S.rapp[t.dataset.bien] = t.value.trim() === "" || x === null ? "" : x; persist(); render(); return; }
   if (t.id === "sec-delay"){ SEC.cfg.delay = +t.value; secCfgSave(); return; }
@@ -1267,8 +1309,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.15";
+const APP_VERSION = "1.7.16";
 const CHANGELOG = [
+  {v:"1.7.16", date:"2026-11-10", titre:"Analyse des années, ajustements hors compta", items:["Tous les ajustements de rapprochement (« Écart de rapprochement ») sont maintenant automatiquement marqués « hors compta » : ils corrigent le solde du compte, jamais le bénéfice, le bilan ni la liste « à saisir en compta ». Les anciens ajustements sont mis à jour tout seuls.","Réglages › Démo et aide : l’entrée « Parcours guidé », qui ne servait pas, est retirée (la visite guidée plein écran et le guide restent).","Biens › Rapprochement › Historique des ajustements : touche une ligne pour la modifier ou l’annuler (suppression).","Bilan : nouvelle carte « Pourquoi mes années sont différentes ? » : compare le cash flow de deux années (tous les biens ou un seul) et explique l’écart poste par poste, avec les dates des dépenses ponctuelles, les paiements manquants et les lignes encore prévues.","Bilan › Mois par mois : le chiffre à droite est expliqué (cash flow du mois = loyers − charges) et les lignes hors compta n’y sont plus comptées, comme dans le reste du bilan."]},
   {v:"1.7.15", date:"2026-11-10", titre:"Soldes bien visibles, tarifs modifiables, jour de prélèvement", items:["Accueil : le solde de chaque compte est en gros, avec la couleur du bien.","Pointage › Comptes des biens : le solde de l’appli aujourd’hui en gros, et un champ « Solde de ma banque » directement dedans : tu le changes quand tu veux, l’écart se met à jour, et tu peux enregistrer l’ajustement.","Biens › Vue : le solde du compte aujourd’hui (à comparer avec la banque) en gros en haut de la carte.","Biens › Tarifs : touche une ligne de l’historique pour la corriger ou la supprimer.","Biens › Tarifs › « Changer le jour de prélèvement » : déplace en une fois toutes les lignes d’une catégorie au même jour du mois (crédit le 24, assurance le 5…), à partir d’une date."]},
   {v:"1.7.14", date:"2026-11-10", titre:"Retour au même endroit", items:["Quand tu ouvres une opération pour la modifier puis que tu appuies sur « Retour », tu retrouves la page exactement là où tu l’avais laissée, au lieu de remonter tout en haut."]},
   {v:"1.7.13", date:"2026-11-10", titre:"Charges par catégorie en tableau", items:["Biens › Vue et Dépenses : les barres (qui ne servaient à rien, tout étant comparé au Crédit) sont remplacées par un tableau : Catégorie, Total, Payé, Reste, avec une ligne de total. Reste = ce qui n’est pas encore payé, « payé ✓ » quand tout est réglé.","Compta › Charges par poste : même tableau (Catégorie et Total), sans colonnes de paiement, et le « payé ✓ » ne s’affiche plus à tort à cet endroit."]},
@@ -1449,6 +1492,7 @@ const HELP = {
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
     "« Toutes les années » : résultats, soldes et bourse versée cumulée.",
+    "« Pourquoi mes années sont différentes ? » : choisis deux années (et un bien si tu veux), touche Analyser : l'appli compare le cash flow et explique l'écart poste par poste (dépense ponctuelle, paiement manquant, montant changé, lignes encore prévues).",
     "Le bouton Exporter produit un bilan au choix : un ou plusieurs biens, un mois, plusieurs mois ou plusieurs années, toutes les opérations ou seulement les dépenses ou les recettes (synthèse, mois par mois, par catégorie, liste des opérations), en Excel ou en PDF."]},
   set:{t:"Réglages", p:"Échange avec Excel, sécurité et confort.", l:[
     "Mise à jour des règles : « Exporter en Word » donne un fichier à coller dans une IA qui cherche sur internet ; « Importer la réponse » te montre chaque changement avec sa source. Rien ne s'applique sans ton accord, et l'historique garde la trace.",
@@ -1469,7 +1513,7 @@ const helpHtml = k => { const h = HELP[k]; return h ? `<h2>${esc(h.t)}</h2><p cl
 function sheetHelp(){ openSheet(helpHtml(helpKey()) + `<div class="btns"><button class="btn ghost" data-act="guide">Tout le guide</button><button class="btn" data-act="sheetclose">Compris</button></div>`); }
 function sheetGuide(){
   openSheet(`<h2>Tout le guide</h2>${Object.keys(HELP).map(k => `<details class="h"><summary><span>${esc(HELP[k].t)}</span><span class="muted small">voir</span></summary><p class="muted">${esc(HELP[k].p)}</p><ul>${HELP[k].l.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>`).join("")}
-    <div class="btns"><button class="btn ghost" data-act="tour">Revoir le parcours guidé</button><button class="btn" data-act="sheetclose">Fermer</button></div>`);
+    <div class="btns"><button class="btn" data-act="sheetclose">Fermer</button></div>`);
 }
 const TOUR = [
   ["Bienvenue", "Cette appli suit les loyers, les charges et les soldes de tes deux biens, et parle avec ton classeur Excel."],
@@ -1497,7 +1541,7 @@ const ficheCard = () => `<div class="card"><h2>Fiche de l'appli (à partager)</h
   <div class="small muted">Une page de présentation claire avec toutes les fonctions. « Partager » envoie le lien avec un court descriptif au-dessus (points importants) ; la page est mise à jour à chaque nouvelle version de l'appli.</div>
   <div class="affs">${AFFICHES.map(a => `<button type="button" data-act="aff-open" data-f="${a[0]}"><img src="${a[0]}" alt="${a[1]}" loading="lazy"><span>${a[1]}</span></button>`).join("")}</div>
   <div class="btns"><button class="btn sm" data-act="fiche-share">Partager avec le descriptif</button><button class="btn sm ghost" data-act="fiche-open">Voir la fiche</button><button class="btn sm ghost" data-act="fiche-copy">Copier le lien</button></div></div>`;
-const aideCard = () => `<div class="card"><h2>Aide</h2><div class="btns"><button class="btn" data-act="guide">Tout le guide</button><button class="btn ghost" data-act="tour">Parcours guidé</button><button class="btn ghost" data-act="demo">Mode démo</button></div>
+const aideCard = () => `<div class="card"><h2>Aide</h2><div class="btns"><button class="btn" data-act="guide">Tout le guide</button><button class="btn ghost" data-act="demo">Mode démo</button></div>
   <div class="small muted">Le mode démo charge des données d'exemple à la place des données de cet appareil.</div></div>`;
 
 /* ---------- Routines de démarrage (aussi après le code) ---------- */
@@ -1614,7 +1658,7 @@ function clotureDo(){
   for (const id of bienIds()){
     const rr = $("#cl-r-" + id).value, calc = soldeAt(id, end), v = parseNum(rr);
     if (rr.trim() !== "" && v !== null){ const ec = r2(v - calc);
-      if (ec){ const o = {id:uid(), date:end, bien:id, type:ec > 0 ? "Entrée" : "Sortie", cat:"Écart de rapprochement", lib:"Ajustement sur relevé banque du " + frDate(end), montant:Math.abs(ec), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Solde réel relevé " + nbsp(eur(v)), upd:t}; S.journal.push(o); made.push(o.id); } }
+      if (ec){ const o = {id:uid(), date:end, bien:id, type:ec > 0 ? "Entrée" : "Sortie", cat:"Écart de rapprochement", lib:"Ajustement sur relevé banque du " + frDate(end), montant:Math.abs(ec), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Solde réel relevé " + nbsp(eur(v)), hc:"x", upd:t}; S.journal.push(o); made.push(o.id); } }
     const sv = $("#cl-s-" + id) ? parseNum($("#cl-s-" + id).value) : null, pcat = $("#cl-p-" + id) ? $("#cl-p-" + id).value : "Bourse";
     if (sv && sv > 0){ const o = {id:uid(), date:end, bien:id, type:"Sortie", cat:pcat, lib:"Mise de côté fin " + MOIS[m].toLowerCase(), montant:r2(sv), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Clôture de " + MOIS[m].toLowerCase() + " " + y, upd:t}; S.journal.push(o); made.push(o.id); }
   }
@@ -4075,8 +4119,7 @@ function demoCard(){
     ${!DEMO && S.demo && back ? row("demo-back", "Retrouver mes données", "Quitter la démo") : ""}
     ${row("visite", "Visite guidée plein écran", "De A à Z, pas à pas, avec des captures")}
     ${row("guideweb", "Guide à lire (page web)", "Pas à pas, avec les vrais écrans")}
-    ${row("guide", "Mode d'emploi", "Le guide, expliqué simplement")}
-    ${row("tour", "Parcours guidé", "Les grandes étapes en quelques écrans")}</div></div>`;
+    ${row("guide", "Mode d'emploi", "Le guide, expliqué simplement")}</div></div>`;
 }
 
 /* ============ Reprendre une liste depuis un PDF ou un texte collé (inventaire, état des lieux) ============ */
@@ -5241,7 +5284,7 @@ document.addEventListener("toggle", ev => { const t = ev.target; if (t && t.clas
 document.addEventListener("change", ev => { const t = ev.target; if (!t || t.id !== "bn-bail") return; const r = $("#bn-regime"); if (r && ["", "LMNP", "Revenus fonciers"].includes(r.value.trim())) r.value = t.value === "vide" ? "Revenus fonciers" : "LMNP"; });
 
 /* ============ Démarrage ============ */
-const migrate = () => { if (!S.cfg || typeof S.cfg !== "object") S.cfg = {bailleur:"", adr:{}}; if (!Array.isArray(S.modeles)) S.modeles = []; if (!Array.isArray(S.clotures)) S.clotures = []; if (!S.rapp || typeof S.rapp !== "object") S.rapp = {}; for (const k of ["biens","tarifs","journal","factures","locataires","seen","partages","edl","inv","docs"]) if (!Array.isArray(S[k])) S[k] = []; };
+const migrate = () => { if (!S.cfg || typeof S.cfg !== "object") S.cfg = {bailleur:"", adr:{}}; if (!Array.isArray(S.modeles)) S.modeles = []; if (!Array.isArray(S.clotures)) S.clotures = []; if (!S.rapp || typeof S.rapp !== "object") S.rapp = {}; for (const k of ["biens","tarifs","journal","factures","locataires","seen","partages","edl","inv","docs"]) if (!Array.isArray(S[k])) S[k] = []; for (const j of S.journal) if (j && j.cat === "Écart de rapprochement" && j.hc !== "x") j.hc = "x"; };
 function startApp(){
   S = load();
   if (!S || !Array.isArray(S.journal)){ S = emptyData(); persist(); }
