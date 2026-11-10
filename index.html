@@ -211,6 +211,7 @@ body.welcome{padding-bottom:40px}
 .hero{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -14px 28px rgba(0,0,0,.14),0 14px 28px -14px color-mix(in srgb,var(--accent) 80%,#000)}
 .hero::before{content:"";position:absolute;inset:0 0 55% 0;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0));pointer-events:none}
 .hero > *{position:relative}
+.accbig{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0 8px 10px;margin:4px 0;border-left:5px solid #fff;border-radius:4px}.accbig .v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}.soldebig{border-left:5px solid var(--accent);padding:4px 0 6px 12px;margin:6px 0 10px;display:flex;flex-direction:column;gap:4px;align-items:flex-start}.soldebig .v{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
 .glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:6px 12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bourse{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px -14px #53247A}
 .top .app{font-size:21px}
@@ -638,7 +639,7 @@ function viewHome(){
   return topbar("Gestion Locative Facile") + `
   <div class="card hero"><div class="lbl">Solde de mes comptes appartements</div><div class="big num">${eur(tot)}</div>
     <div class="glass">${ids.map(id => { const p = placeOf(id), on = bourseOn(), parts = on ? PLACE_CATS.filter(c => p.by[c]).map(c => (c === "Bourse" ? "bourse" : c) + " " + eur(p.by[c])).concat(p.interets ? ["intérêts " + eur(p.interets)] : []) : [];
-      return kv(bienPill(id), eur(soldeBien(id)), "") + (parts.length ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">(${parts.join(" + ")}) · total ${eur(r2(soldeBien(id) + p.total))}</div>` : ""); }).join("")}
+      return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(soldeBien(id))}</span></div>` + (parts.length ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">(${parts.join(" + ")}) · total ${eur(r2(soldeBien(id) + p.total))}</div>` : ""); }).join("")}
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
   ${matelasHome()}${bourseCard()}${placeCard(null)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
@@ -836,9 +837,10 @@ function viewBienVue(){
   const t = live(S.locataires).filter(x => x.bien === id);
   return `
   <div class="card"><div class="top"><h2>${bienPill(id)} ${y}</h2></div>
+    <div class="soldebig" style="border-color:${BIEN_COL[id] || "var(--accent)"}"><div class="small muted">Solde du compte dans l'appli aujourd'hui (à comparer avec ta banque)</div><div class="v num" style="color:${BIEN_COL[id] || "var(--accent)"}">${eur(soldeBien(id))}</div><button class="btn ghost sm" data-act="go" data-v="month">Saisir le solde de la banque</button></div>
     ${kv("Solde du compte au 1er janvier", eur(soldeAvant(id, y)))}${kv("Loyers (encaissés + prévus)", eur(s.rec))}${kv("Charges (payées + prévues)", "− " + eur(s.dep))}
     <div class="kv tot"><span>Cash flow</span><span class="num ${signCl(s.cf)}">${eur(s.cf)}</span></div>
-    ${kv("Solde du compte au 31/12", eur(soldeBien(id, y)))}
+    ${kv("Solde prévu au 31/12", eur(soldeBien(id, y)))}
     ${b ? `<div class="small muted">${b.adresse ? esc(b.adresse) + " · " : ""}Loyer ${eur(b.loyer)} · crédit ${eur(b.credit)}/mois${b.regime ? " · " + esc(b.regime) : ""}${t.length ? " · locataire : " + esc(t[t.length-1].nom) : ""}</div>` : ""}</div>
   ${matelasCard(id)}
   ${(() => { const ty = usedTypes(id); if (!bourseOn() || !ty.length) return ""; return `<div class="card" style="border-color:${BOURSE_COL}"><div class="top"><h2 style="color:${BOURSE_COL}">${titleTypes(ty)}</h2><button class="btn sm" style="background:${BOURSE_COL}" data-act="bourse" data-v="${esc(id)}">Remboursement</button></div>${ty.map(c => { const b = bourseOf(id, c); return (ty.length > 1 ? `<div class="small muted" style="margin-top:6px"><b>${c}</b></div>` : "") + kv(c === "Bourse" ? "Mis en bourse" : "Mis sur " + c, eur(b.mis)) + kv("Remboursé", eur(b.remb)) + `<div class="kv tot"><span>Reste à rembourser</span><span class="num" style="color:${BOURSE_COL}">${eur(b.reste)}</span></div>`; }).join("")}</div>`; })()}
@@ -891,9 +893,10 @@ function viewLoc(){
 function viewTarifs(){
   const ids = bienIds(), hist = S.tarifs.slice().sort((a,b) => b.date.localeCompare(a.date));
   return `<div class="card"><div class="top"><h2>Tarifs en vigueur</h2><button class="btn sm" data-act="tarif-new">Nouveau tarif</button></div>
-    <div class="small muted">Un changement de montant = une nouvelle ligne. L'historique n'est jamais modifié.</div>
+    <div class="btns" style="margin:6px 0"><button class="btn ghost sm" data-act="jour-new">Changer le jour de prélèvement</button></div>
+    <div class="small muted">Un changement de montant = une nouvelle ligne. Touche une ligne de l'historique pour la corriger ou la supprimer.</div>
     ${ids.map(id => `<div class="env" style="padding:6px 0">${bienPill(id)}${POSTES_TARIF.map(p => { const t = tarifVigueur(id, p); return kv(esc(p), t ? eur(t.montant) + ` <span class="muted small">depuis le ${frDate(t.date)}</span>` : "—"); }).join("")}</div>`).join("")}</div>
-  <div class="card"><h2>Historique</h2><div class="rows">${hist.length ? hist.map(t => `<div class="row"><div class="main"><div class="t">${bienPill(t.bien)} ${esc(t.poste)}</div><div class="s">à partir du ${frDate(t.date)}${t.note ? " · " + esc(t.note) : ""}${t.app ? " · ajouté ici" : ""}</div></div><div class="amt num">${eur(t.montant)}</div></div>`).join("") : '<div class="empty">Aucun tarif.</div>'}</div></div>`;
+  <div class="card"><h2>Historique</h2><div class="rows">${hist.length ? hist.map(t => `<div class="row" data-act="tarif-edit" data-i="${S.tarifs.indexOf(t)}" style="cursor:pointer"><div class="main"><div class="t">${bienPill(t.bien)} ${esc(t.poste)}</div><div class="s">à partir du ${frDate(t.date)}${t.note ? " · " + esc(t.note) : ""}${t.app ? " · ajouté ici" : ""}</div></div><div class="amt num">${eur(t.montant)}</div></div>`).join("") : '<div class="empty">Aucun tarif.</div>'}</div></div>`;
 }
 function viewRapp(){
   const ids = bienIds(), hist = J().filter(j => j.cat === "Écart de rapprochement").sort((a,b) => b.date.localeCompare(a.date));
@@ -926,6 +929,31 @@ function sheetTarif(){
     <label class="f">Note<input id="tf-note" placeholder="Ex. nouveau tarif depuis septembre"></label>
     <div class="btns"><button class="btn" data-act="tf-save" style="flex:1">Ajouter</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
+function sheetTarifEdit(i){
+  const t = S.tarifs[i]; if (!t) return; const ids = bienIds();
+  openSheet(`<h2>Modifier le tarif</h2>
+    <label class="f">Bien<select id="te-bien">${ids.map(id => `<option value="${esc(id)}"${id === t.bien ? " selected" : ""}>${esc(bienName(id))}</option>`).join("")}</select></label>
+    <label class="f">Poste<select id="te-poste">${POSTES_TARIF.map(p => `<option${p === t.poste ? " selected" : ""}>${esc(p)}</option>`).join("")}</select></label>
+    <div class="grid2"><label class="f">À partir du<input id="te-date" type="date" value="${esc(t.date)}"></label><label class="f">Montant mensuel (€)<input id="te-mont" inputmode="decimal" value="${fmtNum(t.montant)}"></label></div>
+    <label class="f">Note<input id="te-note" value="${esc(t.note || "")}"></label>
+    <div class="btns"><button class="btn" data-act="te-save" data-i="${i}" style="flex:1">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>
+    <div class="btns"><button class="btn ghost sm" data-act="te-del" data-i="${i}" style="color:var(--bad)">Supprimer cette ligne</button></div>`);
+}
+function jourCats(bien){ return [...new Set(J().filter(j => (bien === "all" || j.bien === bien) && (j.type === "Dépense" || j.type === "Recette")).map(j => j.cat))].sort((a, b) => a.localeCompare(b, "fr")); }
+function sheetJour(){
+  const ids = bienIds(), d = V.jr = Object.assign({bien:"all", cat:"Crédit (mensualité)", jour:"24", from:todayIso().slice(0, 8) + "01", pointees:false}, V.jr || {});
+  const cats = jourCats(d.bien); if (!cats.includes(d.cat)) d.cat = cats[0] || "";
+  const n = jourMatches(d).length;
+  openSheet(`<h2>Changer le jour de prélèvement</h2><div class="small muted">Déplace en une fois toutes les lignes d'une catégorie au même jour du mois (ex. crédit le 24, assurance le 5). Un mois trop court prend son dernier jour.</div>
+    <label class="f">Bien<select id="jr-bien"><option value="all">Tous les biens</option>${ids.map(id => `<option value="${esc(id)}"${id === d.bien ? " selected" : ""}>${esc(bienName(id))}</option>`).join("")}</select></label>
+    <label class="f">Catégorie<select id="jr-cat">${cats.map(c => `<option${c === d.cat ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+    <div class="grid2"><label class="f">Nouveau jour du mois<input id="jr-jour" inputmode="numeric" value="${esc(d.jour)}"></label><label class="f">À partir du<input id="jr-from" type="date" value="${esc(d.from)}"></label></div>
+    <label class="f" style="flex-direction:row;gap:8px;align-items:center"><input id="jr-pt" type="checkbox"${d.pointees ? " checked" : ""} style="width:auto"> Inclure aussi les lignes déjà pointées</label>
+    <div class="info">${n} ligne(s) seront déplacées.</div>
+    <div class="btns"><button class="btn" data-act="jr-save" style="flex:1">Appliquer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+}
+function jourMatches(d){ return J().filter(j => (d.bien === "all" || j.bien === d.bien) && j.cat === d.cat && j.date >= d.from && (d.pointees || j.pointe !== "x")); }
+function jourDate(iso, jour){ const [y, m] = iso.split("-").map(Number), last = new Date(y, m, 0).getDate(); return y + "-" + pad(m) + "-" + pad(Math.min(jour, last)); }
 function sheetPartage(frais){
   const p = partagesList().find(x => x.frais === frais) || {frais, total:0, partStudio:0.5};
   const ids = bienIds(), s1 = ids.includes("STUDIO") ? "STUDIO" : ids[0], s2 = ids.includes("T2") ? "T2" : ids.find(i => i !== s1);
@@ -1162,6 +1190,14 @@ document.addEventListener("click", ev => {
       S.journal.push({id:uid(), date:f.date, bien:f.bien, type:"Entrée", cat:f.cat || "Bourse", lib:"Remboursement " + (!f.cat || f.cat === "Bourse" ? "bourse" : f.cat), montant:r2(mt), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"", upd:Date.now()});
       V.bs = null; persist(); closeSheet(); toast("Remboursement de " + eur(mt) + " enregistré"); render(); break; }
     case "tarif-new": sheetTarif(); break;
+    case "tarif-edit": sheetTarifEdit(+b.dataset.i); break;
+    case "te-save": { const t = S.tarifs[+b.dataset.i], mt = parseNum($("#te-mont").value), d = $("#te-date").value; if (!t) return; if (!mt || mt <= 0 || !d) return toast("Date et montant obligatoires");
+      Object.assign(t, {bien:$("#te-bien").value, poste:$("#te-poste").value, date:d, montant:r2(mt), note:$("#te-note").value.trim(), app:true, upd:Date.now()}); persist(); closeSheet(); toast("Tarif corrigé"); render(); break; }
+    case "te-del": { const i = +b.dataset.i; if (!S.tarifs[i]) return; S.tarifs.splice(i, 1); persist(); closeSheet(); toast("Tarif supprimé"); render(); break; }
+    case "jour-new": sheetJour(); break;
+    case "jr-save": { const d = V.jr, j = parseInt($("#jr-jour").value, 10); if (!(j >= 1 && j <= 31)) return toast("Jour entre 1 et 31");
+      d.jour = String(j); const L = jourMatches(d); if (!L.length) return toast("Aucune ligne à déplacer");
+      L.forEach(x => { x.date = jourDate(x.date, j); x.upd = Date.now(); }); persist(); closeSheet(); toast(L.length + " ligne(s) déplacée(s) au " + j); render(); break; }
     case "tf-save": { const mt = parseNum($("#tf-mont").value), d = $("#tf-date").value; if (!mt || mt <= 0 || !d) return toast("Date et montant obligatoires");
       S.tarifs.push({bien:$("#tf-bien").value, poste:$("#tf-poste").value, date:d, montant:r2(mt), note:$("#tf-note").value.trim(), app:true, upd:Date.now()}); persist(); closeSheet(); toast("Tarif ajouté"); render(); break; }
     case "partage": sheetPartage(v); break;
@@ -1222,6 +1258,7 @@ document.addEventListener("input", ev => {
 document.addEventListener("change", ev => {
   const t = ev.target;
   if (t.id === "file" && t.files[0]) { onFile(t.files[0]); t.value = ""; return; }
+  if (/^jr-/.test(t.id) && V.jr){ const d = V.jr; if (t.id === "jr-bien"){ d.bien = t.value; } if (t.id === "jr-cat") d.cat = t.value; if (t.id === "jr-jour") d.jour = t.value; if (t.id === "jr-from") d.from = t.value || d.from; if (t.id === "jr-pt") d.pointees = t.checked; sheetJour(); return; }
   if (/^rp-/.test(t.id)){ const x = parseNum(t.value); S.rapp = S.rapp || {}; S.rapp[t.dataset.bien] = t.value.trim() === "" || x === null ? "" : x; persist(); render(); return; }
   if (t.id === "sec-delay"){ SEC.cfg.delay = +t.value; secCfgSave(); return; }
   if (V.tab === "add" && /^f-(cat|date)$/.test(t.id)){ collectDraft(); autoSuggest(false); updateInfo(); }
@@ -1230,8 +1267,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.14";
+const APP_VERSION = "1.7.15";
 const CHANGELOG = [
+  {v:"1.7.15", date:"2026-11-10", titre:"Soldes bien visibles, tarifs modifiables, jour de prélèvement", items:["Accueil : le solde de chaque compte est en gros, avec la couleur du bien.","Pointage › Comptes des biens : le solde de l’appli aujourd’hui en gros, et un champ « Solde de ma banque » directement dedans : tu le changes quand tu veux, l’écart se met à jour, et tu peux enregistrer l’ajustement.","Biens › Vue : le solde du compte aujourd’hui (à comparer avec la banque) en gros en haut de la carte.","Biens › Tarifs : touche une ligne de l’historique pour la corriger ou la supprimer.","Biens › Tarifs › « Changer le jour de prélèvement » : déplace en une fois toutes les lignes d’une catégorie au même jour du mois (crédit le 24, assurance le 5…), à partir d’une date."]},
   {v:"1.7.14", date:"2026-11-10", titre:"Retour au même endroit", items:["Quand tu ouvres une opération pour la modifier puis que tu appuies sur « Retour », tu retrouves la page exactement là où tu l’avais laissée, au lieu de remonter tout en haut."]},
   {v:"1.7.13", date:"2026-11-10", titre:"Charges par catégorie en tableau", items:["Biens › Vue et Dépenses : les barres (qui ne servaient à rien, tout étant comparé au Crédit) sont remplacées par un tableau : Catégorie, Total, Payé, Reste, avec une ligne de total. Reste = ce qui n’est pas encore payé, « payé ✓ » quand tout est réglé.","Compta › Charges par poste : même tableau (Catégorie et Total), sans colonnes de paiement, et le « payé ✓ » ne s’affiche plus à tort à cet endroit."]},
   {v:"1.7.12", date:"2026-11-10", titre:"Export au choix : biens, période, contenu", items:["Le bouton « Exporter » (Pointage et Bilan) ouvre une seule fenêtre : tu coches les biens (Studio, T2 ou les deux), tu choisis le premier et le dernier mois (un mois, plusieurs mois, plusieurs années d’un coup, avec les raccourcis Ce mois / Cette année / Année dernière / Tout) et le contenu (tout, dépenses seulement ou recettes seulement), en Excel ou en PDF.","Correction : quand un seul bien était affiché, l’export sortait quand même les deux biens. Le bien affiché est maintenant pré-coché et tu peux le changer.","Biens › Vue et Dépenses : la longue liste d’opérations est maintenant rangée par mois (un bandeau par mois avec ses recettes, ses dépenses et son résultat). Quatre présentations au choix : « Colonnes » (les mois côte à côte : 3 colonnes sur iPad en paysage, 2 en portrait, 1 sur téléphone, c’est choisi par défaut sur grand écran), « Par mois », « Tableau » (colonnes Date, Catégorie, Entrée, Sortie, Pointé, avec les totaux du mois) et « Liste ». Un filtre Tout / Dépenses / Recettes.","Charges par catégorie : une ligne entièrement payée affiche maintenant « payé ✓ » (avant, rien ne s’affichait, seul le « reste à payer » apparaissait).","Les exports choisis ont une synthèse, un « mois par mois », un « par catégorie » et la liste des opérations (avec la colonne « Hors compta »)."]},
@@ -3236,10 +3274,13 @@ document.addEventListener("click", ev => {
 function soldesCard(){
   const ids = V.bf === "all" ? bienIds() : [V.bf]; if (!ids.length) return "";
   const att = id => J().filter(j => j.bien === id && j.compte !== "Perso" && j.pointe !== "x" && j.date <= todayIso() && !isArch(j)), sg = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x));
-  return `<div class="card"><h2>Comptes des biens</h2>${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null, a = att(id), sa = r2(sum(a.map(rlSigned)));
-      return `<div class="env" style="padding:8px 0;gap:4px"><div class="top">${bienPill(id)}<span class="num"><b>${eur(calc)}</b></span></div><div class="small muted">Solde d'après les opérations pointées</div>
-        ${a.length ? `<div class="kv"><span class="small">Pas encore pointées (${a.length})</span><span class="num small">${sg(sa)}</span></div>` : ""}${has ? `<div class="kv"><span class="small">Dernier solde saisi du relevé</span><span class="num small">${eur(reel)}</span></div><div class="kv"><span class="small">Écart</span><span class="num small ${ec ? "neg" : "pos"}">${ec ? sg(ec) : "aucun"}</span></div>${ec ? `<div class="small muted">${ecartPhrase(ec)}</div>` : ""}` : ""}
-        <button class="btn ghost sm" data-act="rl-go" data-bien="${esc(id)}">Comparer avec le relevé</button></div>`; }).join("")}
+  return `<div class="card"><h2>Comptes des biens</h2><div class="small muted">Le gros chiffre est le solde de l'appli aujourd'hui (opérations pointées). Saisis le solde de ta banque pour voir l'écart.</div>${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null, a = att(id), sa = r2(sum(a.map(rlSigned))), col = BIEN_COL[id] || "var(--accent)";
+      return `<div class="env" style="padding:10px 0;gap:6px"><div class="top">${bienPill(id)}</div>
+        <div class="soldebig" style="border-color:${col}"><div class="small muted">Solde dans l'appli aujourd'hui</div><div class="v num" style="color:${col}">${eur(calc)}</div></div>
+        ${a.length ? `<div class="kv"><span class="small">Pas encore pointées (${a.length})</span><span class="num small">${sg(sa)}</span></div>` : ""}
+        <label class="f">Solde de ma banque (€)<input id="rp-${esc(id)}" data-bien="${esc(id)}" inputmode="decimal" value="${has ? fmtNum(reel) : ""}" placeholder="0,00"></label>
+        ${has ? `<div class="kv"><span>Écart (banque − appli)</span><span class="num ${ec ? "neg" : "pos"}">${ec ? sg(ec) : "aucun"}</span></div>${ec ? `<div class="small muted">${ecartPhrase(ec)}</div><button class="btn" data-act="rapp-save" data-v="${esc(id)}">Enregistrer l'ajustement de ${eur(Math.abs(ec))}</button>` : `<div class="info">Le solde est juste.</div>`}` : ""}
+        <button class="btn ghost sm" data-act="rl-go" data-bien="${esc(id)}">Comparer avec un relevé (fichier)</button></div>`; }).join("")}
     ${ids.length > 1 ? kv("Total des comptes", `<b>${eur(r2(sum(ids.map(id => soldeBien(id)))))}</b>`) : ""}</div>`;
 }
 
