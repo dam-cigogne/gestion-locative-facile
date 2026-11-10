@@ -488,7 +488,16 @@ function bourseOf(id, cat){
 }
 function splitPartage(total, part){ const a = r2(total * part); return [a, r2(total - a)]; }   // STUDIO arrondi, T2 = le reste
 const bkind = id => { const b = S.biens.find(x => x.id === id); return b && b.bail === "vide" ? "vide" : "meuble"; };
-const partagesList = () => S.partages.length ? S.partages : Object.keys(PARTAGE_CAT).map(f => ({frais:f, total:0, partStudio:0.5}));
+function partParts(p){   // parts par compte : {id: fraction}. Ancien format : partStudio (Studio / T2)
+  if (p.parts && Object.keys(p.parts).length) return p.parts;
+  const ids = bienIds(), s1 = ids.includes("STUDIO") ? "STUDIO" : ids[0], s2 = ids.includes("T2") ? "T2" : ids.find(i => i !== s1), ps = p.partStudio == null ? 0.5 : p.partStudio, o = {};
+  if (s1) o[s1] = ps; if (s2) o[s2] = r2(1 - ps); return o; }
+function splitParts(total, parts){   // tous les comptes arrondis sauf le dernier = le reste
+  const ids = Object.keys(parts); let rest = total; return ids.map((id, i) => { const m = i === ids.length - 1 ? r2(rest) : r2(total * parts[id]); rest = r2(rest - m); return [id, m]; }); }
+const partagesList = () => (S.partages.length ? S.partages : Object.keys(PARTAGE_CAT).map(f => ({frais:f, total:0, partStudio:0.5}))).map(p => Object.assign({}, p, {parts:partParts(p)}));
+const partagesEnsure = () => { if (!S.partages.length) S.partages = partagesList().map(p => ({frais:p.frais, total:p.total, parts:p.parts})); return S.partages; };
+const partCat = p => p.cat || PARTAGE_CAT[p.frais] || p.frais;
+const partTxt = (p, sep) => splitParts(p.total, p.parts).map(([id, m]) => bienName(id) + " " + Math.round(p.parts[id] * 1000) / 10 + " % (" + eur(m) + ")").join(sep || " · ");
 function tarifVigueur(bien, poste){
   const L = S.tarifs.filter(t => t.bien === bien && t.poste === poste && t.date && t.date <= todayIso()).sort((a,b) => b.date.localeCompare(a.date));
   return L[0] || null;
@@ -898,9 +907,9 @@ function viewBienVue(){
   ${opsCard("Toutes les opérations", ops, true)}`;
 }
 function partagesCard(){
-  return `<div class="card"><h2>Frais partagés entre les 2 comptes</h2><div class="small muted">Saisis le total une seule fois : l'appli crée une ligne par compte (part Studio arrondie, T2 = le reste).</div>
-    <div class="rows">${partagesList().map(p => { const [a, b] = splitPartage(p.total, p.partStudio);
-      return `<div class="row"><div class="main"><div class="t">${esc(p.frais)}</div><div class="s">Total ${eur(p.total)} · Studio ${Math.round(p.partStudio*100)} % (${eur(a)}) · T2 ${eur(b)}</div></div><button class="mini" data-act="partage" data-v="${esc(p.frais)}">Saisir</button></div>`; }).join("")}</div></div>`;
+  return `<div class="card"><h2>Frais partagés entre comptes</h2><div class="small muted">Saisis le total une seule fois : l'appli crée une ligne par compte, selon les parts que tu as choisies (2, 3 comptes ou plus). Le dernier compte prend le reste après arrondi.</div>
+    <div class="rows">${partagesList().map(p => `<div class="row"><div class="main"><div class="t">${esc(p.frais)}</div><div class="s">Total ${eur(p.total)} · ${partTxt(p)}</div></div><button class="mini" data-act="part-edit" data-v="${esc(p.frais)}" aria-label="Modifier ce frais">✎</button><button class="mini" data-act="partage" data-v="${esc(p.frais)}">Saisir</button></div>`).join("") || '<div class="empty">Aucun frais partagé.</div>'}</div>
+    <div class="btns"><button class="btn sm ghost" data-act="part-new">+ Ajouter un frais partagé</button></div></div>`;
 }
 function viewBienDep(){
   const id = V.bsel, y = V.y, L = J().filter(j => j.bien === id && yr(j) === y && j.type === "Dépense" && !HC(j)), cats = {};
@@ -1018,20 +1027,43 @@ function sheetJour(){
 }
 function jourMatches(d){ return J().filter(j => (d.bien === "all" || j.bien === d.bien) && j.cat === d.cat && j.date >= d.from && (d.pointees || j.pointe !== "x")); }
 function jourDate(iso, jour){ const [y, m] = iso.split("-").map(Number), last = new Date(y, m, 0).getDate(); return y + "-" + pad(m) + "-" + pad(Math.min(jour, last)); }
+function partInputs(parts, prefix){   // une case % par compte
+  return bienIds().map((id, i) => `<div class="grid2 dxi"><label style="display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink)"><input type="checkbox" style="width:22px;height:22px;flex:none;margin:0" id="${prefix}-on-${i}" data-pid="${esc(id)}" ${parts && parts[id] != null ? "checked" : ""}><span>${esc(bienName(id))}</span></label><label class="f" style="margin:0"><input id="${prefix}-pc-${i}" inputmode="decimal" aria-label="Part de ${esc(bienName(id))} (%)" value="${parts && parts[id] != null ? fmtNum(Math.round(parts[id] * 1000) / 10) : ""}" placeholder="%"></label></div>`).join("");
+}
+function partRead(prefix){   // lit les cases : {parts:{id:fraction}, somme (en %)}
+  const parts = {}; let sum = 0;
+  bienIds().forEach((id, i) => { const on = $("#" + prefix + "-on-" + i); if (!on || !on.checked) return; const v = parseNum($("#" + prefix + "-pc-" + i).value) || 0; parts[id] = v / 100; sum += v; });
+  return {parts, sum:Math.round(sum * 100) / 100};
+}
 function sheetPartage(frais){
-  const p = partagesList().find(x => x.frais === frais) || {frais, total:0, partStudio:0.5};
-  const ids = bienIds(), s1 = ids.includes("STUDIO") ? "STUDIO" : ids[0], s2 = ids.includes("T2") ? "T2" : ids.find(i => i !== s1);
-  V.pt = {frais, s1, s2};
-  openSheet(`<h2>${esc(frais)} · 2 comptes</h2>
-    <div class="grid2"><label class="f">Total (€)<input id="pt-total" inputmode="decimal" value="${p.total ? fmtNum(p.total) : ""}"></label><label class="f">Part ${esc(bienName(s1))} (%)<input id="pt-part" inputmode="decimal" value="${fmtNum(Math.round(p.partStudio * 1000) / 10)}"></label></div>
+  const p = partagesList().find(x => x.frais === frais) || {frais, total:0, parts:partParts({})};
+  V.pt = {frais};
+  openSheet(`<h2>${esc(frais)}</h2>
+    <label class="f">Total (€)<input id="pt-total" inputmode="decimal" value="${p.total ? fmtNum(p.total) : ""}"></label>
+    <div class="small muted">Comptes concernés et part de chacun (modifiable pour cette fois) :</div>${partInputs(p.parts, "pt")}
     <div class="grid2"><label class="f">Date<input id="pt-date" type="date" value="${todayIso()}"></label><label class="f">Payé depuis<select id="pt-compte"><option value="Bien">Compte du bien</option><option value="Perso">Compte perso</option></select></label></div>
     <div class="seg"><button class="on" id="pt-pt" data-act="pt-tog">Pointé (passé sur le compte)</button></div>
     <div id="pt-info" class="info"></div>
-    <div class="btns"><button class="btn" data-act="pt-save" style="flex:1">Créer les 2 lignes</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+    <div class="btns"><button class="btn" data-act="pt-save" style="flex:1">Créer les lignes</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
   V.pt.pt = true; ptInfo();
 }
-function ptInfo(){ const t = parseNum($("#pt-total").value) || 0, pc = (parseNum($("#pt-part").value) || 0) / 100, [a, b] = splitPartage(t, pc);
-  $("#pt-info").textContent = `${bienName(V.pt.s1)} ${eur(a)} · ${bienName(V.pt.s2)} ${eur(b)}`; }
+function ptInfo(){ const t = parseNum($("#pt-total").value) || 0, r = partRead("pt"), L = splitParts(t, r.parts);
+  const el = $("#pt-info"); if (!el) return;
+  el.textContent = (L.map(([id, m]) => bienName(id) + " " + eur(m)).join(" · ") || "Coche au moins deux comptes") + (Math.abs(r.sum - 100) > 0.01 ? " · attention : les parts font " + r.sum + " % (il faut 100 %)" : ""); }
+function sheetPartEdit(frais){
+  const ex = frais ? partagesList().find(x => x.frais === frais) : null, ids = bienIds(), cats = CATS["Dépense"];
+  const parts = ex ? ex.parts : Object.fromEntries(ids.slice(0, 2).map(id => [id, 0.5])), cat = ex ? partCat(ex) : cats[cats.length - 1];
+  V.pe = {old:frais || null};
+  openSheet(`<h2>${ex ? "Modifier le frais partagé" : "Nouveau frais partagé"}</h2>
+    <label class="f">Nom du frais<input id="pe-nom" value="${esc(ex ? ex.frais : "")}" placeholder="Ex. Ménage de l'escalier"></label>
+    <label class="f">Catégorie dans la compta<select id="pe-cat">${[...new Set([cat].concat(cats))].map(c => `<option ${c === cat ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+    <div class="small muted">Comptes qui se partagent ce frais et part de chacun (le total doit faire 100 %). Ces parts servent de valeurs de départ à chaque saisie.</div>${partInputs(parts, "pe")}
+    <div id="pe-info" class="info"></div>
+    <div class="btns"><button class="btn" data-act="pe-save" style="flex:1">Enregistrer</button>${ex ? '<button class="btn danger" data-act="pe-del">Supprimer</button>' : ""}<button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+  peInfo();
+}
+function peInfo(){ const r = partRead("pe"), n = Object.keys(r.parts).length, el = $("#pe-info"); if (!el) return;
+  el.textContent = n + " compte(s) · total des parts " + r.sum + " %" + (Math.abs(r.sum - 100) > 0.01 ? " (il faut 100 %)" : " ✓"); el.className = "info" + (Math.abs(r.sum - 100) > 0.01 ? " warn" : ""); }
 
 function sheetFacture(id){
   const f = id ? S.factures.find(x => x.id === id) : {fourn:"",num:"",date:todayIso(),cat:"TRAVAUX",desc:"",prix:"",jdmm:"",scan:""};
@@ -1358,12 +1390,21 @@ document.addEventListener("click", ev => {
     case "tf-save": { const mt = parseNum($("#tf-mont").value), d = $("#tf-date").value; if (!mt || mt <= 0 || !d) return toast("Date et montant obligatoires");
       S.tarifs.push({bien:$("#tf-bien").value, poste:$("#tf-poste").value, date:d, montant:r2(mt), note:$("#tf-note").value.trim(), app:true, upd:Date.now()}); persist(); closeSheet(); toast("Tarif ajouté"); render(); break; }
     case "partage": sheetPartage(v); break;
+    case "part-new": sheetPartEdit(null); break;
+    case "part-edit": sheetPartEdit(v); break;
+    case "pe-save": { const nom = $("#pe-nom").value.trim(), r = partRead("pe"), n = Object.keys(r.parts).length;
+      if (!nom) return toast("Donne un nom au frais"); if (n < 2) return toast("Coche au moins deux comptes"); if (Math.abs(r.sum - 100) > 0.01) return toast("Les parts doivent faire 100 % (actuellement " + r.sum + " %)");
+      const L = partagesEnsure(), old = V.pe.old; if (L.some(x => x.frais === nom && x.frais !== old)) return toast("Ce nom existe déjà");
+      const o = old ? L.find(x => x.frais === old) : null, rec = {frais:nom, total:o ? o.total : 0, parts:r.parts, cat:$("#pe-cat").value}; if (o) Object.assign(o, rec, {partStudio:undefined}); else L.push(rec);
+      persist(); closeSheet(); toast("Frais partagé enregistré"); render(); break; }
+    case "pe-del": { const old = V.pe.old; if (!old) return; const L = partagesEnsure(); S.partages = L.filter(x => x.frais !== old); persist(); closeSheet(); toast("Frais partagé supprimé (les lignes déjà créées restent)"); render(); break; }
     case "pt-tog": V.pt.pt = !V.pt.pt; b.classList.toggle("on", V.pt.pt); break;
-    case "pt-save": { const t = parseNum($("#pt-total").value), pc = (parseNum($("#pt-part").value) ?? 50) / 100, d = $("#pt-date").value;
-      if (!t || t <= 0) return toast("Saisis le total"); if (!d) return toast("Choisis une date"); if (pc < 0 || pc > 1) return toast("La part doit être entre 0 et 100 %");
-      const [x, y2] = splitPartage(t, pc), cat = PARTAGE_CAT[V.pt.frais] || V.pt.frais, now = Date.now(), cpt = $("#pt-compte").value;
-      [[V.pt.s1, x], [V.pt.s2, y2]].forEach(([bien, m]) => S.journal.push({id:uid(), date:d, bien, type:"Dépense", cat, lib:V.pt.frais, montant:m, compte:cpt, pointe:V.pt.pt ? "x" : "", compta:"", justif:"", fourn:"", note:"Frais partagés : total " + eur(t).replace(/[\u202f\u00a0]/g, " ") + ", part " + bienName(V.pt.s1) + " " + Math.round(pc*1000)/10 + " %", upd:now}));
-      persist(); closeSheet(); toast("2 lignes créées : " + eur(x) + " + " + eur(y2)); render(); break; }
+    case "pt-save": { const t = parseNum($("#pt-total").value), d = $("#pt-date").value, r = partRead("pt"), n = Object.keys(r.parts).length;
+      if (!t || t <= 0) return toast("Saisis le total"); if (!d) return toast("Choisis une date"); if (n < 2) return toast("Coche au moins deux comptes"); if (Math.abs(r.sum - 100) > 0.01) return toast("Les parts doivent faire 100 % (actuellement " + r.sum + " %)");
+      const pf = partagesList().find(x => x.frais === V.pt.frais) || {frais:V.pt.frais}, cat = partCat(pf), now = Date.now(), cpt = $("#pt-compte").value, L = splitParts(t, r.parts);
+      L.forEach(([bien, m]) => S.journal.push({id:uid(), date:d, bien, type:"Dépense", cat, lib:V.pt.frais, montant:m, compte:cpt, pointe:V.pt.pt ? "x" : "", compta:"", justif:"", fourn:"", note:"Frais partagés : total " + eur(t).replace(/[\u202f\u00a0]/g, " ") + ", " + L.map(([id]) => bienName(id) + " " + Math.round(r.parts[id] * 1000) / 10 + " %").join(", "), upd:now}));
+      const mem = partagesEnsure().find(x => x.frais === V.pt.frais); if (mem){ mem.total = t; mem.parts = r.parts; mem.partStudio = undefined; }
+      persist(); closeSheet(); toast(L.length + " lignes créées : " + L.map(([, m]) => eur(m)).join(" + ")); render(); break; }
     case "rapp-save": { const reel = (S.rapp || {})[v], calc = soldeBien(v), ec = r2(reel - calc); if (!ec) return;
       S.journal.push({id:uid(), date:todayIso(), bien:v, type:ec > 0 ? "Entrée" : "Sortie", cat:"Écart de rapprochement", lib:"Ajustement sur relevé banque du " + frDate(todayIso()), montant:Math.abs(ec), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Solde réel relevé " + eur(reel).replace(/[\u202f\u00a0]/g, " "), hc:"x", upd:Date.now()});
       persist(); toast("Ajustement enregistré : " + eur(Math.abs(ec))); render(); break; }
@@ -1409,7 +1450,8 @@ document.addEventListener("input", ev => {
   const t = ev.target;
   if (t.id === "fq"){ V.fq = t.value; $("#flist").innerHTML = travList(); return; }
   if (t.id === "f-mont" && V.draft){ V.draft.montAuto = false; }
-  if (t.id === "pt-total" || t.id === "pt-part"){ ptInfo(); return; }
+  if (t.id === "pt-total" || /^pt-pc-/.test(t.id)){ ptInfo(); return; }
+  if (/^pe-pc-/.test(t.id)){ peInfo(); return; }
   if (V.tab === "add" && /^f-(mont|date)$/.test(t.id)) updateInfo();
 });
 document.addEventListener("change", ev => {
@@ -1425,8 +1467,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.39";
+const APP_VERSION = "1.7.40";
 const CHANGELOG = [
+  {v:"1.7.40", date:"2026-11-10", titre:"Frais partagés modifiables", items:["Frais partagés entre comptes : tu peux ajouter, renommer ou supprimer un frais (bouton ✎ ou « + Ajouter un frais partagé »).","Chaque frais peut être réparti entre 2, 3 comptes ou plus, avec un pourcentage par compte (le total doit faire 100 %). Le dernier total et les dernières parts sont mémorisés.","À la saisie, les parts restent modifiables pour cette fois ; l’appli crée une ligne par compte.","Rapprochement bancaire : exemple chiffré dans la visite guidée."]},
   {v:"1.7.39", date:"2026-11-10", titre:"Visite guidée : corrections", items:["Visite guidée : la diapo « Les réglages » entoure bien la roue dentée, les diapos « Les opérations » et « Tout pointer » sont visibles en paysage et sur iPhone, et le permis de louer passe après « Retenir le candidat » au lieu de couper la création d'un candidat. Le dossier de pièces est placé après la visite. Les captures qui avaient pris le style Fun par erreur (documents, envoi, signature papier…) sont refaites en style normal, la diapo « Style Fun » montre l'accueil, et la mention des « 12 secondes » pour Annuler est retirée."]},
   {v:"1.7.38", date:"2026-11-10", titre:"Visite guidée et guide refaits", items:["Visite guidée refaite avec l'affichage actuel : les 89 captures sont régénérées, 142 étapes, nouvelle diapo « Les points forts ». Nouvelles étapes : le formulaire de candidature (lien, page remplie par le candidat, e-mail préparé, collage dans l'appli, dossier de pièces), vues compactes (état des lieux, inventaire), fenêtre « Envoyer au locataire » en détail (Mail, Outlook, SMS, PDF joint, rangement dans la fiche), PDF rangés visibles dans la carte du bien. Le guide à lire gagne une section « Envoyer un document au locataire »."]},
   {v:"1.7.37", date:"2026-11-10", titre:"Bouton Outlook, état des lieux compact", items:["Fenêtre « Envoyer au locataire » : nouveau bouton « Outlook » qui ouvre directement l'appli Outlook (e-mail du locataire, objet et texte préremplis) ; si elle n'est pas installée, Outlook sur le web s'ouvre à la place. Le PDF reste à joindre à la main (l'e-mail ne peut pas l'attacher seul).","PDF rangé dans la fiche du locataire : il apparaît aussi dans la carte du bien (États des lieux, Inventaire, Bail et lettres), avec la mention « fiche locataire ».","État des lieux : même « Vue compacte » que l'inventaire (une ligne par élément, observation à la demande).","Inventaire du mobilier : nouvelle « Vue compacte (d'ensemble) » par défaut, une ligne par article (nom, quantité, état), toutes les catégories dépliées, pour tout voir d'un coup pendant la visite. Le bouton « ＋ / 📝 » ouvre l'observation d'un article ; « Vue détaillée » revient à l'ancien affichage.","Après « Enregistrer sur l'appareil », « Autres (PDF joint) » ou « Seulement ranger dans la fiche », la fenêtre « Envoyer au locataire » reste ouverte avec un message de confirmation : tu peux enregistrer le PDF puis enchaîner avec Mail ou SMS et le joindre."]},
@@ -1574,7 +1617,7 @@ const HELP = {
     "Sur un loyer encaissé, « Quittance » fabrique le PDF."]},
   "bld-dep":{t:"Biens › Dépenses", p:"Les dépenses du bien choisi.", l:[
     "Total par catégorie, prochaines dépenses, puis la liste complète.",
-    "Frais partagés (CFE, comptabilité, CGA/OGA, Rendement locatif) : tu saisis le total une fois, l'appli crée une ligne par bien."]},
+    "Frais partagés (CFE, comptabilité, CGA/OGA, Rendement locatif) : tu saisis le total une fois, l'appli crée une ligne par compte (2, 3 ou plus, % par compte). Le bouton ✎ modifie un frais, « + Ajouter un frais partagé » en crée un."]},
   "bld-vue":{t:"Biens › Vue", p:"La fiche d'un bien pour l'année choisie.", l:[
     "La jauge montre le matelas (12 mois de loyer, on n'y touche pas), ce qui est réservé pour les 3 prochains mois et ce qui est utilisable.",
     "Placements et bourse : une ligne résume l'argent placé et les intérêts ; « Détail › » ouvre la page Comptes bancaires.",
@@ -1875,7 +1918,7 @@ function monthBilan(y, m){
     return {id, rec:r2(rec), dep:r2(dep), res:r2(rec - dep), recP:r2(sum(l.filter(j => j.type === "Recette" && j.pointe === "x").map(j => j.montant))), depP:r2(sum(l.filter(j => j.type === "Dépense" && j.pointe === "x").map(j => j.montant))),
       debut:soldeAt(id, new Date(new Date(start) - 864e5).toISOString().slice(0, 10)), fin:soldeAt(id, end)}; });
   const fixes = []; for (const id of bienIds()) for (const p of POSTES_TARIF){ const v = tarifFor(id, p, end); if (v != null) fixes.push([bienName(id), p, v]); }
-  const part = partagesList().map(p => { const [a, b] = splitPartage(p.total, p.partStudio); return [p.frais, p.total, (Math.round(p.partStudio * 1000) / 10) + " %", a, b]; });
+  const part = partagesList().map(p => [p.frais, p.total, partTxt(p, " ; ")]);
   const info = bienIds().map(id => { const bn = S.biens.find(b => b.id === id) || {}, T = live(S.locataires).filter(t => t.bien === id && (!t.debut || t.debut <= end) && (!t.fin || t.fin >= start)), tt = T.length ? T : [tenantFor(id, end)].filter(Boolean);
     return {id, nom:bn.nom || id, adresse:bn.adresse || "", regime:bn.regime || "", tenants:tt}; });
   return {y, m, end, L, per, fixes, part, info, bailleur:(S.cfg && S.cfg.bailleur) || "", badr:(S.cfg && S.cfg.bailleurAdr) || "", tot:{rec:r2(sum(per.map(p => p.rec))), dep:r2(sum(per.map(p => p.dep)))}};
@@ -1888,7 +1931,7 @@ function bilanXlsx(y, m){
   add("Bilan", [["Bilan de " + MOIS[m].toLowerCase() + " " + y], [B.bailleur ? "Bailleur : " + B.bailleur + (B.badr ? " · " + B.badr : "") : ""], ["Bien", "Recettes prévues", "Dépenses prévues", "Résultat", "Recettes encaissées", "Dépenses payées", "Solde début de mois", "Solde fin de mois"]]
     .concat(B.per.map(p => [bienName(p.id), p.rec, p.dep, p.res, p.recP, p.depP, p.debut, p.fin])).concat([["Total", B.tot.rec, B.tot.dep, r2(B.tot.rec - B.tot.dep), r2(sum(B.per.map(p => p.recP))), r2(sum(B.per.map(p => p.depP))), r2(sum(B.per.map(p => p.debut))), r2(sum(B.per.map(p => p.fin)))]]),
     [22, 16, 16, 14, 18, 16, 18, 18], (k, c) => /^[B-H]/.test(k) && +k.slice(1) > 3 ? money : null);
-  add("Fixes", [["Tarifs en vigueur fin " + MOIS[m].toLowerCase()], [], ["Bien", "Poste", "Montant mensuel"]].concat(B.fixes).concat([[], ["Frais partagés", "Total", "Part Studio (%)", "Montant Studio", "Montant T2"]]).concat(B.part).concat([[], ["Biens et locataires"], ["Bien", "Adresse", "Régime", "Locataire", "Téléphone", "E-mail", "Début du bail", "Fin du bail", "Loyer charges comprises", "Dont charges", "Dépôt de garantie"]]).concat(B.info.flatMap(i => (i.tenants.length ? i.tenants : [null]).map(t => [i.nom, i.adresse, i.regime, t ? t.nom : "(aucun locataire)", t ? t.tel : "", t ? t.email : "", t ? frDate(t.debut) : "", t ? (t.fin ? frDate(t.fin) : "en cours") : "", t ? t.loyer : "", t ? t.charges || 0 : "", t ? t.depot : ""]))),
+  add("Fixes", [["Tarifs en vigueur fin " + MOIS[m].toLowerCase()], [], ["Bien", "Poste", "Montant mensuel"]].concat(B.fixes).concat([[], ["Frais partagés", "Total", "Répartition entre les comptes"]]).concat(B.part).concat([[], ["Biens et locataires"], ["Bien", "Adresse", "Régime", "Locataire", "Téléphone", "E-mail", "Début du bail", "Fin du bail", "Loyer charges comprises", "Dont charges", "Dépôt de garantie"]]).concat(B.info.flatMap(i => (i.tenants.length ? i.tenants : [null]).map(t => [i.nom, i.adresse, i.regime, t ? t.nom : "(aucun locataire)", t ? t.tel : "", t ? t.email : "", t ? frDate(t.debut) : "", t ? (t.fin ? frDate(t.fin) : "en cours") : "", t ? t.loyer : "", t ? t.charges || 0 : "", t ? t.depot : ""]))),
     [22, 30, 18, 22, 16, 26, 14, 14, 18, 14, 16], (k, c) => /^[B-K]/.test(k) && +k.slice(1) > 3 ? money : null);
   const ops = [["Date", "Bien", "Type", "Catégorie", "Libellé", "Montant", "Compte", "Pointé", "Saisi compta", "Fournisseur / n° facture", "Note"]].concat(B.L.map(j => [dt(j.date), bienName(j.bien), j.type, j.cat, j.lib, j.montant, j.compte || "Bien", j.pointe === "x" ? "x" : "", j.compta ? "x" : "", j.fourn, j.note]));
   add("Opérations", ops, [12, 16, 11, 26, 34, 14, 10, 8, 12, 24, 30], (k, c) => k[0] === "A" && +k.slice(1) > 1 ? "dd/mm/yyyy" : (k[0] === "F" && +k.slice(1) > 1 ? money : null));
@@ -1911,8 +1954,8 @@ function bilanPdf(y, m){
     if (!i.tenants.length) d.para("Aucun locataire enregistré.", 9.5, 12.5); d.y -= 4; }
   d.h("Tarifs en vigueur");
   for (const f of B.fixes){ d.need(16); d.text(M, d.y, f[0] + " · " + f[1], {size:10}); d.text(R, d.y, eur(f[2]), {size:10, right:true}); d.y -= 15; }
-  d.h("Frais partagés entre les 2 comptes");
-  for (const f of B.part){ d.need(16); d.text(M, d.y, f[0], {size:10}); d.text(R, d.y, "Total " + eur(f[1]) + " · Studio " + eur(f[3]) + " · T2 " + eur(f[4]), {size:9.5, right:true}); d.y -= 15; }
+  d.h("Frais partagés entre comptes");
+  for (const f of B.part){ d.need(16); d.text(M, d.y, f[0], {size:10}); d.text(R, d.y, "Total " + eur(f[1]), {size:9.5, right:true}); d.y -= 13; d.text(M, d.y, f[2], {size:8.5}); d.y -= 15; }
   d.h("Opérations (" + B.L.length + ")");
   const head = () => { ["Date", "Bien", "Catégorie · libellé"].forEach((t, i) => d.text([M, M + 58, M + 118][i], d.y, t, {size:9, bold:true, color:"#5C6B66"})); d.text(R - 40, d.y, "Montant", {size:9, bold:true, right:true, color:"#5C6B66"}); d.text(R, d.y, "Pointé", {size:9, bold:true, right:true, color:"#5C6B66"}); d.y -= 5; d.line(M, d.y, R, d.y); d.y -= 14; };
   head();
