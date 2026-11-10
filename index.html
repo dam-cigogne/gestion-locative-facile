@@ -530,7 +530,19 @@ function demoData(rich){
   const iv = (grp,nom,qte,etat) => ({id:uid(),grp,nom,qte,etat,com:""});
   d.inv.push({id:uid(),bien:"T2",type:"entree",date:dE,loc:"Julien Exemple",rem:"",ref:"",upd:0,
     items:[iv("Chambre","Lit (couchage 140 cm)","1","Bon"),iv("Chambre","Couette","1","Bon"),iv("Séjour","Table","1","Bon"),iv("Séjour","Chaises","4","Moyen"),iv("Cuisine","Réfrigérateur","1","Bon"),iv("Cuisine","Assiettes","6","Bon"),iv("Entretien","Aspirateur","1","Neuf")]});
-  d.cand = [{id:uid(),bien:"T2",nom:"Marie Candidate",tel:"0600000002",email:"marie.candidate@example.com",statut:"dem",dateDem:todayIso(),contrat:"",rev:2400,occ:"1",entree:"",garant:"",grev:"",visite:"",note:"Candidature d'exemple",pieces:{},fichiers:[]},{id:uid(),bien:"T2",nom:"Paul Dossier",tel:"0600000003",email:"paul.dossier@example.com",statut:"dos",dateDem:todayIso(),contrat:"CDI",rev:3100,occ:"2",entree:"",garant:"",grev:"",visite:"",note:"Candidature d'exemple",pieces:{},fichiers:[]}];
+  /* Logement vacant d'exemple : pour essayer tout le parcours candidat → visite → dossier → locataire → état des lieux (données fictives) */
+  d.biens.push({id:"T3",nom:"Appartement T3 (vacant)",solde0:0,date0:y+"-01-01",loyer:720,credit:0,regime:"LMNP",notes:"",upd:0,adresse:"3 impasse de la Démo, 00000 Ville-Test",desc:{type:"Appartement T3", surface:"56", etage:"3e étage", pieces:"3", copro:"Oui", dpe:"C", chauffage:"Électrique individuel", eauch:"Ballon électrique", annexes:"Parking"}});
+  const dd = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+  const cd = (nom, statut, dem, o) => Object.assign({id:uid(),bien:"T3",nom,tel:"0600000" + (100 + d.cand.length),email:nom.split(" ")[0].toLowerCase() + ".exemple@example.com",statut,dateDem:dd(dem),contrat:"",rev:"",occ:"1",entree:"",garant:"",grev:"",visite:"",note:"Candidature d'exemple (fictive)",pieces:{},fichiers:[]}, o || {});
+  d.cand = [];
+  d.cand.push(cd("Léa Exemple", "dem", -1, {rev:2600}));
+  d.cand.push(cd("Hugo Démo", "dem", 0, {rev:2100, occ:"2"}));
+  d.cand.push(cd("Nina Test", "vis", -4, {visite:dd(2), contrat:"CDI", rev:2900}));
+  d.cand.push(cd("Karim Essai", "vis", -6, {visite:dd(5), contrat:"CDD", rev:2300}));
+  d.cand.push(cd("Paul Dossier", "dos", -9, {visite:dd(-3), contrat:"CDI", rev:3400, occ:"2", garant:"Parent (garant)", grev:3800}));
+  d.cand.push(cd("Sophie Modèle", "dos", -12, {visite:dd(-6), contrat:"CDI", rev:3100, garant:"Visale"}));
+  d.cand.push(cd("Sam Refus", "ref", -15, {visite:dd(-10), contrat:"Étudiant", rev:900, note:"Revenus insuffisants (fictif)"}));
+  d.annonces = {T3:{statut:"publiee", upd:Date.now()}};
   return d;
 }
 
@@ -1224,6 +1236,7 @@ function render(){
   window.scrollTo(0, restore ? V.retY : same ? y0 : 0);
   if (restore) V.retSig = null;
   if (typeof phHydrate === "function") phHydrate();
+  if (typeof lockDocs === "function") lockDocs();
 }
 function openSheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; $("#sheetbg").hidden = false; }
 function closeSheet(){ $("#sheetbg").hidden = true; $("#sheet").innerHTML = ""; }
@@ -1408,8 +1421,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.29";
+const APP_VERSION = "1.7.30";
 const CHANGELOG = [
+  {v:"1.7.30", date:"2026-11-10", titre:"Documents signés verrouillés, rangement dans la fiche, démo de mise en location", items:["Un état des lieux ou un inventaire signé est maintenant verrouillé : plus de modification par erreur. Un bouton « Déverrouiller (exceptionnel) » permet de le rouvrir ; la première modification efface alors les signatures.","« Envoyer au locataire » : nouveau bouton « Ranger dans sa fiche » qui garde une copie du PDF (signé s'il l'est) dans Biens › Locataires › sa fiche › Documents. Un envoi en pièce jointe en garde aussi une copie.","Ta pièce d'identité de bailleur se range dans Biens › carte « Bailleur et biens ». La case correspondante de « Renforcer la preuve » est cochée toute seule (comme celle du locataire si sa pièce est dans sa fiche).","Démo : un logement vacant « Appartement T3 » avec 7 candidats fictifs (demandes, visites, dossiers à vérifier, refusé) pour essayer tout le parcours jusqu'à l'état des lieux d'entrée."]},
   {v:"1.7.29", date:"2026-11-10", titre:"Plus de zoom au double appui", items:["Un double appui rapide sur un bouton ou une ligne ne zoome plus sur iPad et iPhone (le zoom au pincement reste possible, et la saisie de montants n'est pas touchée)."]},
   {v:"1.7.28", date:"2026-11-10", titre:"Compta : barre de progression en couleurs", items:["Compta › À saisir : la barre de progression a trois couleurs : vert = lignes saisies, orange = lignes cochées pas encore validées, gris = ce qu'il reste à faire, avec une légende.","Le texte explique que cocher ne suffit pas : il faut toucher « Marquer comme saisi » pour valider les lignes cochées.","Les onglets Dépenses, Recettes et Échéances affichent ✓ quand tout est saisi.","Revenir en arrière : le texte explique comment remettre une ligne à saisir (onglet « Déjà saisi », coche, « Remettre à saisir »), et le bouton Annuler reste 30 secondes au lieu de 12.","Plus de zoom involontaire quand on touche deux fois vite un bouton ou une ligne (le zoom au pincement reste possible)."]},
   {v:"1.7.27", date:"2026-11-10", titre:"Nouveau placement depuis la vue Tous", items:["Comptes bancaires › Placements et bourse › Tous : une carte « Nouveau placement » liste chaque compte avec « Mettre de côté » et « Intérêts », sans avoir à choisir le bien avant."]},
@@ -1578,7 +1592,9 @@ const HELP = {
     "Importer un document déjà fait : bail signé, état des lieux ou inventaire. Un inventaire Excel ou CSV est lu ; les autres formats sont gardés tels quels. L'état des lieux importé devient l'état d'entrée, prêt pour la sortie.",
     "Faire signer : le bailleur puis le locataire signent au doigt, sur ce téléphone. La date et l'heure sont ajoutées, avec une page de preuve. C'est une signature électronique simple, valable mais moins forte qu'un service certifié.",
     "Les photos et les documents importés restent sur le téléphone : ils ne vont ni dans la sauvegarde ni dans Excel, mais les photos sont jointes au PDF.",
-    "Bail et lettres : relis chaque champ. Le dépôt de garantie ne peut pas dépasser 2 mois de loyer hors charges. Ces modèles ne remplacent pas un conseil juridique."]},
+    "Bail et lettres : relis chaque champ. Le dépôt de garantie ne peut pas dépasser 2 mois de loyer hors charges. Ces modèles ne remplacent pas un conseil juridique.",
+    "Un document signé (état des lieux, inventaire) est verrouillé. « Déverrouiller (exceptionnel) » le rouvre, mais la première modification efface les signatures.",
+    "Dans « Envoyer au locataire », « Ranger dans sa fiche » garde une copie du PDF dans Documents du locataire."]},
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
     "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
@@ -2266,6 +2282,7 @@ function sheetBailleur(){ const c = S.cfg || {};
 const biensCard = () => `<div class="card"><h2>Bailleur et biens</h2>
   <div class="kv"><span>Bailleur</span><span>${esc((S.cfg && S.cfg.bailleur) || "non renseigné")}</span></div>
   <div class="btns"><button class="btn ghost sm" data-act="bl-open">Modifier le bailleur</button></div>
+  ${idbRow()}
   <div class="rows">${live(S.biens).map(b => `<div class="row"><div class="main"><div class="t">${bienPill(b.id)}</div><div class="s">${esc(b.adresse || "adresse non renseignée")}</div></div><button class="mini" data-act="bn-edit" data-id="${b.id}">Modifier</button></div>`).join("")}</div>
   <div class="btns"><button class="btn ghost sm" data-act="bn-new">Ajouter un bien</button></div></div>`;
 document.addEventListener("click", ev => {
@@ -4339,7 +4356,7 @@ function proofPage(d, sig, titre){
     d.para("Ces mentions sont déclaratives : elles n'ont pas été vérifiées par l'appli.", 8.5, 12); }
 }
 function sigBanner(e){
-  return `<div class="btns"><button class="btn sm ghost" data-act="dx-rel">PDF de relecture (à relire avant de signer)</button></div>` + (e.sig ? `<div class="info">Signé par ${esc(e.sig.bailleur.nom || "le bailleur")} le ${hhmm(e.sig.bailleur.ts)} et par ${esc(e.sig.locataire.nom || "le locataire")} le ${hhmm(e.sig.locataire.ts)}. Modifier le document efface les signatures.</div><div class="btns"><button class="btn sm ghost" data-act="dx-sign">Refaire les signatures</button></div>`
+  return `<div class="btns"><button class="btn sm ghost" data-act="dx-rel">PDF de relecture (à relire avant de signer)</button></div>` + (e.sig ? `<div class="info">Signé par ${esc(e.sig.bailleur.nom || "le bailleur")} le ${hhmm(e.sig.bailleur.ts)} et par ${esc(e.sig.locataire.nom || "le locataire")} le ${hhmm(e.sig.locataire.ts)}. ${V.doc && V.doc.unlock ? "Déverrouillé : la première modification efface les signatures." : "🔒 Document signé et verrouillé : il ne peut plus être modifié."}</div><div class="btns">${V.doc && V.doc.unlock ? "" : '<button class="btn sm ghost" data-act="dx-unlock">Déverrouiller (exceptionnel)</button>'}<button class="btn sm ghost" data-act="dx-sign">Refaire les signatures</button></div>`
     : `<div class="btns"><button class="btn sm ghost" data-act="dx-sign">Faire signer sur l'écran</button><button class="btn sm ghost" data-act="dx-paper">Signer sur papier (1 page à imprimer)</button></div>`);
 }
 
@@ -5284,7 +5301,8 @@ function sendIntercept(name, data, mime){
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">PDF en pièce jointe</button></div>
     <div class="small muted">Le PDF s'ouvre dans le partage de ton téléphone (Mail, WhatsApp…). ${t && t.email ? "L'e-mail du locataire est copié : colle-le dans « À : »." : ""}</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="mail">E-mail prérempli (sans PDF)</button><button class="btn ghost" style="flex:1" data-act="snd" data-v="sms">SMS prérempli</button></div>
-    <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="save">Enregistrer seulement</button>${t ? `<button class="btn ghost" data-act="ledit" data-id="${t.id}">Fiche</button>` : ""}</div>
+    ${t ? `<div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="fiche">Ranger dans sa fiche</button><button class="btn ghost" data-act="ledit" data-id="${t.id}">Fiche</button></div><div class="small muted">Garde une copie dans Biens › Locataires › sa fiche › Documents, sans rien envoyer.</div>` : ""}
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="save">Enregistrer sur l'appareil (Fichiers…)</button></div>
     <div class="small muted">Une appli sur navigateur ne peut pas joindre un PDF ET remplir le destinataire en même temps : pour un envoi automatique, il faut un serveur d'envoi, ce que l'appli n'a volontairement pas. L'envoi reste donc à valider par toi.</div>`);
   return true;
 }
@@ -5293,10 +5311,12 @@ document.addEventListener("click", async ev => {
   if (a === "blank"){ await blankModel(v); return; }
   if (a !== "snd" || !PEND) return;
   const p = PEND, t = p.t;
-  if (v === "save"){ PEND = null; closeSheet(); saveFile(p.name, p.data, p.mime); return; }
+  if (v === "fiche"){ await sendArchive(p); PEND = null; closeSheet(); render(); return; }
+  if (v === "save"){ await sendArchive(p, true); PEND = null; closeSheet(); saveFile(p.name, p.data, p.mime); return; }
   if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
   if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
   if (v === "att"){
+    await sendArchive(p, true);
     if (t && t.email){ try { await navigator.clipboard.writeText(t.email); toast("E-mail copié : " + t.email); } catch(e){} }
     try { const file = new File([p.data], p.name, {type:p.mime});
       if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.bj}); return; } }
@@ -5320,6 +5340,51 @@ async function blankModel(k){
     return saveFile({impaye:"loyer-impaye-", attest:"attestation-loyer-", depot:"restitution-depot-", rappel:"rappel-etat-des-lieux-sortie-"}[k] + "vierge.pdf", letterPdf(k, o), "application/pdf");
   } catch(err){ toast("PDF impossible : " + err.message); }
 }
+
+/* Copie rangée dans la fiche du locataire (Documents) */
+const sendPtype = ti => /état des lieux/i.test(ti) ? "État des lieux" : /inventaire/i.test(ti) ? "Inventaire" : /bail/i.test(ti) ? "Bail / avenant" : /quittance/i.test(ti) ? "Quittance" : "Courrier";
+async function sendArchive(p, quiet){
+  const t = p.t, c = p.c; if (!t) return;
+  try {
+    const buf = new Uint8Array(p.data).buffer.slice(0), size = buf.byteLength, nom = c.titre + " (" + frDate(c.date) + ")";
+    if (docList("docs").some(d => !d.del && d.kind === "loc" && d.loc === t.id && d.nom === nom && d.size === size)){ if (!quiet) toast("Déjà dans la fiche de " + t.nom); return; }
+    const fid = uid(); await flPut(fid, {name:p.name, type:p.mime, buf});
+    docList("docs").push({id:fid, bien:c.bien, kind:"loc", loc:t.id, ptype:sendPtype(c.titre), nom, fname:p.name, date:c.date, type:p.mime, size, upd:Date.now()}); persist();
+    toast(quiet ? "Copie rangée dans la fiche de " + t.nom : "Rangé dans la fiche de " + t.nom + " › Documents");
+  } catch(e){ toast("Rangement impossible : " + (e && e.message || e)); }
+}
+/* ---------- Pièce d'identité du bailleur ---------- */
+const idbDoc = () => docList("docs").find(d => d.kind === "idb" && !d.del) || null;
+const tenantHasId = t => !!t && docList("docs").some(d => !d.del && d.kind === "loc" && d.loc === t.id && /identité/i.test(d.ptype || ""));
+function idbRow(){ const d = idbDoc();
+  return `<div class="row"><div class="main"><div class="t">Ma pièce d'identité (bailleur)</div><div class="s">${d ? esc(d.fname || d.nom) + " · ajoutée le " + frDate(d.date) : "Pas encore rangée. Reste sur cet appareil ; sert à cocher la preuve de signature."}</div></div>${d ? `<button class="mini" data-act="fl-open" data-id="${d.id}">Ouvrir</button><button class="mini" data-act="idb-del" data-id="${d.id}" aria-label="Retirer">×</button>` : `<label class="mini" style="cursor:pointer">Ajouter<input id="idb-file" type="file" accept="image/*,.pdf" hidden></label>`}</div>`; }
+document.addEventListener("change", async ev => {
+  const f = ev.target && ev.target.id === "idb-file" && ev.target.files[0]; if (!f) return;
+  try { const fid = uid(), type = f.type || "application/octet-stream"; await flPut(fid, {name:f.name, type, buf:await f.arrayBuffer()});
+    docList("docs").push({id:fid, bien:"", kind:"idb", nom:"Pièce d'identité du bailleur", fname:f.name, date:todayIso(), type, size:f.size, upd:Date.now()}); persist(); render(); toast("Pièce d'identité rangée sur cet appareil"); }
+  catch(e){ toast("Fichier non enregistré : " + (e && e.message || e)); }
+});
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act=idb-del]"); if (!b) return;
+  openSheet(`<h2>Retirer ta pièce d'identité ?</h2><p style="margin:0">Le fichier est effacé de cet appareil. Ton original reste dans tes fichiers.</p><div class="btns"><button class="btn danger" data-act="idb-del-ok" data-id="${b.dataset.id}">Retirer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+});
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act=idb-del-ok]"); if (!b) return;
+  const d = docList("docs").find(x => x.id === b.dataset.id); if (d){ d.del = true; d.upd = Date.now(); try { flDel(d.id); } catch(e){} persist(); } closeSheet(); render();
+});
+/* ---------- Document signé = verrouillé (déverrouillage exceptionnel) ---------- */
+const LOCK_ACTS = "edl-delitem,ph-del,edl-additem,edl-addroom,edl-delroom,bulk-open,inv-additem,inv-delitem,dx-sign,dx-paper,dx-del".split(",");
+function lockDocs(){
+  if (!V.doc || V.tab !== "bld") return; const e = docCur(); if (!e || !e.sig || V.doc.unlock) return;
+  document.querySelectorAll("#main input,#main select,#main textarea,#main button,#main label.mini").forEach(el => {
+    if (el.matches("[data-dx],[data-dxh],[data-edl-ph],#np-nom,[id^=ni-]") || LOCK_ACTS.includes(el.dataset.act)){ el.disabled = true; if (el.tagName === "LABEL") el.style.opacity = ".4"; el.style.opacity = ".5"; }
+  });
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "dx-unlock") openSheet(`<h2>Déverrouiller ce document ?</h2><p style="margin:0">Il est signé : le modifier efface les signatures, et il faudra le faire signer de nouveau. À n'utiliser qu'exceptionnellement (erreur à corriger).</p><div class="btns"><button class="btn danger" data-act="dx-unlock-ok">Déverrouiller</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+  if (b.dataset.act === "dx-unlock-ok"){ if (V.doc) V.doc.unlock = true; closeSheet(); render(); toast("Document déverrouillé"); }
+});
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
@@ -5348,8 +5413,8 @@ function proofStep(res, f){
   V.pf = {res, f}; const t = S.locataires.find(x => !x.del && res.locataire && x.nom === res.locataire.nom), ref = refFmt(res.hash);
   openSheet(`<h2>Renforcer la preuve (conseillé)</h2><div class="small muted">Ces mentions s'écrivent sur la page de preuve du PDF. Plus tu en coches, plus le dossier est solide. Elles restent déclaratives.</div>
     <label class="f">E-mail du locataire<input id="pf-mail" type="email" inputmode="email" value="${esc((t && t.email) || "")}" autocomplete="off"></label>
-    <label class="ck"><input type="checkbox" id="pf-idl"> Pièce d'identité du locataire jointe au dossier (fiche locataire › Documents)</label>
-    <label class="ck"><input type="checkbox" id="pf-idb"> Ma pièce d'identité de bailleur jointe au dossier</label>
+    <label class="ck"><input type="checkbox" id="pf-idl" ${tenantHasId(t) ? "checked" : ""}> Pièce d'identité du locataire jointe au dossier (fiche locataire › Documents)</label>
+    <label class="ck"><input type="checkbox" id="pf-idb" ${idbDoc() ? "checked" : ""}> Ma pièce d'identité de bailleur jointe au dossier ${idbDoc() ? "(rangée dans Réglages › Bailleur)" : "(à ranger dans Réglages › Bailleur)"}</label>
     <label class="ck"><input type="checkbox" id="pf-ms"> J'ai envoyé au locataire un e-mail pour qu'il confirme « lu et approuvé »</label>
     <label class="ck"><input type="checkbox" id="pf-mr"> J'ai reçu sa confirmation par e-mail (je la conserve)</label>
     <div class="btns"><button class="btn ghost" data-act="pf-mail">Écrire l'e-mail de confirmation</button></div>
