@@ -1425,9 +1425,10 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.34";
+const APP_VERSION = "1.7.35";
 const CHANGELOG = [
-  {v:"1.7.34", date:"2026-11-10", titre:"PDF de relecture lisible à l'écran", items:["Bail, état des lieux, inventaire : « PDF de relecture » ouvre le PDF dans le lecteur de l'appli pour le relire tout de suite, au lieu de la fenêtre d'envoi. Le bouton « Partager » du lecteur permet de l'envoyer.","Fenêtre d'envoi simplifiée : un seul bouton « Envoyer le PDF » (Mail, Messages, WhatsApp…) avec le PDF toujours joint, l'e-mail ou le numéro du locataire copié. Les boutons « e-mail sans PDF » et « SMS » sans pièce jointe sont supprimés (un lien e-mail ou SMS ne peut pas joindre de fichier)."]},
+  {v:"1.7.35", date:"2026-11-10", titre:"Lecteur PDF : toutes les pages", items:["Dans le lecteur de l'appli, un bouton « Toutes les pages » ouvre le PDF dans le lecteur du téléphone, qui permet de défiler sur toutes les pages (l'aperçu intégré de l'iPad n'affichait que la première)."]},
+  {v:"1.7.34", date:"2026-11-10", titre:"PDF de relecture lisible à l'écran", items:["Bail, état des lieux, inventaire : « PDF de relecture » ouvre le PDF dans le lecteur de l'appli pour le relire tout de suite, au lieu de la fenêtre d'envoi. Le bouton « Partager » du lecteur permet de l'envoyer.","Fenêtre d'envoi : trois boutons « Mail » (destinataire, objet et texte remplis), « SMS » (numéro et texte remplis) et « Autres » (PDF joint, partage du téléphone). Mail et SMS ne peuvent pas joindre le PDF (limite du téléphone). « Autres » ouvre une seule fois le partage du téléphone (Mail, Messages, WhatsApp, et aussi « Enregistrer dans Fichiers » pour garder un exemplaire). La case « Ranger dans la fiche » est cochée par défaut ; « Enregistrer sur l'appareil » et « Seulement ranger dans la fiche » sont des boutons à part. Fenêtre d'envoi simplifiée : un seul bouton « Envoyer le PDF » (Mail, Messages, WhatsApp…) avec le PDF toujours joint, l'e-mail ou le numéro du locataire copié. Les boutons « e-mail sans PDF » et « SMS » sans pièce jointe sont supprimés (un lien e-mail ou SMS ne peut pas joindre de fichier)."]},
   {v:"1.7.33", date:"2026-11-10", titre:"iPhone : tableaux d'emprunt ajustés, relecture envoyable", items:["Compta › Emprunt et intérêts et Échéancier : la ligne « Remboursé à ce jour » passe à la ligne et les tableaux sont plus compacts, ce qui évite que la page déborde et se réduise sur iPhone.","Le PDF de relecture s'ouvre maintenant directement à l'écran pour être lu (bouton Partager pour l'envoyer). Les boutons « Créer le bail / le PDF » (bail, lettres, état des lieux, inventaire, quittance) ouvrent maintenant tous la fenêtre « Envoyer au locataire » au lieu du partage brut ; « Enregistrer sur l'appareil (Fichiers…) » y reste proposé."]},
   {v:"1.7.32", date:"2026-11-10", titre:"Bouton « Fiche » accessible", items:["Dans Biens › Locataires, le bouton « Fiche » du locataire actuel est passé à gauche, à côté du titre : il n'est plus caché par les onglets de logements sur le côté (iPad).","Signature sur papier : après la photo de la page signée, un encadré « ✓ Page signée enregistrée » s'affiche en haut de la fenêtre, et « 3 · Envoyer le dossier signé » ouvre la fenêtre « Envoyer au locataire » (pièce jointe, e-mail, SMS, ranger dans sa fiche) au lieu du partage brut de l'iPad."]},
   {v:"1.7.31", date:"2026-11-10", titre:"Après une signature : envoyer et ranger comme pour tous les documents", items:["Après une signature électronique (courrier, restitution du dépôt, bail), « Continuer » ouvre maintenant la même fenêtre « Envoyer au locataire » que les autres documents : pièce jointe, e-mail, SMS, « Ranger dans sa fiche » ou enregistrement sur l'appareil.","Ton exemplaire signé reste rangé automatiquement dans Biens › Documents du bien.","Arrivée et Départ d'un locataire : si le logement est soumis au permis de louer, une étape « Permis de louer » apparaît dans chaque liste (demande à la mairie avant le bail, à prévoir dès le départ) avec un bouton vers le suivi."]},
@@ -4954,6 +4955,7 @@ document.addEventListener("click", async ev => {
     case "td-open": { const d = docList("docs").find(x => x.id === id); if (d) viewFile(id, d.fname || d.nom); break; }
     case "vw-open": viewFile(b.dataset.fid, b.dataset.name); break;
     case "vw-close": closeViewer(); break;
+    case "vw-full": { const fr = document.querySelector("#viewer iframe"); if (fr && fr.dataset.blob){ if (!window.open(fr.dataset.blob, "_blank")) toast("Ouverture bloquée : utilise Partager"); } break; }
     case "vw-share": { const w = V.vw; if (w) saveFile(w.name, w.buf, w.type); break; }
     case "td-del": { const d = docList("docs").find(x => x.id === id); if (!d) break; openSheet(`<h2>Retirer ce document ?</h2><p style="margin:0">« ${esc(d.nom)} » sera retiré de l'appli. Ton original reste dans tes fichiers.</p><div class="btns"><button class="btn danger" data-act="td-del-ok" data-id="${id}" data-tid="${b.dataset.tid}">Retirer</button><button class="btn ghost" data-act="ledit" data-id="${b.dataset.tid}">Annuler</button></div>`); break; }
     case "td-del-ok": { const d = docList("docs").find(x => x.id === id); if (d){ d.del = true; d.upd = Date.now(); flDel(id); persist(); } sheetLoc(b.dataset.tid); break; }
@@ -5134,7 +5136,7 @@ async function viewFile(fid, name){
   if (!isImg && !isPdf) return saveFile(name || rec.name || "document", rec.buf, type);
   closeViewer(); V.vw = {name:name || rec.name || "document", buf:rec.buf, type};
   const url = URL.createObjectURL(new Blob([rec.buf], {type})), v = document.createElement("div"); v.id = "viewer";
-  v.innerHTML = `<div class="vbar"><span class="vt">${esc(V.vw.name)}</span><button class="mini" data-act="vw-share">Partager</button><button class="mini" data-act="vw-close">Fermer</button></div>` +
+  v.innerHTML = `<div class="vbar"><span class="vt">${esc(V.vw.name)}</span>${isPdf ? '<button class="mini" data-act="vw-full">Toutes les pages</button>' : ""}<button class="mini" data-act="vw-share">Partager</button><button class="mini" data-act="vw-close">Fermer</button></div>` +
     (isImg ? `<div class="vimg"><img data-blob="${url}" src="${url}" alt=""></div>` : `<iframe data-blob="${url}" src="${url}" title="${esc(V.vw.name)}"></iframe>`);
   document.body.appendChild(v);
 }
@@ -5314,14 +5316,12 @@ function sendIntercept(name, data, mime){
   PEND.sj = sj; PEND.bj = bj; PEND.t = t;
   openSheet(`<h2>Envoyer au locataire</h2><div class="info"><b>${esc(c.titre)}</b> · ${esc(bienName(c.bien))}<br>${t ? esc(t.nom) + (t.email ? " · " + esc(t.email) : " · <i>pas d'e-mail</i>") + (t.tel ? " · " + esc(t.tel) : "") : "Aucun locataire enregistré pour ce bien."}</div>
     ${c.signed ? `<div class="info">✓ Ton exemplaire signé est déjà rangé dans <b>Biens › Documents du bien</b>.</div>` : ""}
-    <div class="small muted" style="margin:6px 0 2px"><b>1 · Coche ce que tu veux garder</b></div>
-    ${t ? `<label class="ck"><input type="checkbox" id="snd-fiche" checked> Ranger une copie dans la fiche de ${esc(t.nom)} (Documents)</label>` : ""}
-    <label class="ck"><input type="checkbox" id="snd-dev" checked> Enregistrer sur cet appareil (Fichiers…)</label>
-    <div class="small muted" style="margin:8px 0 2px"><b>2 · Choisis comment l'envoyer</b> (les cases cochées sont faites d'abord)</div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">Envoyer le PDF (Mail, Messages, WhatsApp…)</button></div>
-    <div class="small muted">Le PDF est joint. Dans la fenêtre qui s'ouvre, choisis <b>Mail</b> (objet et message déjà remplis) ou <b>Messages</b>. ${t && t.email ? "L'e-mail du locataire (" + esc(t.email) + ") est copié : colle-le dans « À : »." : t && t.tel ? "Son numéro (" + esc(t.tel) + ") est copié." : "Ajoute son e-mail dans sa fiche pour le retrouver ici."}</div>
-    <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="only">Seulement ranger / enregistrer (sans envoyer)</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
-    <div class="small muted">Si « Enregistrer sur cet appareil » est coché, l'enregistrement se fait en premier : ensuite touche de nouveau ton mode d'envoi. Une appli sur navigateur ne peut pas envoyer l'e-mail toute seule : l'envoi reste à valider par toi.</div>`);
+    ${t ? `<label class="ck"><input type="checkbox" id="snd-fiche" checked> Ranger aussi une copie dans la fiche de ${esc(t.nom)} (Documents)</label>` : ""}
+    <div class="small muted" style="margin:6px 0 2px"><b>Envoyer par :</b></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="mail">✉️ Mail${t && t.email ? " à " + esc(t.email) : ""}</button><button class="btn" style="flex:1" data-act="snd" data-v="sms">💬 SMS${t && t.tel ? " au " + esc(t.tel) : ""}</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">📎 Autres (PDF joint : Mail, Messages, WhatsApp…)</button></div>
+    <div class="small muted">⚠️ Mail et SMS ouvrent le message avec le destinataire et le texte déjà remplis, mais <b>le téléphone ne permet pas de joindre le PDF à partir d'une appli web</b> : joins-le toi-même (trombone ▸ Fichiers, après « Enregistrer sur l'appareil »). Pour un envoi avec le PDF déjà joint, utilise « Autres » (l'e-mail ou le numéro du locataire est copié).</div>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="save">Enregistrer sur l'appareil (Fichiers…)</button>${t ? `<button class="btn ghost" style="flex:1" data-act="snd" data-v="only">Seulement ranger dans la fiche</button>` : ""}<button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
   return true;
 }
 document.addEventListener("click", async ev => {
@@ -5329,28 +5329,18 @@ document.addEventListener("click", async ev => {
   if (a === "blank"){ await blankModel(v); return; }
   if (a !== "snd" || !PEND) return;
   const p = PEND, t = p.t;
-  const fi = $("#snd-fiche"), dv = $("#snd-dev");
-  /* cases cochées : d'abord la fiche, puis l'enregistrement sur l'appareil (il demande un appui de plus avant l'envoi) */
+  const fi = $("#snd-fiche");
   if (fi && fi.checked) await sendArchive(p, true);
-  if (dv && dv.checked && !p.devDone){ p.devDone = true; SEND = null; await saveFile(p.name, p.data, p.mime); if (v !== "only"){ toast("Enregistré. Touche maintenant ton mode d'envoi."); return; } }
   if (v === "only"){ PEND = null; closeSheet(); render(); return; }
-  if (v === "fiche"){ PEND = null; closeSheet(); render(); return; }
-  if (v === "save"){ PEND = null; closeSheet(); return; }
+  if (v === "save"){ PEND = null; closeSheet(); SEND = null; await saveFile(p.name, p.data, p.mime); return; }
   if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
-  if (v === "sms"){
-    /* un lien sms: ne peut pas joindre de fichier : on passe par le partage du téléphone (Messages) avec le PDF, et on copie le numéro */
-    if (t && t.tel){ try { await navigator.clipboard.writeText(t.tel); toast("Numéro copié : " + t.tel + ". Choisis Messages."); } catch(e){} }
-    try { const file = new File([p.data], p.name, {type:p.mime});
-      if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.sj}); return; } }
-    catch(e){ if (e && e.name === "AbortError") return; }
-    if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche");
-    location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
+  if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
   if (v === "att"){
     { const cp = t && (t.email || t.tel); if (cp){ try { await navigator.clipboard.writeText(cp); toast((t.email ? "E-mail copié : " : "Numéro copié : ") + cp); } catch(e){} } }
     try { const file = new File([p.data], p.name, {type:p.mime});
       if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.bj}); return; } }
     catch(e){ if (e && e.name === "AbortError") return; }
-    PEND = null; closeSheet(); SEND = null; if (!(dv && dv.checked)) saveFile(p.name, p.data, p.mime, "Joins-le à ton e-mail" + (t && t.email ? " pour " + t.email : "") + ".");
+    PEND = null; closeSheet(); SEND = null; saveFile(p.name, p.data, p.mime, "Joins-le à ton e-mail" + (t && t.email ? " pour " + t.email : "") + ".");
   }
 });
 /* ---------- Modèles vierges ---------- */
