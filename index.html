@@ -633,7 +633,7 @@ const ICON = {
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>'
 };
 function renderTabs(){
-  const tabOn = V.tab === "ana" ? "chart" : V.tab === "ech" ? "cmp" : V.tab;
+  const tabOn = V.tab === "ana" ? "chart" : V.tab === "ech" ? "cmp" : V.tab === "cb" ? (V.cbback === "month" ? "month" : "home") : V.tab;
   const T = [["home","Accueil"],["cmp","Compta"],["add","Ajouter"],["month","Pointage"],["bld","Biens"],["rent","Location"],["chart","Bilan"]];
   $("#tabs .in").innerHTML = T.map(([k,l]) => k === "add"
     ? `<button class="add ${tabOn===k?"on":""}" data-act="tab" data-v="${k}" aria-label="${l}"><span class="pl">${ICON[k]}</span><span>${l}</span></button>`
@@ -668,11 +668,11 @@ function viewHome(){
   const tileLate = n => { const l = J().filter(j => statut(j) === "En retard" && j.cat === "Loyer").sort((a, b) => a.date.localeCompare(b.date))[0]; return `<button class="tile ${n ? "bad" : ""}" data-act="go" data-v="bld" data-sub="loyers" data-bien="${l ? esc(l.bien) : ""}"><span class="n">${n}</span><span class="l">loyer(s) en retard</span></button>`; };
   const tile = (n, l, cl, to, f) => `<button class="tile ${n ? cl : ""}" data-act="go" data-v="${to}" data-f="${f || ""}"><span class="n">${n}</span><span class="l">${l}</span></button>`;
   return topbar("Gestion Locative Facile") + `
-  <div class="card hero"><div class="lbl">Solde de mes comptes appartements</div><div class="big num">${eur(tot)}</div>
+  <div class="card hero" data-act="cb-open" data-sub="rapp" role="button" style="cursor:pointer"><div class="lbl">Solde de mes comptes appartements</div><div class="big num">${eur(tot)}</div>
     <div class="glass">${ids.map(id => { const p = placeOf(id), on = bourseOn(), parts = on ? PLACE_CATS.filter(c => p.by[c]).map(c => (c === "Bourse" ? "bourse" : c) + " " + eur(p.by[c])).concat(p.interets ? ["intérêts " + eur(p.interets)] : []) : [];
       return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(soldeBien(id))}</span></div>` + (parts.length ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">(${parts.join(" + ")}) · total ${eur(r2(soldeBien(id) + p.total))}</div>` : ""); }).join("")}
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
-  ${matelasHome()}${bourseCard()}${placeCard(null)}
+  ${matelasHome()}${bourseCard(true)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
   ${feHome()}
   <div class="card"><h2>Bénéfice ${y}</h2>
@@ -682,13 +682,13 @@ function viewHome(){
   <div class="card"><h2>Prochaines échéances</h2><div class="rows">${next.length ? next.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)} · ${esc(bienName(j.bien))}</div></div><div class="amt num ${isIn(j)?"pos":""}">${isIn(j)?"+":"−"} ${eur(j.montant)}</div></div>`).join("") : '<div class="empty">Rien de prévu.</div>'}</div></div>`;
 }
 
-function bourseCard(){
+function bourseCard(link){
   const ids = bienIds(), ty = usedTypes(null); if (!bourseOn() || !ty.length) return "";
   const t = placeOf(null);
-  return `<div class="card bourse"><div class="lbl">${titleTypes(ty)}, pas dépensé</div><div class="big num">${eur(t.net)}</div><div class="small" style="opacity:.9">total à récupérer sur les comptes appartements</div>
+  return `<div class="card bourse"${link ? ' data-act="cb-open" data-sub="plc" role="button" style="cursor:pointer"' : ""}><div class="lbl">${titleTypes(ty)}, pas dépensé</div><div class="big num">${eur(t.net)}</div><div class="small" style="opacity:.9">total à récupérer sur les comptes appartements</div>
     ${ty.length > 1 ? `<div class="small" style="opacity:.9">${ty.map(c => c + " " + eur(t.by[c])).join(" · ")}</div>` : ""}
     ${ids.map(id => { const p = placeOf(id); return usedTypes(id).length ? `<div class="kv">${bienPill(id)}<span class="num">${eur(p.net)}</span></div>` : ""; }).join("")}
-    <div class="btns"><button class="btn sm" data-act="bourse" data-v="">Remboursement bourse</button></div></div>`;
+    <div class="btns"><button class="btn sm" data-act="bourse" data-v="">Remboursement bourse</button>${link ? '<span class="small" style="opacity:.9;align-self:center">Détail et intérêts ›</span>' : ""}</div></div>`;
 }
 
 /* ---------- Loyers (dans Biens, bien par bien) ---------- */
@@ -747,7 +747,7 @@ function viewAdd(){
   const d = V.draft || (ed ? draftFrom(ed) : newDraft()); V.draft = d;
   const cats = allCats(d.type);
   const bs = bienIds();
-  return `<div class="top"><button class="btn ghost sm" data-act="tab" data-v="${ed ? (V.back || "month") : "home"}">${ed ? "‹ Retour" : "‹ Accueil"}</button><button class="q" data-act="help" aria-label="Aide">?</button></div>
+  return `<div class="top"><button class="btn ghost sm" data-act="tab" data-v="${V.back || (ed ? "month" : "home")}">${V.back || ed ? "‹ Retour" : "‹ Accueil"}</button><button class="q" data-act="help" aria-label="Aide">?</button></div>
   <div class="top"><div class="app">${ed ? "Modifier l'opération" : "Ajouter une opération"}</div></div>
   <div class="card">
     ${modelesRow(ed)}
@@ -825,14 +825,14 @@ function tenantCard(id){
     : '<div class="small muted">Aucun locataire enregistré pour ce bien.</div>'}</div>`;
 }
 function viewBiens(){
-  const subs = [["vue","Vue"],["loyers","Loyers"],["dep","Dépenses"],["travaux","Travaux"],["loc","Locataires"],["mvt","Arrivée/Départ"],["docs","Documents"],["tarifs","Tarifs"],["rapp","Rapprochement"]], ids = bienIds();
+  const subs = [["vue","Vue"],["loyers","Loyers"],["dep","Dépenses"],["travaux","Travaux"],["loc","Locataires"],["mvt","Arrivée/Départ"],["docs","Documents"],["tarifs","Tarifs"]], ids = bienIds();
   if (!subs.some(x => x[0] === V.bsub)) V.bsub = "vue";
   const sub = V.bsub; if (!V.bsel || !ids.includes(V.bsel)) V.bsel = ids[0] || "";
   const seg = `<div class="seg">${subs.map(([k,l]) => `<button class="${sub===k?"on":""}" data-act="bsub" data-v="${k}">${l}</button>`).join("")}</div>`;
   const nav = sub === "vue" || sub === "loyers" || sub === "dep" ? yearNav() : "";
   const sel = ["vue","loyers","dep","loc","mvt","docs"].includes(sub) ? bienSeg("bsel", V.bsel, false) + tenantCard(V.bsel) : "";
   let body = "";
-  if (sub === "vue") body = viewBienVue(); else if (sub === "loyers") body = viewBienLoyers(); else if (sub === "dep") body = viewBienDep(); else if (sub === "travaux") body = viewTravaux(); else if (sub === "tarifs") body = viewTarifs(); else if (sub === "rapp") body = viewRapp(); else if (sub === "docs") body = viewDocs(); else if (sub === "mvt") body = viewMvt(); else body = viewLoc();
+  if (sub === "vue") body = viewBienVue(); else if (sub === "loyers") body = viewBienLoyers(); else if (sub === "dep") body = viewBienDep(); else if (sub === "travaux") body = viewTravaux(); else if (sub === "tarifs") body = viewTarifs(); else if (sub === "docs") body = viewDocs(); else if (sub === "mvt") body = viewMvt(); else body = viewLoc();
   return topbar("Biens", nav) + seg + sel + body;
 }
 /* Charges par catégorie : tableau (Total / Payé / Reste). Sans info de paiement (onglet Compta), seulement le total. */
@@ -874,8 +874,7 @@ function viewBienVue(){
     ${kv("Solde prévu au 31/12", eur(soldeBien(id, y)))}
     ${b ? `<div class="small muted">${b.adresse ? esc(b.adresse) + " · " : ""}Loyer ${eur(b.loyer)} · crédit ${eur(b.credit)}/mois${b.regime ? " · " + esc(b.regime) : ""}${t.length ? " · locataire : " + esc(t[t.length-1].nom) : ""}</div>` : ""}</div>
   ${matelasCard(id)}
-  ${(() => { const ty = usedTypes(id); if (!bourseOn() || !ty.length) return ""; return `<div class="card" style="border-color:${BOURSE_COL}"><div class="top"><h2 style="color:${BOURSE_COL}">${titleTypes(ty)}</h2><button class="btn sm" style="background:${BOURSE_COL}" data-act="bourse" data-v="${esc(id)}">Remboursement</button></div>${ty.map(c => { const b = bourseOf(id, c); return (ty.length > 1 ? `<div class="small muted" style="margin-top:6px"><b>${c}</b></div>` : "") + kv(c === "Bourse" ? "Mis en bourse" : "Mis sur " + c, eur(b.mis)) + kv("Remboursé", eur(b.remb)) + `<div class="kv tot"><span>Reste à rembourser</span><span class="num" style="color:${BOURSE_COL}">${eur(b.reste)}</span></div>`; }).join("")}</div>`; })()}
-  ${placeCard(id)}
+  ${(() => { const p = placeOf(id), ty = usedTypes(id); if (!ty.length && !p.interets) return ""; return `<div class="card" style="padding:12px 16px;gap:4px"><div class="top"><span class="small muted">Placements et bourse</span><button class="mini" data-act="cb-open" data-sub="plc" data-bien="${esc(id)}">Détail ›</button></div>${kv("Argent placé", eur(p.net))}${kv("Intérêts gagnés", eur(p.interets), "muted")}</div>`; })()}
   <div class="btns"><button class="btn ghost sm" data-act="bn-edit" data-id="${esc(id)}">Modifier le bien</button><button class="btn ghost sm" data-act="bn-new">Ajouter un bien</button></div>
   <div class="card"><h2>Charges par catégorie</h2>${rows.length ? catBars(rows, rows[0].v) : '<div class="empty">Aucune dépense cette année.</div>'}</div>
   ${opsCard("Toutes les opérations", ops, true)}`;
@@ -928,6 +927,21 @@ function viewTarifs(){
     <div class="small muted">Un changement de montant = une nouvelle ligne. Touche une ligne de l'historique pour la corriger ou la supprimer.</div>
     ${ids.map(id => `<div class="env" style="padding:6px 0">${bienPill(id)}${POSTES_TARIF.map(p => { const t = tarifVigueur(id, p); return kv(esc(p), t ? eur(t.montant) + ` <span class="muted small">depuis le ${frDate(t.date)}</span>` : "—"); }).join("")}</div>`).join("")}</div>
   <div class="card"><h2>Historique</h2><div class="rows">${hist.length ? hist.map(t => `<div class="row" data-act="tarif-edit" data-i="${S.tarifs.indexOf(t)}" style="cursor:pointer"><div class="main"><div class="t">${bienPill(t.bien)} ${esc(t.poste)}</div><div class="s">à partir du ${frDate(t.date)}${t.note ? " · " + esc(t.note) : ""}${t.app ? " · ajouté ici" : ""}</div></div><div class="amt num">${eur(t.montant)}</div></div>`).join("") : '<div class="empty">Aucun tarif.</div>'}</div></div>`;
+}
+function bourseBienCard(id){ return (() => { const ty = usedTypes(id); if (!bourseOn() || !ty.length) return ""; return `<div class="card" style="border-color:${BOURSE_COL}"><div class="top"><h2 style="color:${BOURSE_COL}">${titleTypes(ty)}</h2><button class="btn sm" style="background:${BOURSE_COL}" data-act="bourse" data-v="${esc(id)}">Remboursement</button></div>${ty.map(c => { const b = bourseOf(id, c); return (ty.length > 1 ? `<div class="small muted" style="margin-top:6px"><b>${c}</b></div>` : "") + kv(c === "Bourse" ? "Mis en bourse" : "Mis sur " + c, eur(b.mis)) + kv("Remboursé", eur(b.remb)) + `<div class="kv tot"><span>Reste à rembourser</span><span class="num" style="color:${BOURSE_COL}">${eur(b.reste)}</span></div>`; }).join("")}</div>`; })(); }
+function viewCB(){
+  const ids = bienIds(), sub = V.cbsub === "plc" ? "plc" : "rapp", back = V.cbback === "month" ? "month" : "home";
+  const head = `<div class="top"><button class="btn ghost sm" data-act="tab" data-v="${back}">‹ ${back === "month" ? "Pointage" : "Accueil"}</button><button class="q" data-act="help" aria-label="Aide">?</button></div><h1 style="margin:6px 0 2px;font-size:22px">Comptes bancaires</h1><div class="small muted" style="margin-bottom:6px">Le solde de chaque compte, le rapprochement avec ta banque, l'argent placé et les intérêts.</div>`;
+  const seg = `<div class="seg"><button class="${sub === "rapp" ? "on" : ""}" data-act="cb-sub" data-v="rapp">Rapprochement</button><button class="${sub === "plc" ? "on" : ""}" data-act="cb-sub" data-v="plc">Placements et bourse</button></div>`;
+  let body;
+  if (!ids.length) body = '<div class="card"><div class="info">Ajoute un logement pour commencer.</div></div>';
+  else if (sub === "rapp") body = viewRapp();
+  else { const sel = V.cbbien && ids.includes(V.cbbien) ? V.cbbien : "all";
+    const bseg = `<div class="seg rail"><button class="${sel === "all" ? "on" : ""}" data-act="cb-bien" data-v="all">Tous</button>${ids.map(id => `<button class="${sel === id ? "on" : ""}" data-act="cb-bien" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+    body = bseg + (sel === "all"
+      ? (bourseCard() + placeCard(null) || '<div class="card"><div class="info">Rien de placé pour l\'instant. Choisis un compte (Studio, T2…) puis touche « Mettre de côté ».</div></div>')
+      : bourseBienCard(sel) + placeCard(sel, true)); }
+  return head + seg + body;
 }
 function viewRapp(){
   const ids = bienIds(), hist = J().filter(j => j.cat === "Écart de rapprochement").sort((a,b) => b.date.localeCompare(a.date));
@@ -1198,11 +1212,11 @@ function render(){
   const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig, prevSig = V.lastSig; V.lastSig = sig;
   // Retour depuis le formulaire : on retrouve la page là où on l'avait laissée
   const prevTab = prevSig ? prevSig.split("|")[0] : "";
-  const SUBT = t => t === "add" || t === "ana" || t === "ech";
+  const SUBT = t => t === "add" || t === "ana" || t === "ech" || t === "cb";
   if (SUBT(V.tab) && prevTab && !SUBT(prevTab)){ V.retSig = prevSig; V.retY = y0; }
   const restore = SUBT(prevTab) && V.tab !== prevTab && !SUBT(V.tab) && V.retSig === sig && V.retY != null;
   main.dataset.tab = V.tab;
-  main.innerHTML = V.tab === "welcome" ? viewWelcome() : V.tab === "home" ? viewHome() : V.tab === "guide" ? viewGuide() : V.tab === "cmp" ? viewCompta() : V.tab === "add" ? viewAdd() : V.tab === "month" ? viewMonth() : V.tab === "bld" ? viewBiens() : V.tab === "rent" ? viewRent() : V.tab === "chart" ? viewBilan() : V.tab === "ana" ? viewAnalyse() : V.tab === "ech" ? viewEch() : viewSet();
+  main.innerHTML = V.tab === "welcome" ? viewWelcome() : V.tab === "home" ? viewHome() : V.tab === "guide" ? viewGuide() : V.tab === "cmp" ? viewCompta() : V.tab === "add" ? viewAdd() : V.tab === "month" ? viewMonth() : V.tab === "bld" ? viewBiens() : V.tab === "rent" ? viewRent() : V.tab === "chart" ? viewBilan() : V.tab === "ana" ? viewAnalyse() : V.tab === "ech" ? viewEch() : V.tab === "cb" ? viewCB() : viewSet();
   if (V.tab === "add") updateInfo();
   window.scrollTo(0, restore ? V.retY : same ? y0 : 0);
   if (restore) V.retSig = null;
@@ -1281,6 +1295,8 @@ document.addEventListener("click", ev => {
     case "mprev": setMonth(-1); break; case "mnext": setMonth(1); break;
     case "opv": V.opv = v; render(); break; case "opt": V.opt = v; render(); break;
     case "bf": V.bf = v; render(); break; case "mf": V.mf = v; render(); break;
+    case "cb-open": V.cbback = V.tab === "cb" ? V.cbback : V.tab; V.tab = "cb"; V.cbsub = b.dataset.sub === "plc" ? "plc" : "rapp"; if (b.dataset.bien) V.cbbien = b.dataset.bien; render(); break;
+    case "cb-sub": V.cbsub = v; render(); break; case "cb-bien": V.cbbien = v; render(); break;
     case "bsub": V.bsub = v; render(); break; case "bsel": V.bsel = v; render(); break;
     case "jtoggle": { const j = getJ(id); j.pointe = j.pointe === "x" ? "" : "x"; j.upd = Date.now(); onPointe(j); persist(); render(); { const sr = $("#sres"); if (sr) sr.innerHTML = searchRes(V.sq || ""); } break; }
     case "jedit": closeSheet(); V.back = V.tab; V.editId = id; V.draft = null; V.tab = "add"; render(); break;
@@ -1389,8 +1405,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.24";
+const APP_VERSION = "1.7.25";
 const CHANGELOG = [
+  {v:"1.7.25", date:"2026-11-10", titre:"Page Comptes bancaires", items:["Nouvelle page « Comptes bancaires » qui regroupe le rapprochement avec la banque et les placements (bourse, livrets, intérêts). On l'ouvre en touchant le gros solde de l'accueil, la carte violette « Bourse, pas dépensé », ou le bouton « Comptes bancaires › » du Pointage.","Biens : le sous-onglet « Rapprochement » et les grosses cartes Bourse et Placements ont disparu. Biens › Vue garde une ligne « Placements et bourse » avec « Détail › ».","L'accueil n'affiche plus la carte des intérêts : elle est dans la nouvelle page. Le bouton « ‹ Retour » du formulaire ramène à la page d'où tu viens."]},
   {v:"1.7.24", date:"2026-11-10", titre:"Signature papier : dossier signé archivé", items:["Signature papier : dès que la page signée est scannée ou photographiée, l’appli crée et range dans les documents du logement un PDF « SIGNÉ » complet : le document, sa page de signature et la page signée à la main en dernière page. C’est ce fichier unique qui est envoyé par e-mail (partage) et que tu peux archiver."]},
   {v:"1.7.23", date:"2026-11-10", titre:"Compta : liste repliable", items:["Compta : la carte « À saisir sur le site de compta » a un bouton « Replier / Déplier ». Repliée, on voit tout de suite la liasse fiscale, « Détails, chiffres et export » et le reste, sans faire défiler toute la liste.","Signature papier : nouveau bouton « Photographier la page avec l’appareil photo » (en plus de « Scanner la page signée ») pour prendre la page signée directement en photo."]},
   {v:"1.7.22", date:"2026-11-10", titre:"Style Fun", items:["Nouveau réglage « Style de l’appli » (Réglages › Aspect) : Normal (par défaut, rien ne change) ou Fun ✨, plus rond et plus coloré (cartes arrondies, dégradés, boutons en pilule). Il se combine avec les couleurs et le mode clair ou sombre."]},
@@ -1527,10 +1544,9 @@ const HELP = {
     "Frais partagés (CFE, comptabilité, CGA/OGA, Rendement locatif) : tu saisis le total une fois, l'appli crée une ligne par bien."]},
   "bld-vue":{t:"Biens › Vue", p:"La fiche d'un bien pour l'année choisie.", l:[
     "La jauge montre le matelas (12 mois de loyer, on n'y touche pas), ce qui est réservé pour les 3 prochains mois et ce qui est utilisable.",
-    "Livrets et placements : l'argent placé compte dans le total du bien ; « Ajouter des intérêts » note ce que le placement rapporte.",
+    "Placements et bourse : une ligne résume l'argent placé et les intérêts ; « Détail › » ouvre la page Comptes bancaires.",
     "« Modifier le bien » change le nom, l'adresse, le loyer ou le crédit. « Ajouter un bien » en crée un autre.",
     "Solde au 1er janvier, loyers, charges, cash flow et solde au 31/12.",
-    "Le bloc Bourse donne le mis en bourse, le remboursé et le reste.",
     "Les charges sont rangées par catégorie, avec le reste à payer."]},
   "bld-travaux":{t:"Biens › Travaux", p:"Les factures de travaux et d'équipement.", l:[
     "Touche une facture pour la modifier. « Scanné » et « Compta » se cochent d'un appui.",
@@ -1575,7 +1591,8 @@ const HELP = {
     "Le tarif en vigueur est la ligne la plus récente dont la date est passée.",
     "« Nouveau tarif » ajoute une ligne. L'historique ne se modifie jamais.",
     "Les formulaires se pré-remplissent avec le tarif en vigueur."]},
-  "bld-rapp":{t:"Biens › Rapprochement", p:"Comparer l'appli avec le relevé de banque.", l:[
+  cb:{t:"Comptes bancaires", p:"Rapprochement avec ta banque, placements, bourse et intérêts : tout ce qui concerne l'argent des comptes, au même endroit. On y arrive en touchant le gros solde de l'accueil, la carte violette « Bourse », ou « Comptes bancaires › » dans Pointage.", l:[
+    "Deux sous-onglets : « Rapprochement » (comparer l'appli avec le relevé) et « Placements et bourse » (argent mis de côté, remboursement, intérêts).",
     "Tape le solde réel du relevé. L'écart = réel − calculé.",
     "Si l'écart n'est pas nul, un bouton crée une seule ligne datée (qui compte dans le solde, pas dans le bénéfice).",
     "Rien n'est jamais corrigé en silence : une correction est toujours une nouvelle ligne.",
@@ -2848,9 +2865,9 @@ function matelasHome(){
 }
 const usedTypes = id => PLACE_CATS.filter(c => J().some(j => j.cat === c && (id == null || j.bien === id)));
 const titleTypes = ty => ty.length < 2 ? (ty[0] || "Bourse") : ty.slice(0, -1).join(", ") + " et " + ty[ty.length - 1];
-function placeCard(id){
+function placeCard(id, force){
   const p = placeOf(id);
-  if (!p.interets && !(id && usedTypes(id).length)) return "";
+  if (!force && !p.interets && !(id && usedTypes(id).length)) return "";
   const L = id ? J().filter(j => j.bien === id && (PLACE_CATS.includes(j.cat) || j.cat === CAT_INT)).sort((a, b) => b.date.localeCompare(a.date)) : [];
   const lab = j => j.cat === CAT_INT ? "Intérêts" : j.type === "Sortie" ? "Mis de côté" : "Remboursé (revenu sur le compte)";
   const hist = L.length ? `<div class="rows" style="margin-top:6px">${L.map(j => `<div class="row"><div class="main"><div class="t">${lab(j)}${j.cat === CAT_INT ? "" : " · " + esc(j.cat)}</div><div class="s">${frDate(j.date)}${j.lib ? " · " + esc(j.lib) : ""}</div></div><div class="amt num ${j.type === "Sortie" ? "" : "pos"}">${eur(j.montant)}</div><button class="mini" data-act="jedit" data-id="${esc(j.id)}">Modifier / supprimer</button></div>`).join("")}</div>` : "";
@@ -2861,7 +2878,7 @@ function placeCard(id){
 }
 document.addEventListener("click", ev => {
   const b = ev.target.closest("[data-act]"); if (!b || b.dataset.act !== "int-add") return;
-  const bien = b.dataset.id; V.back = "bld"; V.bsub = "vue"; V.bsel = bien; V.editId = null; V.draft = newDraft({type:"Entrée", bien, cat:CAT_INT, lib:"Intérêts", pt:true}); V.tab = "add"; render();
+  const bien = b.dataset.id; V.back = "cb"; V.cbbien = bien; V.editId = null; V.draft = newDraft({type:"Entrée", bien, cat:CAT_INT, lib:"Intérêts", pt:true}); V.tab = "add"; render();
 });
 
 /* ---------- Compta location vide : revenus fonciers (micro-foncier / réel, déclaration 2044) ----------
@@ -3041,7 +3058,7 @@ document.addEventListener("click", ev => {
     case "hist-ask": { const Y = histSel(), n = histOps(Y).length, ne = histEch(Y).length; openSheet(`<h2>Tout est déjà saisi jusqu'au 31/12/${Y} ?</h2><p>${n} ligne(s)${ne ? " et " + ne + " échéance(s) d'emprunt" : ""} datées jusqu'à cette date vont être marquées <b>déjà saisies en compta</b>. Tu pourras les remettre à saisir (bouton « Annuler » juste après, ou dans « Déjà saisi »).</p><div class="btns"><button class="btn" data-act="hist-do">Oui, marquer comme saisi</button><button class="btn ghost" data-act="sheetclose">Non</button></div>`); break; }
     case "hist-do": { const Y = histSel(), ops = histOps(Y), ks = histEch(Y), t = Date.now(); ops.forEach(j => { j.compta = "x"; j.upd = t; }); ks.forEach(k => cmSetDone(k, true)); persist(); closeSheet(); render(); saisieUndoBar(ops.length + " ligne(s) et " + ks.length + " échéance(s) marquée(s) saisie(s)", ops.map(j => j.id), true, ks); break; }
     case "dclr": { const i = b.previousElementSibling; if (i && i.tagName === "INPUT"){ i.value = ""; i.dispatchEvent(new Event("input", {bubbles:true})); i.dispatchEvent(new Event("change", {bubbles:true})); toast("Date effacée : enregistre pour valider"); } break; }
-    case "pl-add": { const bien = b.dataset.id; V.back = "bld"; V.bsub = "vue"; V.bsel = bien; V.editId = null; V.draft = newDraft({type:"Sortie", bien, cat:b.dataset.cat || "Livret A", lib:"Mis de côté", pt:true}); V.tab = "add"; render(); break; }
+    case "pl-add": { const bien = b.dataset.id; V.back = "cb"; V.cbbien = bien; V.editId = null; V.draft = newDraft({type:"Sortie", bien, cat:b.dataset.cat || "Livret A", lib:"Mis de côté", pt:true}); V.tab = "add"; render(); break; }
   }
 });
 /* « Effacer la date » à côté des dates facultatives des feuilles (sur iPhone on ne peut pas vider un champ date) */
@@ -3589,7 +3606,7 @@ function rlMerge(P){
 function rlLoad(lines, fname){
   const bien = V.rlTarget, bal = (lines.bal || []).slice().sort((a, b) => a.d.localeCompare(b.d)); lines = lines.filter(l => l.d && l.m).slice(0, 8000);
   if (!lines.length){ toast("Aucune ligne reconnue : vérifie que le fichier contient une date et un montant par ligne"); return; }
-  V.rl = {bien, fname, lines, sel:{}, cat:{}}; if (bal.length){ const last = bal[bal.length - 1], first = bal[0], lo = lines.map(l => l.d).sort()[0]; V.rl.real = last.v; V.rl.at = last.d; V.rl.fromPdf = true; if (bal.length > 1 && first.d <= lo){ V.rl.real0 = first.v; V.rl.at0 = first.d; } } closeSheet(); V.tab = "bld"; V.bsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
+  V.rl = {bien, fname, lines, sel:{}, cat:{}}; if (bal.length){ const last = bal[bal.length - 1], first = bal[0], lo = lines.map(l => l.d).sort()[0]; V.rl.real = last.v; V.rl.at = last.d; V.rl.fromPdf = true; if (bal.length > 1 && first.d <= lo){ V.rl.real0 = first.v; V.rl.at0 = first.d; } } closeSheet(); V.cbback = V.tab === "cb" ? V.cbback : (V.tab === "month" ? "month" : "home"); V.tab = "cb"; V.cbsub = "rapp"; render(); toast(lines.length + " ligne(s) lues");
 }
 const rlRefreshBtns = () => { const n = Object.values((V.rl && V.rl.sel) || {}).filter(Boolean).length; ["rl-add-b", "rl-ign-b"].forEach((id, k) => { const b = document.getElementById(id); if (b) b.textContent = (k ? "Ignorer" : "Ajouter") + " la sélection (" + n + ")"; }); };
 document.addEventListener("change", async ev => {
@@ -3606,7 +3623,7 @@ document.addEventListener("click", ev => {
   const bt = ev.target.closest("[data-act^=rl-]"); if (!bt) return; const a = bt.dataset.act, R = V.rl;
   switch (a){
     case "rl-pick": sheetRl(bt.dataset.bien); break;
-    case "rl-go": V.tab = "bld"; V.bsub = "rapp"; render(); sheetRl(bt.dataset.bien); break;
+    case "rl-go": V.cbback = V.tab === "cb" ? V.cbback : V.tab; V.tab = "cb"; V.cbsub = "rapp"; render(); sheetRl(bt.dataset.bien); break;
     case "rl-paste-ok": { const x = $("#rl-txt").value; if (!x.trim()) return toast("Colle d'abord les lignes"); try { rlLoad(rlText(x), ""); } catch(e){ toast("Lecture impossible"); } break; }
     case "rl-flip": if (R){ R.lines.forEach(l => l.m = -l.m); R.sel = {}; R.cat = {}; render(); toast("Signes inversés"); } break;
     case "rl-close": V.rl = null; render(); break;
@@ -3635,7 +3652,7 @@ document.addEventListener("click", ev => {
 function soldesCard(){
   const ids = V.bf === "all" ? bienIds() : [V.bf]; if (!ids.length) return "";
   const att = id => J().filter(j => j.bien === id && j.compte !== "Perso" && j.pointe !== "x" && j.date <= todayIso() && !isArch(j)), sg = x => (x < 0 ? "−" : "+") + " " + eur(Math.abs(x));
-  return `<div class="card"><h2>Comptes des biens</h2><div class="small muted">Le gros chiffre est le solde de l'appli aujourd'hui (opérations pointées). Saisis le solde de ta banque pour voir l'écart.</div>${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null, a = att(id), sa = r2(sum(a.map(rlSigned))), col = BIEN_COL[id] || "var(--accent)";
+  return `<div class="card"><div class="top"><h2>Comptes des biens</h2><button class="mini" data-act="cb-open" data-sub="rapp">Comptes bancaires ›</button></div><div class="small muted">Le gros chiffre est le solde de l'appli aujourd'hui (opérations pointées). Saisis le solde de ta banque pour voir l'écart.</div>${ids.map(id => { const calc = soldeBien(id), reel = (S.rapp || {})[id], has = reel !== undefined && reel !== "" && reel !== null, ec = has ? r2(reel - calc) : null, a = att(id), sa = r2(sum(a.map(rlSigned))), col = BIEN_COL[id] || "var(--accent)";
       return `<div class="env" style="padding:10px 0;gap:6px"><div class="top">${bienPill(id)}</div>
         <div class="soldebig" style="border-color:${col}"><div class="small muted">Solde dans l'appli aujourd'hui</div><div class="v num" style="color:${col}">${eur(calc)}</div></div>
         ${a.length ? `<div class="kv"><span class="small">Pas encore pointées (${a.length})</span><span class="num small">${sg(sa)}</span></div>` : ""}
