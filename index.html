@@ -1050,11 +1050,16 @@ function render(){
   document.body.classList.toggle("welcome", V.tab === "welcome");
   document.body.classList.toggle("side", pref("glf-tabs", "top") === "side"); renderTabs(); demoBar();
   const main = $("#main");
-  const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig; V.lastSig = sig;
+  const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig, prevSig = V.lastSig; V.lastSig = sig;
+  // Retour depuis le formulaire : on retrouve la page là où on l'avait laissée
+  const prevTab = prevSig ? prevSig.split("|")[0] : "";
+  if (V.tab === "add" && prevTab && prevTab !== "add"){ V.retSig = prevSig; V.retY = y0; }
+  const restore = prevTab === "add" && V.tab !== "add" && V.retSig === sig && V.retY != null;
   main.dataset.tab = V.tab;
   main.innerHTML = V.tab === "welcome" ? viewWelcome() : V.tab === "home" ? viewHome() : V.tab === "guide" ? viewGuide() : V.tab === "cmp" ? viewCompta() : V.tab === "add" ? viewAdd() : V.tab === "month" ? viewMonth() : V.tab === "bld" ? viewBiens() : V.tab === "rent" ? viewRent() : V.tab === "chart" ? viewBilan() : viewSet();
   if (V.tab === "add") updateInfo();
-  window.scrollTo(0, same ? y0 : 0);
+  window.scrollTo(0, restore ? V.retY : same ? y0 : 0);
+  if (restore) V.retSig = null;
   if (typeof phHydrate === "function") phHydrate();
 }
 function openSheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; $("#sheetbg").hidden = false; }
@@ -1225,8 +1230,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.13";
+const APP_VERSION = "1.7.14";
 const CHANGELOG = [
+  {v:"1.7.14", date:"2026-11-10", titre:"Retour au même endroit", items:["Quand tu ouvres une opération pour la modifier puis que tu appuies sur « Retour », tu retrouves la page exactement là où tu l’avais laissée, au lieu de remonter tout en haut."]},
   {v:"1.7.13", date:"2026-11-10", titre:"Charges par catégorie en tableau", items:["Biens › Vue et Dépenses : les barres (qui ne servaient à rien, tout étant comparé au Crédit) sont remplacées par un tableau : Catégorie, Total, Payé, Reste, avec une ligne de total. Reste = ce qui n’est pas encore payé, « payé ✓ » quand tout est réglé.","Compta › Charges par poste : même tableau (Catégorie et Total), sans colonnes de paiement, et le « payé ✓ » ne s’affiche plus à tort à cet endroit."]},
   {v:"1.7.12", date:"2026-11-10", titre:"Export au choix : biens, période, contenu", items:["Le bouton « Exporter » (Pointage et Bilan) ouvre une seule fenêtre : tu coches les biens (Studio, T2 ou les deux), tu choisis le premier et le dernier mois (un mois, plusieurs mois, plusieurs années d’un coup, avec les raccourcis Ce mois / Cette année / Année dernière / Tout) et le contenu (tout, dépenses seulement ou recettes seulement), en Excel ou en PDF.","Correction : quand un seul bien était affiché, l’export sortait quand même les deux biens. Le bien affiché est maintenant pré-coché et tu peux le changer.","Biens › Vue et Dépenses : la longue liste d’opérations est maintenant rangée par mois (un bandeau par mois avec ses recettes, ses dépenses et son résultat). Quatre présentations au choix : « Colonnes » (les mois côte à côte : 3 colonnes sur iPad en paysage, 2 en portrait, 1 sur téléphone, c’est choisi par défaut sur grand écran), « Par mois », « Tableau » (colonnes Date, Catégorie, Entrée, Sortie, Pointé, avec les totaux du mois) et « Liste ». Un filtre Tout / Dépenses / Recettes.","Charges par catégorie : une ligne entièrement payée affiche maintenant « payé ✓ » (avant, rien ne s’affichait, seul le « reste à payer » apparaissait).","Les exports choisis ont une synthèse, un « mois par mois », un « par catégorie » et la liste des opérations (avec la colonne « Hors compta »)."]},
   {v:"1.7.11", date:"2026-11-09", titre:"Barre d’onglets stable sur iPhone", items:["Correction : après avoir tapé un solde ou ouvert une liste déroulante, la barre d’onglets du bas ne remonte plus au milieu de l’écran. Les champs de saisie ont maintenant une taille de 16 px (l’iPhone ne zoome plus) et la barre est remise en bas toute seule."]},
