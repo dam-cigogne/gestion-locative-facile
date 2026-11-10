@@ -212,6 +212,11 @@ body.welcome{padding-bottom:40px}
 .hero::before{content:"";position:absolute;inset:0 0 55% 0;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0));pointer-events:none}
 .hero > *{position:relative}
 .accbig{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0 8px 10px;margin:4px 0;border-left:5px solid #fff;border-radius:4px}.accbig .v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}.soldebig{border-left:5px solid var(--accent);padding:4px 0 6px 12px;margin:6px 0 10px;display:flex;flex-direction:column;gap:4px;align-items:flex-start}.soldebig .v{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}.kpi .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px}.kpi.good{border-color:var(--ok);background:#E6F4EC}.kpi.bad{border-color:var(--bad);background:var(--bad-soft)}
+.grid-an{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:900px){.grid-an{grid-template-columns:1fr 1.3fr;align-items:start}}
+.dv{display:grid;grid-template-columns:minmax(100px,1.1fr) 2.2fr minmax(92px,.9fr);gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.dv .dl{font-size:14px}.dv .dn{text-align:right;white-space:nowrap}.db{display:flex;height:16px}.db .half{flex:1;display:flex}.db .half.l{justify-content:flex-end;border-right:2px solid var(--line)}.db i{display:block;height:100%;border-radius:4px}.db i.good{background:var(--ok)}.db i.bad{background:var(--bad)}
+.anl{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.ot.an tr.clk{cursor:pointer}.ot.an tr.clk:active{background:var(--accent-soft)}.ot.an tr.hot td{background:var(--warn-soft)}.ot.an tr.tot td{border-top:2px solid var(--line)}.ot.an td.why{font-size:12.5px;color:var(--muted)}@media(max-width:760px){.ot.an th.why,.ot.an td.why{display:none}.kpi .v{font-size:19px}}
 .glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:6px 12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bourse{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px -14px #53247A}
 .top .app{font-size:21px}
@@ -603,10 +608,11 @@ const ICON = {
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>'
 };
 function renderTabs(){
+  const tabOn = V.tab === "ana" ? "chart" : V.tab;
   const T = [["home","Accueil"],["cmp","Compta"],["add","Ajouter"],["month","Pointage"],["bld","Biens"],["rent","Location"],["chart","Bilan"]];
   $("#tabs .in").innerHTML = T.map(([k,l]) => k === "add"
-    ? `<button class="add ${V.tab===k?"on":""}" data-act="tab" data-v="${k}" aria-label="${l}"><span class="pl">${ICON[k]}</span><span>${l}</span></button>`
-    : `<button class="${V.tab===k?"on":""}" data-act="tab" data-v="${k}">${ICON[k]}<span>${l}</span></button>`).join("");
+    ? `<button class="add ${tabOn===k?"on":""}" data-act="tab" data-v="${k}" aria-label="${l}"><span class="pl">${ICON[k]}</span><span>${l}</span></button>`
+    : `<button class="${tabOn===k?"on":""}" data-act="tab" data-v="${k}">${ICON[k]}<span>${l}</span></button>`).join("");
 }
 const yearNav = () => `<div class="nav"><button data-act="yprev" aria-label="Année précédente">‹</button><span>${V.y}</span><button data-act="ynext" aria-label="Année suivante">›</button></div>`;
 const monthNav = () => `<div class="nav"><button data-act="mprev" aria-label="Mois précédent">‹</button><span>${MOIS[V.m]} ${V.y}</span><button data-act="mnext" aria-label="Mois suivant">›</button></div>`;
@@ -1008,41 +1014,76 @@ function sheetRelance(id){
 /* ---------- Analyse : pourquoi deux années sont différentes ---------- */
 const ONESHOT = ["Mobilier / équipement","Entretien / réparations","Travaux","Divers"];
 function anLines(y, bien){ return J().filter(j => yr(j) === y && !HC(j) && (j.type === "Recette" || j.type === "Dépense") && (bien === "all" || j.bien === bien)); }
-function anGroup(L){ const g = {}; L.forEach(j => { const k = j.type + "|" + j.cat, o = g[k] = g[k] || {type:j.type, cat:j.cat, v:0, n:0, dates:[]}; o.v += N(j.montant); o.n++; o.dates.push(j.date); }); Object.values(g).forEach(o => o.v = r2(o.v)); return g; }
-function anCf(L){ return r2(sum(L.filter(j => j.type === "Recette").map(j => N(j.montant))) - sum(L.filter(j => j.type === "Dépense").map(j => N(j.montant)))); }
-function anPrevu(L){ const P = L.filter(j => j.pointe !== "x"); return {rec:r2(sum(P.filter(j => j.type === "Recette").map(j => N(j.montant)))), dep:r2(sum(P.filter(j => j.type === "Dépense").map(j => N(j.montant)))), n:P.length}; }
-function analyseHtml(a, b, bien){
-  const L1 = anLines(a, bien), L0 = anLines(b, bien), g1 = anGroup(L1), g0 = anGroup(L0), cf1 = anCf(L1), cf0 = anCf(L0), d = r2(cf1 - cf0);
-  if (!L1.length && !L0.length) return `<div class="info">Aucune opération en ${a} ni en ${b}.</div>`;
-  const keys = [...new Set(Object.keys(g1).concat(Object.keys(g0)))];
-  const items = keys.map(k => { const x1 = g1[k], x0 = g0[k], t = (x1 || x0).type, cat = (x1 || x0).cat, v1 = x1 ? x1.v : 0, v0 = x0 ? x0.v : 0, n1 = x1 ? x1.n : 0, n0 = x0 ? x0.n : 0, eff = r2(t === "Recette" ? v1 - v0 : v0 - v1); return {t, cat, v1, v0, n1, n0, eff, d1:x1 ? x1.dates : [], d0:x0 ? x0.dates : []}; }).filter(o => Math.abs(o.eff) >= 0.5).sort((p, q) => Math.abs(q.eff) - Math.abs(p.eff));
-  const top = items.slice(0, 7), reste = r2(sum(items.slice(7).map(o => o.eff)));
-  const dts = a => a.length && a.length <= 3 ? " (" + a.map(frDate).join(", ") + ")" : "";
-  const why = o => {
-    const bits = [];
-    if (o.v0 === 0 && o.v1 > 0) bits.push(o.t === "Recette" ? `nouveau en ${a} : ${eur(o.v1)}${dts(o.d1)}` : `dépense présente en ${a} seulement : ${eur(o.v1)}${dts(o.d1)}${ONESHOT.includes(o.cat) ? ", ponctuelle" : ""}`);
-    else if (o.v1 === 0 && o.v0 > 0) bits.push(o.t === "Recette" ? `rien en ${a}, ${eur(o.v0)} en ${b}` : `${eur(o.v0)} en ${b}${dts(o.d0)}, rien en ${a}${ONESHOT.includes(o.cat) ? " (dépense ponctuelle)" : ""}`);
-    else { bits.push(`${eur(o.v1)} en ${a} contre ${eur(o.v0)} en ${b}`); if (o.n1 !== o.n0) bits.push(`${o.n1} ligne(s) contre ${o.n0}${o.n0 > o.n1 ? " : il manque " + (o.n0 - o.n1) + " paiement(s) en " + a : " : " + (o.n1 - o.n0) + " de plus en " + a}`); else if (o.n1 > 0 && Math.abs(o.v1 / o.n1 - o.v0 / o.n0) >= 0.5) bits.push(`montant moyen ${eur(r2(o.v1 / o.n1))} contre ${eur(r2(o.v0 / o.n0))}`); }
-    return bits.join(" · ");
-  };
-  const ids = bienIds(), par = bien === "all" && ids.length > 1 ? ids.map(id => kv(bienPill(id), `${eur(anCf(anLines(b, id)))} → <b>${eur(anCf(anLines(a, id)))}</b>`)).join("") : "";
-  const p1 = anPrevu(L1), p0 = anPrevu(L0), notes = [];
-  if (p1.n) notes.push(`En ${a}, ${p1.n} ligne(s) ne sont pas encore pointées (${eur(p1.rec)} de loyers, ${eur(p1.dep)} de charges) : le cash flow les compte comme prévues.`);
-  if (p0.n) notes.push(`En ${b}, ${p0.n} ligne(s) ne sont toujours pas pointées (${eur(p0.rec)} de loyers, ${eur(p0.dep)} de charges).`);
-  const mois = y => new Set(anLines(y, bien).filter(j => j.type === "Recette" && j.cat === "Loyer").map(j => mo(j))).size;
-  if (mois(a) !== mois(b)) notes.push(`Loyers : ${mois(a)} mois en ${a} contre ${mois(b)} en ${b}.`);
-  const head = Math.abs(d) < 0.5 ? `Le cash flow est le même en ${a} et en ${b}.` : `Le cash flow ${a} est <b class="${d > 0 ? "pos" : "neg"}">${d > 0 ? "plus haut" : "plus bas"} de ${eur(Math.abs(d))}</b> que celui de ${b}.`;
-  return `<div class="env" style="padding:6px 0;gap:6px"><div class="kv"><span>Cash flow ${b}</span><span class="num">${eur(cf0)}</span></div><div class="kv"><span>Cash flow ${a}</span><span class="num"><b>${eur(cf1)}</b></span></div>${par}<div class="small" style="margin:4px 0">${head}</div></div>
-    ${items.length ? `<div class="small muted" style="margin:6px 0 2px">Ce qui explique l'écart (effet sur le cash flow ${a}) :</div><div class="rows">${top.map(o => `<div class="row"><div class="main"><div class="t">${esc(o.cat)} <span class="muted small">${o.t === "Recette" ? "recette" : "charge"}</span></div><div class="s">${why(o)}</div></div><div class="amt num ${o.eff < 0 ? "neg" : "pos"}">${o.eff > 0 ? "+" : "−"} ${eur(Math.abs(o.eff))}</div></div>`).join("")}${Math.abs(reste) >= 0.5 ? `<div class="row"><div class="main"><div class="t">Autres petits écarts</div><div class="s">${items.length - 7} poste(s)</div></div><div class="amt num ${reste < 0 ? "neg" : "pos"}">${reste > 0 ? "+" : "−"} ${eur(Math.abs(reste))}</div></div>` : ""}</div>` : `<div class="info">Aucun poste ne diffère.</div>`}
-    ${notes.length ? `<div class="small muted" style="margin-top:8px">${notes.map(esc).join("<br>")}</div>` : ""}`;
+function anGroup(L){ const g = {}; L.forEach(j => { const k = j.type + "|" + j.cat, o = g[k] = g[k] || {type:j.type, cat:j.cat, v:0, n:0, dates:[], L:[]}; o.v += N(j.montant); o.n++; o.dates.push(j.date); o.L.push(j); }); Object.values(g).forEach(o => o.v = r2(o.v)); return g; }
+const anSum = (L, t) => r2(sum(L.filter(j => j.type === t).map(j => N(j.montant))));
+const anCf = L => r2(anSum(L, "Recette") - anSum(L, "Dépense"));
+function anPrevu(L){ const P = L.filter(j => j.pointe !== "x"); return {rec:anSum(P, "Recette"), dep:anSum(P, "Dépense"), n:P.length}; }
+function anItems(L1, L0, a, b){
+  const g1 = anGroup(L1), g0 = anGroup(L0), keys = [...new Set(Object.keys(g1).concat(Object.keys(g0)))];
+  return keys.map(k => { const x1 = g1[k], x0 = g0[k], t = (x1 || x0).type, cat = (x1 || x0).cat, v1 = x1 ? x1.v : 0, v0 = x0 ? x0.v : 0, n1 = x1 ? x1.n : 0, n0 = x0 ? x0.n : 0;
+    return {key:k, t, cat, v1, v0, n1, n0, eff:r2(t === "Recette" ? v1 - v0 : v0 - v1), L1:x1 ? x1.L : [], L0:x0 ? x0.L : []}; }).sort((p, q) => Math.abs(q.eff) - Math.abs(p.eff));
 }
+function anWhy(o, a, b){
+  const dts = L => L.length && L.length <= 3 ? " (" + L.map(j => frDate(j.date)).join(", ") + ")" : "", bits = [];
+  if (o.v0 === 0 && o.v1 > 0) bits.push(o.t === "Recette" ? `nouveau en ${a}` : `dépense présente en ${a} seulement${dts(o.L1)}${ONESHOT.includes(o.cat) ? " : ponctuelle" : ""}`);
+  else if (o.v1 === 0 && o.v0 > 0) bits.push(o.t === "Recette" ? `rien en ${a}` : `dépense de ${b} seulement${dts(o.L0)}${ONESHOT.includes(o.cat) ? " : ponctuelle" : ""}, rien en ${a}`);
+  else { if (o.n1 !== o.n0) bits.push(o.n0 > o.n1 ? `${o.n0 - o.n1} paiement(s) de moins en ${a} (${o.n1} contre ${o.n0})` : `${o.n1 - o.n0} paiement(s) de plus en ${a} (${o.n1} contre ${o.n0})`); if (o.n1 && o.n0 && Math.abs(o.v1 / o.n1 - o.v0 / o.n0) >= 0.5) bits.push(`montant moyen ${eur(r2(o.v1 / o.n1))} contre ${eur(r2(o.v0 / o.n0))}`); }
+  return bits.join(" · ") || "—";
+}
+const effCell = e => `<span class="num ${e < 0 ? "neg" : e > 0 ? "pos" : ""}">${e > 0 ? "+" : e < 0 ? "−" : ""} ${eur(Math.abs(e))}</span>`;
 function analyseCard(years){
-  const A = V.an = Object.assign({a:V.y, b:V.y - 1, bien:"all", run:false}, V.an || {}), ids = bienIds(), opt = (arr, sel) => arr.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join(""), lo = Math.min(...years, V.y - 1), hi = Math.max(...years), ys = []; for (let y = hi; y >= lo; y--) ys.push([y, y]);
-  return `<div class="card"><h2>Pourquoi mes années sont différentes ?</h2><div class="small muted">Compare le cash flow de deux années et explique l'écart poste par poste : dépense ponctuelle, paiement manquant, montant qui a changé…</div>
+  const A = V.an = Object.assign({a:V.y, b:V.y - 1, bien:"all", sub:"syn", open:{}}, V.an || {}), ids = bienIds();
+  const lo = Math.min(...years, V.y - 1), hi = Math.max(...years), ys = []; for (let y = hi; y >= lo; y--) ys.push([y, y]);
+  const opt = (arr, sel) => arr.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join("");
+  return `<div class="card"><h2>Pourquoi mes années sont différentes ?</h2><div class="small muted">Compare le cash flow de deux années et explique l'écart : par catégorie, mois par mois et bien par bien, sur une page dédiée.</div>
     <div class="grid2"><label class="f">Année<select id="an-a">${opt(ys, A.a)}</select></label><label class="f">Comparée à<select id="an-b">${opt(ys, A.b)}</select></label></div>
     ${ids.length > 1 ? `<label class="f">Bien<select id="an-bien">${opt([["all", "Tous les biens"]].concat(ids.map(id => [id, bienName(id)])), A.bien)}</select></label>` : ""}
-    <button class="btn" data-act="an-run">Analyser</button>
-    ${A.run && A.a !== A.b ? `<div style="margin-top:10px">${analyseHtml(+A.a, +A.b, A.bien)}</div>` : A.run ? `<div class="info" style="margin-top:10px">Choisis deux années différentes.</div>` : ""}</div>`;
+    <button class="btn" data-act="an-run">Ouvrir l'analyse détaillée</button></div>`;
+}
+function viewAnalyse(){
+  const A = V.an = Object.assign({a:V.y, b:V.y - 1, bien:"all", sub:"syn", open:{}}, V.an || {}), a = +A.a, b = +A.b, bien = A.bien, ids = bienIds();
+  const years = [...new Set(J().map(yr).concat([now0.getFullYear(), a, b]))].sort((x, y) => x - y), lo = Math.min(...years), hi = Math.max(...years), ys = []; for (let y = hi; y >= lo; y--) ys.push([y, y]);
+  const opt = (arr, sel) => arr.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(sel) ? " selected" : ""}>${esc(l)}</option>`).join("");
+  const head = `<div class="top"><button class="btn ghost sm" data-act="tab" data-v="chart">‹ Bilan</button><button class="q" data-act="help" aria-label="Aide">?</button></div><h1 style="margin:6px 0 2px;font-size:22px">Pourquoi mes années sont différentes ?</h1>
+    <div class="card"><div class="grid2"><label class="f">Année<select id="an-a">${opt(ys, a)}</select></label><label class="f">Comparée à<select id="an-b">${opt(ys, b)}</select></label></div>
+    ${ids.length > 1 ? `<label class="f">Bien<select id="an-bien">${opt([["all", "Tous les biens"]].concat(ids.map(id => [id, bienName(id)])), bien)}</select></label>` : ""}</div>`;
+  if (a === b) return head + `<div class="card"><div class="info">Choisis deux années différentes.</div></div>`;
+  const L1 = anLines(a, bien), L0 = anLines(b, bien), cf1 = anCf(L1), cf0 = anCf(L0), d = r2(cf1 - cf0), items = anItems(L1, L0, a, b);
+  if (!L1.length && !L0.length) return head + `<div class="card"><div class="info">Aucune opération en ${a} ni en ${b}.</div></div>`;
+  const dRec = r2(anSum(L1, "Recette") - anSum(L0, "Recette")), dDep = r2(anSum(L1, "Dépense") - anSum(L0, "Dépense"));
+  const kpis = `<div class="kpis"><div class="kpi"><div class="small muted">Cash flow ${b}</div><div class="v num">${eur(cf0)}</div></div><div class="kpi"><div class="small muted">Cash flow ${a}</div><div class="v num">${eur(cf1)}</div></div><div class="kpi ${d < 0 ? "bad" : d > 0 ? "good" : ""}"><div class="small muted">Écart ${a} − ${b}</div><div class="v num ${d < 0 ? "neg" : d > 0 ? "pos" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""} ${eur(Math.abs(d))}</div></div></div>`;
+  const subs = [["syn", "Synthèse"], ["cat", "Par catégorie"], ["mois", "Mois par mois"]].concat(ids.length > 1 && bien === "all" ? [["bien", "Par bien"]] : []);
+  const seg = `<div class="seg" style="margin:10px 0">${subs.map(([k, l]) => `<button class="${A.sub === k ? "on" : ""}" data-act="an-sub" data-v="${k}">${l}</button>`).join("")}</div>`;
+  let body = "";
+  if (A.sub === "cat"){
+    const row = o => { const open = A.open[o.key], det = L => L.length ? L.slice().sort((p, q) => p.date.localeCompare(q.date)).map(j => `<div class="kv"><span class="small">${frDate(j.date)} · ${esc(j.lib || j.cat)}</span><span class="num small">${eur(N(j.montant))}</span></div>`).join("") : '<div class="small muted">Aucune ligne</div>';
+      return `<tr class="clk" data-act="an-cat" data-k="${esc(o.key)}"><td>${open ? "▾" : "▸"} ${esc(o.cat)}</td><td class="r">${o.v0 ? eur(o.v0) : "—"}<div class="small muted">${o.n0} ligne(s)</div></td><td class="r">${o.v1 ? eur(o.v1) : "—"}<div class="small muted">${o.n1} ligne(s)</div></td><td class="r">${effCell(o.eff)}</td><td class="why">${esc(anWhy(o, a, b))}</td></tr>`
+        + (open ? `<tr><td colspan="5" style="background:var(--accent-soft)"><div class="grid2"><div><b class="small">${b}</b>${det(o.L0)}</div><div><b class="small">${a}</b>${det(o.L1)}</div></div><div class="small" style="margin-top:6px">${esc(anWhy(o, a, b))}</div></td></tr>` : ""); };
+    const part = (t, titre) => { const I = items.filter(o => o.t === t); if (!I.length) return ""; return `<tr class="mh"><td colspan="5"><b>${titre}</b></td></tr>${I.map(row).join("")}<tr class="tot"><td><b>Total ${titre.toLowerCase()}</b></td><td class="r"><b>${eur(anSum(L0, t))}</b></td><td class="r"><b>${eur(anSum(L1, t))}</b></td><td class="r">${effCell(r2(t === "Recette" ? anSum(L1, t) - anSum(L0, t) : anSum(L0, t) - anSum(L1, t)))}</td><td></td></tr>`; };
+    body = `<div class="card"><div class="small muted" style="margin-bottom:6px">Touche une ligne pour voir les opérations des deux années. « Effet » = ce que ça change au cash flow ${a} par rapport à ${b} (vert = favorable, rouge = défavorable).</div><div class="otw"><table class="ot an"><thead><tr><th>Catégorie</th><th class="r">${b}</th><th class="r">${a}</th><th class="r">Effet</th><th class="why">Explication</th></tr></thead><tbody>${part("Recette", "Recettes")}${part("Dépense", "Charges")}</tbody><tfoot><tr><td><b>Cash flow</b></td><td class="r"><b>${eur(cf0)}</b></td><td class="r"><b>${eur(cf1)}</b></td><td class="r">${effCell(d)}</td><td class="why"></td></tr></tfoot></table></div></div>`;
+  } else if (A.sub === "mois"){
+    const mm = (L, m) => L.filter(j => mo(j) === m), rows = MC.map((nm, m) => {
+      const l1 = mm(L1, m), l0 = mm(L0, m), r1 = anSum(l1, "Recette"), p1 = anSum(l1, "Dépense"), r0 = anSum(l0, "Recette"), p0 = anSum(l0, "Dépense"), c1 = r2(r1 - p1), c0 = r2(r0 - p0), e = r2(c1 - c0), top = anItems(l1, l0, a, b)[0];
+      return {nm, r1, p1, r0, p0, c1, c0, e, why:top && Math.abs(top.eff) >= 0.5 ? `${top.cat} ${top.eff > 0 ? "+" : "−"} ${eur(Math.abs(top.eff))}` : "—"}; });
+    const mx = Math.max(1, ...rows.map(r => Math.abs(r.e)));
+    body = `<div class="card"><div class="small muted" style="margin-bottom:6px">Pour chaque mois : loyers, charges et cash flow des deux années, l'écart, et la catégorie qui l'explique le plus.</div><div class="otw"><table class="ot an"><thead><tr><th>Mois</th><th class="r">Loyers ${b}</th><th class="r">Charges ${b}</th><th class="r">Cash ${b}</th><th class="r">Loyers ${a}</th><th class="r">Charges ${a}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${rows.map(r => `<tr${Math.abs(r.e) >= mx * 0.6 && Math.abs(r.e) >= 1 ? ' class="hot"' : ""}><td><b>${r.nm}</b></td><td class="r">${eur(r.r0)}</td><td class="r">${eur(r.p0)}</td><td class="r"><b>${eur(r.c0)}</b></td><td class="r">${eur(r.r1)}</td><td class="r">${eur(r.p1)}</td><td class="r"><b>${eur(r.c1)}</b></td><td class="r">${effCell(r.e)}</td><td class="small nw">${esc(r.why)}</td></tr>`).join("")}</tbody><tfoot><tr><td><b>Année</b></td><td class="r">${eur(anSum(L0, "Recette"))}</td><td class="r">${eur(anSum(L0, "Dépense"))}</td><td class="r"><b>${eur(cf0)}</b></td><td class="r">${eur(anSum(L1, "Recette"))}</td><td class="r">${eur(anSum(L1, "Dépense"))}</td><td class="r"><b>${eur(cf1)}</b></td><td class="r">${effCell(d)}</td><td></td></tr></tfoot></table></div></div>`;
+  } else if (A.sub === "bien"){
+    body = `<div class="card"><div class="otw"><table class="ot an"><thead><tr><th>Bien</th><th class="r">Cash ${b}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${ids.map(id => { const l1 = anLines(a, id), l0 = anLines(b, id), c1 = anCf(l1), c0 = anCf(l0), top = anItems(l1, l0, a, b).slice(0, 2).filter(o => Math.abs(o.eff) >= 0.5); return `<tr><td>${bienPill(id)}</td><td class="r">${eur(c0)}</td><td class="r"><b>${eur(c1)}</b></td><td class="r">${effCell(r2(c1 - c0))}</td><td class="small nw">${top.length ? top.map(o => esc(o.cat) + " " + (o.eff > 0 ? "+" : "−") + " " + eur(Math.abs(o.eff))).join("<br>") : "—"}</td></tr>`; }).join("")}</tbody></table></div></div>`;
+  } else {
+    const mx = Math.max(1, ...items.map(o => Math.abs(o.eff))), top = items.filter(o => Math.abs(o.eff) >= 0.5), big = top.slice(0, 8), rest = top.slice(8), restV = r2(sum(rest.map(o => o.eff)));
+    const bars = big.map(o => { const w = Math.round(Math.abs(o.eff) / mx * 100); return `<div class="dv"><div class="dl">${esc(o.cat)}<div class="small muted">${o.t === "Recette" ? "recette" : "charge"}</div></div><div class="db"><div class="half l">${o.eff < 0 ? `<i class="bad" style="width:${w}%"></i>` : ""}</div><div class="half r">${o.eff > 0 ? `<i class="good" style="width:${w}%"></i>` : ""}</div></div><div class="dn">${effCell(o.eff)}</div></div>`; }).join("");
+    const lines = big.slice(0, 4).map(o => `<li><b>${esc(o.cat)}</b> : ${esc(anWhy(o, a, b))} <span class="muted">(${o.eff > 0 ? "+" : "−"} ${eur(Math.abs(o.eff))})</span></li>`).join("");
+    const p1 = anPrevu(L1), p0 = anPrevu(L0), notes = [];
+    if (p1.n) notes.push(`En ${a}, ${p1.n} ligne(s) ne sont pas encore pointées (${eur(p1.rec)} de loyers, ${eur(p1.dep)} de charges) : le cash flow les compte comme prévues.`);
+    if (p0.n) notes.push(`En ${b}, ${p0.n} ligne(s) ne sont toujours pas pointées (${eur(p0.rec)} de loyers, ${eur(p0.dep)} de charges).`);
+    const mois = y => new Set(anLines(y, bien).filter(j => j.type === "Recette" && j.cat === "Loyer").map(mo)).size;
+    if (mois(a) !== mois(b)) notes.push(`Loyers reçus sur ${mois(a)} mois en ${a} contre ${mois(b)} en ${b}.`);
+    body = `<div class="grid-an"><div class="card"><h2>En bref</h2><p style="margin:4px 0">Le cash flow ${a} est <b class="${d < 0 ? "neg" : "pos"}">${d < 0 ? "plus bas" : "plus haut"} de ${eur(Math.abs(d))}</b> que celui de ${b}.</p>
+      <div class="kv"><span>Loyers</span>${effCell(dRec)}</div><div class="kv"><span>Charges</span>${effCell(r2(-dDep))}</div><div class="kv tot"><span>Écart du cash flow</span>${effCell(d)}</div>
+      ${lines ? `<div class="small muted" style="margin-top:10px">Les raisons principales</div><ul class="anl">${lines}</ul>` : ""}${notes.length ? `<div class="small muted" style="margin-top:8px">${notes.map(esc).join("<br>")}</div>` : ""}</div>
+      <div class="card"><h2>Ce qui pèse le plus</h2><div class="small muted" style="margin-bottom:6px">Vert à droite : ça améliore le cash flow ${a}. Rouge à gauche : ça le baisse.</div>${bars || '<div class="info">Aucun poste ne diffère.</div>'}${Math.abs(restV) >= 0.5 ? `<div class="dv"><div class="dl">Autres petits écarts<div class="small muted">${rest.length} poste(s)</div></div><div class="db"></div><div class="dn">${effCell(restV)}</div></div>` : ""}</div></div>`;
+  }
+  return head + kpis + seg + body;
 }
 function viewBilan(){
   const y = V.y, ids = bienIds(), st = stats(null, y);
@@ -1121,10 +1162,10 @@ function render(){
   const sig = V.tab + "|" + V.bsub + "|" + (V.doc ? V.doc.id : ""), y0 = window.scrollY, same = sig === V.lastSig, prevSig = V.lastSig; V.lastSig = sig;
   // Retour depuis le formulaire : on retrouve la page là où on l'avait laissée
   const prevTab = prevSig ? prevSig.split("|")[0] : "";
-  if (V.tab === "add" && prevTab && prevTab !== "add"){ V.retSig = prevSig; V.retY = y0; }
-  const restore = prevTab === "add" && V.tab !== "add" && V.retSig === sig && V.retY != null;
+  if ((V.tab === "add" || V.tab === "ana") && prevTab && prevTab !== "add" && prevTab !== "ana"){ V.retSig = prevSig; V.retY = y0; }
+  const restore = (prevTab === "add" || prevTab === "ana") && V.tab !== prevTab && V.tab !== "add" && V.tab !== "ana" && V.retSig === sig && V.retY != null;
   main.dataset.tab = V.tab;
-  main.innerHTML = V.tab === "welcome" ? viewWelcome() : V.tab === "home" ? viewHome() : V.tab === "guide" ? viewGuide() : V.tab === "cmp" ? viewCompta() : V.tab === "add" ? viewAdd() : V.tab === "month" ? viewMonth() : V.tab === "bld" ? viewBiens() : V.tab === "rent" ? viewRent() : V.tab === "chart" ? viewBilan() : viewSet();
+  main.innerHTML = V.tab === "welcome" ? viewWelcome() : V.tab === "home" ? viewHome() : V.tab === "guide" ? viewGuide() : V.tab === "cmp" ? viewCompta() : V.tab === "add" ? viewAdd() : V.tab === "month" ? viewMonth() : V.tab === "bld" ? viewBiens() : V.tab === "rent" ? viewRent() : V.tab === "chart" ? viewBilan() : V.tab === "ana" ? viewAnalyse() : viewSet();
   if (V.tab === "add") updateInfo();
   window.scrollTo(0, restore ? V.retY : same ? y0 : 0);
   if (restore) V.retSig = null;
@@ -1229,7 +1270,9 @@ document.addEventListener("click", ev => {
       if (mt > reste + 0.005 && !f.confirm){ f.confirm = true; sheetBourse(f.bien); return; }
       S.journal.push({id:uid(), date:f.date, bien:f.bien, type:"Entrée", cat:f.cat || "Bourse", lib:"Remboursement " + (!f.cat || f.cat === "Bourse" ? "bourse" : f.cat), montant:r2(mt), compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"", upd:Date.now()});
       V.bs = null; persist(); closeSheet(); toast("Remboursement de " + eur(mt) + " enregistré"); render(); break; }
-    case "an-run": V.an = V.an || {}; V.an.run = true; render(); break;
+    case "an-run": V.an = V.an || {}; V.an.sub = "syn"; V.tab = "ana"; render(); break;
+    case "an-sub": V.an.sub = v; render(); break;
+    case "an-cat": { const o = V.an.open = V.an.open || {}, k = b.dataset.k; o[k] = !o[k]; render(); break; }
     case "tarif-new": sheetTarif(); break;
     case "tarif-edit": sheetTarifEdit(+b.dataset.i); break;
     case "te-save": { const t = S.tarifs[+b.dataset.i], mt = parseNum($("#te-mont").value), d = $("#te-date").value; if (!t) return; if (!mt || mt <= 0 || !d) return toast("Date et montant obligatoires");
@@ -1309,9 +1352,10 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.16";
+const APP_VERSION = "1.7.17";
 const CHANGELOG = [
-  {v:"1.7.16", date:"2026-11-10", titre:"Analyse des années, ajustements hors compta", items:["Tous les ajustements de rapprochement (« Écart de rapprochement ») sont maintenant automatiquement marqués « hors compta » : ils corrigent le solde du compte, jamais le bénéfice, le bilan ni la liste « à saisir en compta ». Les anciens ajustements sont mis à jour tout seuls.","Réglages › Démo et aide : l’entrée « Parcours guidé », qui ne servait pas, est retirée (la visite guidée plein écran et le guide restent).","Biens › Rapprochement › Historique des ajustements : touche une ligne pour la modifier ou l’annuler (suppression).","Bilan : nouvelle carte « Pourquoi mes années sont différentes ? » : compare le cash flow de deux années (tous les biens ou un seul) et explique l’écart poste par poste, avec les dates des dépenses ponctuelles, les paiements manquants et les lignes encore prévues.","Bilan › Mois par mois : le chiffre à droite est expliqué (cash flow du mois = loyers − charges) et les lignes hors compta n’y sont plus comptées, comme dans le reste du bilan."]},
+  {v:"1.7.17", date:"2026-11-10", titre:"Page dédiée « Pourquoi mes années sont différentes ? »", items:["Bilan › « Pourquoi mes années sont différentes ? » ouvre maintenant une page entière, claire et en colonnes (sur grand écran comme sur téléphone) : choisis l’année, l’année de comparaison et le bien.","Synthèse : trois cartes (cash flow de chaque année et écart), phrase d’explication, graphique, et colonne « Surtout dû à ».","Par catégorie : tableau 2025 / 2026 / Effet (vert = favorable, rouge = défavorable) ; touche une ligne pour voir les opérations des deux années.","Mois par mois : loyers, charges et cash flow des deux années, écart, et mois qui s’écartent le plus surlignés. Détail par bien.","Visite guidée et guide : 3 nouvelles diapos (synthèse, par catégorie, mois par mois)."]},
+  {v:"1.7.16", date:"2026-11-10", titre:"Analyse des années, ajustements hors compta", items:["Tous les ajustements de rapprochement (« Écart de rapprochement ») sont maintenant automatiquement marqués « hors compta » : ils corrigent le solde du compte, jamais le bénéfice, le bilan ni la liste « à saisir en compta ». Les anciens ajustements sont mis à jour tout seuls.","Réglages › Démo et aide : l’entrée « Parcours guidé », qui ne servait pas, est retirée (la visite guidée plein écran et le guide restent).","Biens › Rapprochement › Historique des ajustements : touche une ligne pour la modifier ou l’annuler (suppression).","Bilan : nouvelle carte « Pourquoi mes années sont différentes ? » qui ouvre une page dédiée : synthèse avec graphique, tableau par catégorie (touche une ligne pour voir les opérations), mois par mois avec les mois qui s’écartent le plus surlignés, et détail par bien. Elle explique l’écart de cash flow entre deux années : dépenses ponctuelles avec leurs dates, paiements manquants, montants changés, lignes encore prévues.","Bilan › Mois par mois : le chiffre à droite est expliqué (cash flow du mois = loyers − charges) et les lignes hors compta n’y sont plus comptées, comme dans le reste du bilan."]},
   {v:"1.7.15", date:"2026-11-10", titre:"Soldes bien visibles, tarifs modifiables, jour de prélèvement", items:["Accueil : le solde de chaque compte est en gros, avec la couleur du bien.","Pointage › Comptes des biens : le solde de l’appli aujourd’hui en gros, et un champ « Solde de ma banque » directement dedans : tu le changes quand tu veux, l’écart se met à jour, et tu peux enregistrer l’ajustement.","Biens › Vue : le solde du compte aujourd’hui (à comparer avec la banque) en gros en haut de la carte.","Biens › Tarifs : touche une ligne de l’historique pour la corriger ou la supprimer.","Biens › Tarifs › « Changer le jour de prélèvement » : déplace en une fois toutes les lignes d’une catégorie au même jour du mois (crédit le 24, assurance le 5…), à partir d’une date."]},
   {v:"1.7.14", date:"2026-11-10", titre:"Retour au même endroit", items:["Quand tu ouvres une opération pour la modifier puis que tu appuies sur « Retour », tu retrouves la page exactement là où tu l’avais laissée, au lieu de remonter tout en haut."]},
   {v:"1.7.13", date:"2026-11-10", titre:"Charges par catégorie en tableau", items:["Biens › Vue et Dépenses : les barres (qui ne servaient à rien, tout étant comparé au Crédit) sont remplacées par un tableau : Catégorie, Total, Payé, Reste, avec une ligne de total. Reste = ce qui n’est pas encore payé, « payé ✓ » quand tout est réglé.","Compta › Charges par poste : même tableau (Catégorie et Total), sans colonnes de paiement, et le « payé ✓ » ne s’affiche plus à tort à cet endroit."]},
@@ -1492,8 +1536,14 @@ const HELP = {
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
     "« Toutes les années » : résultats, soldes et bourse versée cumulée.",
-    "« Pourquoi mes années sont différentes ? » : choisis deux années (et un bien si tu veux), touche Analyser : l'appli compare le cash flow et explique l'écart poste par poste (dépense ponctuelle, paiement manquant, montant changé, lignes encore prévues).",
+    "« Pourquoi mes années sont différentes ? » : choisis deux années (et un bien si tu veux), touche « Ouvrir l'analyse détaillée » : une page dédiée avec la synthèse, le tableau par catégorie, le mois par mois et le détail par bien.",
     "Le bouton Exporter produit un bilan au choix : un ou plusieurs biens, un mois, plusieurs mois ou plusieurs années, toutes les opérations ou seulement les dépenses ou les recettes (synthèse, mois par mois, par catégorie, liste des opérations), en Excel ou en PDF."]},
+  ana:{t:"Pourquoi mes années sont différentes ?", p:"Comprendre l'écart de cash flow entre deux années.", l:[
+    "Choisis les deux années (et un bien si tu veux) en haut de la page.",
+    "Synthèse : l'écart en un coup d'œil, les raisons principales et un graphique : vert = ça améliore le cash flow, rouge = ça le baisse.",
+    "Par catégorie : un tableau des deux années. Touche une ligne pour voir les opérations de chaque année.",
+    "Mois par mois : loyers, charges et cash flow de chaque mois, l'écart, et ce qui l'explique. Les mois qui s'écartent le plus sont surlignés.",
+    "Par bien : le cash flow de chaque bien et la raison principale de son écart."]},
   set:{t:"Réglages", p:"Échange avec Excel, sécurité et confort.", l:[
     "Mise à jour des règles : « Exporter en Word » donne un fichier à coller dans une IA qui cherche sur internet ; « Importer la réponse » te montre chaque changement avec sa source. Rien ne s'applique sans ton accord, et l'historique garde la trace.",
     "Signature : à l'écran (signature + paraphe reproduit sur chaque page + preuves) ou sur papier (tu n'imprimes que la dernière page puis tu la rescannes). La signature à l'écran est une signature électronique simple : sa valeur dépend de l'accord des deux parties.",
