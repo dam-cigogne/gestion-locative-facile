@@ -832,7 +832,7 @@ function saveOp(){
 /* ---------- Biens ---------- */
 function tenantCard(id){
   const t = tenantFor(id, todayIso()), ended = t && t.fin && t.fin < todayIso();
-  return `<div class="card" style="padding:12px 16px;gap:4px"><div class="top"><span class="small muted">Locataire actuel</span>${t ? `<button class="mini" data-act="ledit" data-id="${t.id}">Fiche</button>` : `<button class="mini" data-act="lnew">Ajouter</button>`}</div>
+  return `<div class="card" style="padding:12px 16px;gap:4px"><div class="top" style="justify-content:flex-start;gap:12px"><span class="small muted">Locataire actuel</span>${t ? `<button class="mini" data-act="ledit" data-id="${t.id}">Fiche</button>` : `<button class="mini" data-act="lnew">Ajouter</button>`}</div>
     ${t ? `<div class="t" style="font-weight:600;font-size:16px">${esc(t.nom)}${ended ? ' <span class="chip warn">bail terminé</span>' : ""}</div>
       <div class="small muted">Bail depuis le ${t.debut ? frDate(t.debut) : "?"}${t.fin ? " jusqu'au " + frDate(t.fin) : ""} · loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""}</div>${soldeLine(id)}
       <div class="btns" style="gap:6px">${t.tel ? `<a class="mini" href="tel:${esc(t.tel)}">Appeler</a><a class="mini" href="sms:${esc(t.tel)}">SMS</a>` : ""}${t.email ? `<a class="mini" href="mailto:${esc(t.email)}">E-mail</a>` : ""}</div>`
@@ -1421,8 +1421,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.31";
+const APP_VERSION = "1.7.32";
 const CHANGELOG = [
+  {v:"1.7.32", date:"2026-11-10", titre:"Bouton « Fiche » accessible", items:["Dans Biens › Locataires, le bouton « Fiche » du locataire actuel est passé à gauche, à côté du titre : il n'est plus caché par les onglets de logements sur le côté (iPad).","Signature sur papier : après la photo de la page signée, un encadré « ✓ Page signée enregistrée » s'affiche en haut de la fenêtre, et « 3 · Envoyer le dossier signé » ouvre la fenêtre « Envoyer au locataire » (pièce jointe, e-mail, SMS, ranger dans sa fiche) au lieu du partage brut de l'iPad."]},
   {v:"1.7.31", date:"2026-11-10", titre:"Après une signature : envoyer et ranger comme pour tous les documents", items:["Après une signature électronique (courrier, restitution du dépôt, bail), « Continuer » ouvre maintenant la même fenêtre « Envoyer au locataire » que les autres documents : pièce jointe, e-mail, SMS, « Ranger dans sa fiche » ou enregistrement sur l'appareil.","Ton exemplaire signé reste rangé automatiquement dans Biens › Documents du bien.","Arrivée et Départ d'un locataire : si le logement est soumis au permis de louer, une étape « Permis de louer » apparaît dans chaque liste (demande à la mairie avant le bail, à prévoir dès le départ) avec un bouton vers le suivi."]},
   {v:"1.7.30", date:"2026-11-10", titre:"Documents signés verrouillés, rangement dans la fiche, démo de mise en location", items:["Un état des lieux ou un inventaire signé est maintenant verrouillé : plus de modification par erreur. Un bouton « Déverrouiller (exceptionnel) » permet de le rouvrir ; la première modification efface alors les signatures.","« Envoyer au locataire » : nouveau bouton « Ranger dans sa fiche » qui garde une copie du PDF (signé s'il l'est) dans Biens › Locataires › sa fiche › Documents. Un envoi en pièce jointe en garde aussi une copie.","Ta pièce d'identité de bailleur se range dans Biens › carte « Bailleur et biens ». La case correspondante de « Renforcer la preuve » est cochée toute seule (comme celle du locataire si sa pièce est dans sa fiche).","Démo : un logement vacant « Appartement T3 » avec 7 candidats fictifs (demandes, visites, dossiers à vérifier, refusé) pour essayer tout le parcours jusqu'à l'état des lieux d'entrée."]},
   {v:"1.7.29", date:"2026-11-10", titre:"Plus de zoom au double appui", items:["Un double appui rapide sur un bouton ou une ligne ne zoome plus sur iPad et iPhone (le zoom au pincement reste possible, et la saisie de montants n'est pas touchée)."]},
@@ -5433,11 +5434,11 @@ function scanCompress(file){ return new Promise((res, rej) => { const img = new 
     const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res({d:c.toDataURL("image/jpeg", 0.8), w:c.width, h:c.height}); };
   img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("image")); }; img.src = url; }); }
 function paperSteps(p){
-  return `<div class="info"><b>Signature papier · réf. ${esc(p.ref)}</b></div>
+  return `${p.note ? `<div class="info" style="border:2px solid var(--ok,#1a8f5a)"><b>✓ Page signée enregistrée</b><br>${p.note}</div>` : ""}<div class="info"><b>Signature papier · réf. ${esc(p.ref)}</b></div>
     <ol class="small" style="padding-left:18px;margin:6px 0;line-height:1.55"><li>Enregistre le PDF (il est aussi gardé dans les documents du logement).</li><li>Imprime <b>uniquement la dernière page</b> (« PAGE DE SIGNATURE »), chez toi, au tabac, à la mairie ou à la médiathèque. Pas d'imprimante : le locataire peut l'imprimer de son côté.</li><li>Le bailleur et le locataire <b>signent et paraphent à la main</b> cette page.</li><li>Scanne-la avec le bouton ci-dessous, ou prends-la directement en photo avec l'appareil photo (pose-la à plat, bien éclairée, les 4 coins visibles).</li><li>Envoie le dossier (PDF complet + page signée) par e-mail.</li></ol>
     <div class="btns"><button class="btn ghost" data-act="pp-save">1 · Enregistrer le PDF</button><label class="btn" style="flex:1;text-align:center;cursor:pointer">2 · Scanner la page signée<input id="pp-file" type="file" accept="image/*,application/pdf" hidden></label></div>
     <div class="btns"><label class="btn ghost" style="flex:1;text-align:center;cursor:pointer">📷 Photographier la page avec l'appareil photo<input id="pp-cam" type="file" accept="image/*" capture="environment" hidden></label></div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="pp-send">3 · Envoyer le dossier par e-mail</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="pp-send">3 · Envoyer le dossier signé</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
     <div class="small muted">Pour que le bail soit solide, il vaut mieux que chaque page soit paraphée à la main. Ici toutes les pages portent la même référence (${esc(p.ref)}) : c'est un repère, pas une garantie juridique. En cas de doute, demande à ANIL, à un notaire ou à un avocat.</div>`;
 }
 async function paperMake(kind, build, bien, titre, name){
@@ -5459,7 +5460,8 @@ document.addEventListener("change", async ev => {
       docList("docs").push({id:ffid, bien:p.bien, kind:"bail", nom:p.titre + " SIGNÉ (PDF + page signée à la main), réf. " + p.ref, fname:fn, date:todayIso(), type:"application/pdf", size:pdf.length, upd:Date.now()});
       p.final = {fid:ffid, name:fn}; fin = " Le dossier signé complet (PDF + page signée) est aussi enregistré dans les documents du logement : " + esc(fn) + "."; } catch(e){ fin = ""; } }
   persist(); render(); toast("Page signée enregistrée");
-  openSheet("<h2>Signer sur papier</h2>" + paperSteps(p) + '<div class="info">Page signée enregistrée : ' + esc(name) + ". Vérifie sur le scan que la référence " + esc(p.ref) + " est lisible, puis envoie le dossier." + fin + "</div>");
+  p.note = esc(name) + ". Vérifie sur le scan que la référence " + esc(p.ref) + " est lisible, puis touche « 3 · Envoyer le dossier signé »." + fin;
+  openSheet("<h2>Signer sur papier</h2>" + paperSteps(p));
 });
 document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
@@ -5479,7 +5481,9 @@ document.addEventListener("click", async ev => {
     case "pp-save": { const p = V.pp; if (!p) break; const r = await flGet(p.fid); if (r) await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); break; }
     case "pp-send": { const p = V.pp; if (!p) break; const r = await flGet(p.fid), sc = p.scan ? await flGet(p.scan.fid) : null; if (!r) break;
       if (!sc){ toast("Scanne d'abord la page signée (étape 2)"); break; }
-      const fr = p.final ? await flGet(p.final.fid) : null, files = fr ? [new File([fr.buf], fr.name, {type:"application/pdf"})] : [new File([r.buf], r.name, {type:"application/pdf"}), new File([sc.buf], sc.name, {type:sc.type})];
+      const fr = p.final ? await flGet(p.final.fid) : null;
+      if (fr && typeof sendMark === "function"){ closeSheet(); sendMark(p.bien, (p.titre || "Document") + " signé", todayIso()); await saveFile(fr.name, new Uint8Array(fr.buf), "application/pdf"); break; }
+      const files = fr ? [new File([fr.buf], fr.name, {type:"application/pdf"})] : [new File([r.buf], r.name, {type:"application/pdf"}), new File([sc.buf], sc.name, {type:sc.type})];
       try { if (navigator.canShare && navigator.canShare({files})){ await navigator.share({files, title:"Document signé, réf. " + p.ref, text:"Document complet et page de signature signée à la main. Référence : " + p.ref}); break; } } catch(e){ if (e && e.name === "AbortError") break; }
       if (fr) await saveFile(fr.name, new Uint8Array(fr.buf), "application/pdf"); else { await saveFile(r.name, new Uint8Array(r.buf), "application/pdf"); await saveFile(sc.name, new Uint8Array(sc.buf), sc.type); } toast("Fichiers prêts : joins-les à ton e-mail"); break; }
   }
