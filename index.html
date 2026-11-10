@@ -22,7 +22,7 @@
     return !!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches); };
   window.applyTheme=function(){
     var pal=ls("glf-pal")||"emeraude"; if(!PALS[pal])pal="emeraude"; var dk=window.isDarkNow(), r=document.documentElement;
-    r.setAttribute("data-theme",dk?"dark":"light"); r.setAttribute("data-pal",pal);
+    r.setAttribute("data-theme",dk?"dark":"light"); r.setAttribute("data-pal",pal); r.setAttribute("data-style",ls("glf-style")==="fun"?"fun":"normal");
     var m=document.querySelector('meta[name="theme-color"]'); if(m)m.setAttribute("content",dk?"#0E1715":PALS[pal][0]); };
   window.applyTheme();
 })();
@@ -275,6 +275,30 @@ details.h p{margin:6px 0 0;font-size:14px}details.h ul{margin:6px 0 0;padding-le
 #viewer iframe{flex:1;border:0;background:#fff;width:100%}
 .gt{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}.gt th,.gt td{border:1px solid var(--line);padding:6px 7px;text-align:left;vertical-align:top}.gt thead th{background:var(--accent-soft);color:var(--accent);font-weight:700}.gt tbody th{font-weight:600;background:transparent;width:28%}.gsec summary{cursor:pointer;font-size:15px;list-style:none}.gsec summary::-webkit-details-marker{display:none}.gsec summary::after{content:'+';float:right;font-weight:700}.gsec[open] summary::after{content:'−'}.gsec .gbody{margin-top:8px;overflow-x:auto}.gsec a{color:var(--accent)}
 .affs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.affs button{background:var(--card,#fff);border:1px solid var(--bd,#DDE5E1);border-radius:12px;padding:6px;font:inherit;color:inherit;text-align:center;cursor:pointer}.affs img{width:100%;aspect-ratio:1/1.1;object-fit:cover;object-position:top;border-radius:8px;display:block}.affs span{display:block;font-size:12.5px;margin-top:4px}
+
+/* Style « Fun » (Réglages › Aspect) : désactivé par défaut, le style Normal ne change pas */
+:root[data-style="fun"]{--fun2:#FFB347;--fun3:#7C5CFF;--fun4:#FF6B9A}
+:root[data-style="fun"] body{background:radial-gradient(900px 420px at 100% -10%,color-mix(in srgb,var(--fun3) 16%,transparent),transparent 60%),radial-gradient(700px 380px at -10% 8%,color-mix(in srgb,var(--fun2) 18%,transparent),transparent 60%),var(--bg)}
+:root[data-style="fun"] .card{border-radius:26px;border-color:transparent;box-shadow:0 10px 24px -14px color-mix(in srgb,var(--accent) 55%,transparent),0 2px 4px rgba(20,30,40,.05)}
+:root[data-style="fun"] .card h2{font-size:19px;display:flex;align-items:center;gap:8px}
+:root[data-style="fun"] .card h2::before{content:"";width:10px;height:22px;border-radius:6px;background:linear-gradient(180deg,var(--accent),var(--fun3))}
+:root[data-style="fun"] .hero{border-radius:30px;background:linear-gradient(135deg,var(--accent) 0%,var(--fun3) 62%,var(--fun4) 120%);box-shadow:0 18px 34px -16px var(--fun3)}
+:root[data-style="fun"] .hero::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.16);pointer-events:none}
+:root[data-style="fun"] .btn{border-radius:999px;background-image:linear-gradient(135deg,var(--accent),var(--fun3));color:#fff;box-shadow:0 10px 18px -10px var(--fun3)}
+:root[data-style="fun"] .btn:active{transform:scale(.94) rotate(-1deg)}
+:root[data-style="fun"] .tile{border-radius:22px;border:0;background:linear-gradient(145deg,var(--accent-soft),var(--surface));box-shadow:0 8px 16px -12px var(--accent)}
+:root[data-style="fun"] .tile:nth-child(2n){background:linear-gradient(145deg,color-mix(in srgb,var(--fun2) 22%,var(--surface)),var(--surface))}
+:root[data-style="fun"] .tile:nth-child(3n){background:linear-gradient(145deg,color-mix(in srgb,var(--fun4) 18%,var(--surface)),var(--surface))}
+:root[data-style="fun"] .tile .n{font-family:var(--font-display);font-size:30px}
+:root[data-style="fun"] .seg button.on{background:linear-gradient(135deg,var(--accent),var(--fun3));color:#fff;border-color:transparent}
+:root[data-style="fun"] .mini{border-radius:999px}
+:root[data-style="fun"] .kpi{border-radius:22px;border:0;background:linear-gradient(145deg,var(--accent-soft),var(--surface))}
+:root[data-style="fun"] nav.tabs .in{border-radius:34px;box-shadow:0 14px 30px -12px color-mix(in srgb,var(--fun3) 55%,transparent)}
+:root[data-style="fun"] nav.tabs button.on:not(.add){background:linear-gradient(135deg,var(--accent-soft),color-mix(in srgb,var(--fun3) 25%,var(--surface)))}
+:root[data-style="fun"] .chip{border-radius:999px}
+:root[data-style="fun"] h1{font-family:var(--font-display);letter-spacing:-.02em}
+:root[data-theme="dark"][data-style="fun"]{--fun2:#FFC46B;--fun3:#9A85FF;--fun4:#FF7FA9}
+:root[data-theme="dark"][data-style="fun"] .tile,:root[data-theme="dark"][data-style="fun"] .kpi{background:linear-gradient(145deg,var(--accent-soft),var(--surface))}
 </style>
 </head>
 <body>
@@ -1365,8 +1389,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.21";
+const APP_VERSION = "1.7.22";
 const CHANGELOG = [
+  {v:"1.7.22", date:"2026-11-10", titre:"Style Fun", items:["Nouveau réglage « Style de l’appli » (Réglages › Aspect) : Normal (par défaut, rien ne change) ou Fun ✨, plus rond et plus coloré (cartes arrondies, dégradés, boutons en pilule). Il se combine avec les couleurs et le mode clair ou sombre."]},
   {v:"1.7.21", date:"2026-11-10", titre:"Échéancier complet et reste du prêt", items:["Compta › Emprunt et intérêts : nouveau bouton « Échéancier complet » sur chaque prêt. La page montre, année par année (puis mois par mois en touchant une année), les intérêts, l’assurance, le capital remboursé et le capital restant dû. Les échéances à venir sont grisées.","Nouveau bloc « Où en est le prêt » : capital déjà remboursé, pourcentage, échéances restantes, date de fin, prochaine échéance, et graphique du capital restant dû à la fin de chaque année.","La carte Emprunt indique aussi « Remboursé à ce jour » et le nombre d’échéances restantes.","Export Excel et PDF de l’échéancier."]},
   {v:"1.7.20", date:"2026-11-10", titre:"Lecture des PDF de banque tournés", items:["Correction : un PDF d’échéancier dont la page est tournée (tableau en paysage) n’était pas lu : chaque colonne était prise pour une ligne. Le sens d’écriture est maintenant détecté, ce qui corrige aussi la lecture des relevés de banque tournés.","L’import de l’échéancier retient la date de fin du prêt indiquée par la banque (réalisation + durée)."]},
   {v:"1.7.19", date:"2026-11-10", titre:"Échéancier de la banque importé", items:["Compta › Emprunt et intérêts › Renseigner : nouveau bouton « Importer l’échéancier de la banque » (PDF texte, PDF scanné, photo, Excel ou CSV). L’appli lit le tableau, vérifie chaque ligne, reconstruit l’échéancier complet (même si quelques lignes du scan sont mal lues) et te montre les intérêts de chaque année pour les comparer à ta banque avant de valider.","Une fois importé, les intérêts, le capital remboursé, l’assurance et le capital restant dû de chaque année, ainsi que les échéances à saisir sur le site avec leurs vraies dates, sont ceux de la banque : plus rien à saisir d’une année sur l’autre. « Retirer l’échéancier importé » revient au calcul.","Les scans posés à l’horizontale sont maintenant redressés automatiquement avant la lecture (aussi pour les relevés de banque)."]},
@@ -1420,6 +1445,8 @@ function themeCard(){
     <div class="pals">${Object.keys(PAL_NAMES).map(k => `<button class="pal ${cur === k ? "on" : ""}" data-act="pal" data-v="${k}"><i style="background:${LOC_PALS[k][0]}"></i>${PAL_NAMES[k]}</button>`).join("")}</div>
     <div class="small muted">Onglets (logements, réglages) : en haut ou sur le côté</div>
     <div class="seg">${[["top","En haut"],["side","Sur le côté"]].map(([k, l]) => `<button class="${pref("glf-tabs", "top") === k ? "on" : ""}" data-act="ttabs" data-v="${k}">${l}</button>`).join("")}</div>
+    <div class="small muted">Style de l'appli</div>
+    <div class="seg">${[["normal","Normal"],["fun","Fun ✨"]].map(([k, l]) => `<button class="${pref("glf-style", "normal") === k ? "on" : ""}" data-act="tstyle" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="small muted">Mode clair ou sombre</div>
     <div class="seg">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"],["sched","Horaires"]].map(([k, l]) => `<button class="${mode === k ? "on" : ""}" data-act="tmode" data-v="${k}">${l}</button>`).join("")}</div>
     ${mode === "sched" ? `<div class="tl"><label class="f">Sombre à partir de<input type="time" id="sc-from" value="${sc.from}"></label><label class="f">Clair à partir de<input type="time" id="sc-to" value="${sc.to}"></label></div>
@@ -1451,6 +1478,7 @@ const HELP = {
     "Les trois tuiles (retard, à pointer, à saisir en compta) sont cliquables.",
     "Le bénéfice réalisé ne compte que ce qui est vraiment passé sur le compte (pointé)."]},
   cmp:{t:"Compta", p:"Ce qu'il faut pour remplir ta compta en ligne.", l:[
+    "Style de l'appli : Normal ou Fun ✨ (plus rond, plus coloré) dans Réglages › Aspect. Se combine avec la couleur et le mode clair ou sombre.",
     "Les onglets des logements (Tous, Studio…) peuvent se placer sur le côté : Réglages › Aspect › « Onglets ».",
     "Logement loué vide : la compta devient « revenus fonciers ». Elle compare micro-foncier (abattement de 30 %, jusqu'à 15 000 € de loyers) et régime réel, calcule le déficit foncier et sort un PDF pour la déclaration 2044. Les catégories « à vérifier » ne sont pas comptées : change leur catégorie si besoin. Règles vérifiées en octobre 2026, à revérifier à chaque déclaration.",
     "« Vue d'ensemble » : tout ce qu'il faut saisir sur le site, logement par logement, d'un coup d'œil, avec une case par ligne. « PDF à imprimer » sort la même liste sur une fiche A4 (complète, ou seulement le reste à saisir).",
@@ -2067,6 +2095,7 @@ document.addEventListener("click", async ev => {
     case "sset": V.sset = v; render(); window.scrollTo(0, 0); break;
     case "pal": lsSet("glf-pal", v); applyTheme(); render(); break;
     case "tmode": lsSet("glf-theme", v); applyTheme(); render(); break;
+    case "tstyle": lsSet("glf-style", v); applyTheme(); render(); break;
     case "set-start": lsSet("glf-start", v); render(); break;
     case "fiche-share": try { await navigator.share({title:"Gestion Locative Facile", text:FICHE_TXT, url:ficheUrl()}); } catch(e){ if (!e || e.name !== "AbortError"){ try { await navigator.clipboard.writeText(FICHE_TXT + "\n" + ficheUrl()); toast("Descriptif et lien copiés"); } catch(e2){ toast("Partage impossible"); } } } break;
     case "aff-open": { const f = b.dataset.f, a = AFFICHES.find(x => x[0] === f); if (!a) break; openSheet(`<h2>${esc(a[1])}</h2><img src="${esc(f)}" alt="${esc(a[1])}" style="width:100%;border-radius:12px;border:1px solid var(--bd)">
