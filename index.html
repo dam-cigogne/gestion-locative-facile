@@ -102,6 +102,13 @@ body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;to
 .row:first-child{border-top:0}
 .row.hc{background:color-mix(in srgb,#8b5cf6 12%,transparent);border-left:3px solid #8b5cf6;padding-left:8px;border-radius:6px}
 .chip.hcc{background:#8b5cf6;color:#fff}
+.colsbreak{width:min(1240px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
+.mcols{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-items:start}
+.mcol{border:1px solid var(--line);border-radius:14px;padding:8px 10px;background:var(--surface)}
+.mgrp{margin-top:10px}.mh2{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--accent-soft);border-left:3px solid var(--accent)}
+.otw{overflow-x:auto}.ot{width:100%;border-collapse:collapse;font-size:13px}.ot th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line)}
+.ot td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:top}.ot .r{text-align:right;white-space:nowrap}.ot .nw{white-space:nowrap}.ot tr[data-act]{cursor:pointer}.ot tr[data-act]:active{opacity:.6}
+.ot tr.mh td{background:var(--accent-soft);border-top:2px solid var(--accent);padding:8px 6px}.ot tr.hc td:first-child{border-left:3px solid #8b5cf6}
 .row .main{flex:1;min-width:0}
 .row .t{font-weight:500;overflow-wrap:anywhere}
 .row .s{font-size:12.5px;color:var(--muted)}
@@ -796,7 +803,24 @@ function viewBiens(){
   return topbar("Biens", nav) + seg + sel + body;
 }
 function catBars(rows, max, restKey){
-  return rows.map(r => `<div class="env" style="padding:6px 0;--c:${catColor(r.n)}"><div class="top"><span><span class="cdot" style="background:${catColor(r.n)}"></span>${esc(r.n)}</span><span class="num">${eur(r.v)}${r.reste > 0.005 ? ` <span class="chip warn">reste ${eur(r.reste)}</span>` : ""}</span></div><div class="bar"><i style="width:${max > 0 ? Math.round(r.v / max * 100) : 0}%"></i></div></div>`).join("");
+  return rows.map(r => `<div class="env" style="padding:6px 0;--c:${catColor(r.n)}"><div class="top"><span><span class="cdot" style="background:${catColor(r.n)}"></span>${esc(r.n)}</span><span class="num">${eur(r.v)}${r.reste > 0.005 ? ` <span class="chip warn">reste ${eur(r.reste)}</span>` : ` <span class="chip ok">payé ✓</span>`}</span></div><div class="bar"><i style="width:${max > 0 ? Math.round(r.v / max * 100) : 0}%"></i></div></div>`).join("");
+}
+/* ---------- Liste des opérations d'un bien : par mois / tableau / liste, avec filtre de type ---------- */
+V.opv = V.opv || (window.innerWidth >= 700 ? "col" : "mois"); V.opt = V.opt || "all";
+function opsCard(titre, ops, withType){
+  const L = ops.filter(j => !withType || V.opt === "all" || j.type === V.opt).sort((a, b) => b.date.localeCompare(a.date) || (b.upd || 0) - (a.upd || 0));
+  const seg = (k, cur, items) => `<div class="seg">${items.map(([x, t]) => `<button class="${cur === x ? "on" : ""}" data-act="${k}" data-v="${x}">${t}</button>`).join("")}</div>`;
+  const groups = []; for (const j of L){ const k = j.date.slice(0, 7), g = groups[groups.length - 1]; if (g && g.k === k) g.l.push(j); else groups.push({k, l:[j]}); }
+  const tot = l => { const r = r2(sum(l.filter(j => j.type === "Recette").map(j => j.montant))), d = r2(sum(l.filter(j => j.type === "Dépense").map(j => j.montant))); return {r, d, res:r2(r - d)}; };
+  const sub = t => `<span class="small">${t.r ? `<span class="pos num">+ ${eur(t.r)}</span> ` : ""}${t.d ? `<span class="num">− ${eur(t.d)}</span> ` : ""}<b class="num ${signCl(t.res)}">= ${eur(t.res)}</b></span>`;
+  let body;
+  if (!L.length) body = '<div class="empty">Aucune opération.</div>';
+  else if (V.opv === "liste") body = `<div class="rows">${L.map(j => jRow(j, false)).join("")}</div>`;
+  else if (V.opv === "tab") body = `<div class="otw"><table class="ot"><thead><tr><th>Date</th><th>Catégorie · libellé</th><th class="r">Entrée</th><th class="r">Sortie</th><th>✓</th></tr></thead>${groups.map(g => { const t = tot(g.l);
+    return `<tbody><tr class="mh"><td colspan="5"><b>${monthLab(g.k)}</b> · ${g.l.length} ligne(s) · ${sub(t)}</td></tr>${g.l.map(j => `<tr data-act="jedit" data-id="${esc(j.id)}" class="${HC(j) ? "hc" : ""}"><td class="nw">${frDate(j.date).slice(0, 5)}</td><td>${esc(j.cat || j.type)}${j.lib && j.lib !== j.cat ? ` <span class="muted">· ${esc(j.lib)}</span>` : ""}${HC(j) ? ' <span class="chip hcc">hors compta</span>' : ""}</td><td class="r num pos">${isIn(j) ? eur(j.montant) : ""}</td><td class="r num">${isIn(j) ? "" : eur(j.montant)}</td><td>${j.pointe === "x" ? "✓" : '<span class="muted">·</span>'}</td></tr>`).join("")}</tbody>`; }).join("")}</table></div>`;
+  else if (V.opv === "col") body = `<div class="colsbreak"><div class="mcols">${groups.map(g => { const t = tot(g.l); return `<div class="mcol"><div class="mh2"><b>${monthLab(g.k)}</b>${sub(t)}</div><div class="rows">${g.l.map(j => jRow(j, false)).join("")}</div></div>`; }).join("")}</div></div>`;
+  else body = groups.map(g => { const t = tot(g.l); return `<div class="mgrp"><div class="mh2"><b>${monthLab(g.k)}</b>${sub(t)}</div><div class="rows">${g.l.map(j => jRow(j, false)).join("")}</div></div>`; }).join("");
+  return `<div class="card"><div class="top"><h2>${titre} (${L.length})</h2></div>${seg("opv", V.opv, [["col", "Colonnes"], ["mois", "Par mois"], ["tab", "Tableau"], ["liste", "Liste"]])}${withType ? `<div style="height:6px"></div>` + seg("opt", V.opt, [["all", "Tout"], ["Dépense", "Dépenses"], ["Recette", "Recettes"]]) : ""}<div style="margin-top:8px">${body}</div></div>`;
 }
 function viewBienVue(){
   const id = V.bsel, y = V.y, s = stats(id, y), b = S.biens.find(x => x.id === id);
@@ -816,7 +840,7 @@ function viewBienVue(){
   ${placeCard(id)}
   <div class="btns"><button class="btn ghost sm" data-act="bn-edit" data-id="${esc(id)}">Modifier le bien</button><button class="btn ghost sm" data-act="bn-new">Ajouter un bien</button></div>
   <div class="card"><h2>Charges par catégorie</h2>${rows.length ? catBars(rows, rows[0].v) : '<div class="empty">Aucune dépense cette année.</div>'}</div>
-  <div class="card"><details><summary><span>Toutes les opérations (${ops.length})</span><span class="muted small">voir</span></summary><div class="rows" style="margin-top:6px">${ops.map(j => jRow(j, false)).join("")}</div></details></div>`;
+  ${opsCard("Toutes les opérations", ops, true)}`;
 }
 function partagesCard(){
   return `<div class="card"><h2>Frais partagés entre les 2 comptes</h2><div class="small muted">Saisis le total une seule fois : l'appli crée une ligne par compte (part Studio arrondie, T2 = le reste).</div>
@@ -832,7 +856,7 @@ function viewBienDep(){
   return partagesCard() + `<div class="card"><h2>Dépenses ${esc(bienName(id))} ${y}</h2>${catBars(rows, rows.length ? rows[0].v : 0)}${rows.length ? "" : '<div class="empty">Aucune dépense cette année.</div>'}
     <div class="kv tot"><span>Total</span><span class="num">${eur(total)}</span></div>${kv("dont reste à payer", eur(reste), "muted")}</div>
   <div class="card"><h2>Prochaines dépenses</h2><div class="rows">${next.length ? next.map(j => `<div class="row"><div class="main"><div class="t">${esc(j.lib || j.cat)}</div><div class="s">${frDate(j.date)}</div></div><div class="amt num">${eur(j.montant)}</div></div>`).join("") : '<div class="empty">Rien de prévu.</div>'}</div></div>
-  <div class="card"><details><summary><span>Toutes les dépenses (${all.length})</span><span class="muted small">voir</span></summary><div class="rows" style="margin-top:6px">${all.map(j => jRow(j, false)).join("")}</div></details></div>`;
+  ${opsCard("Toutes les dépenses", all, false)}`;
 }
 function travList(){
   const q = V.fq.trim().toLowerCase();
@@ -958,7 +982,7 @@ function viewBilan(){
   return topbar("Bilan", yearNav()) + `
   <div class="card hero"><div class="lbl">Cash flow ${y} (2 biens)</div><div class="big num">${eur(st.cf)}</div>
     <div class="sub">Loyers ${eur(st.rec)} − charges ${eur(st.dep)}. Encaissé à ce jour : ${eur(st.benef)}.</div></div>
-  <div class="btns"><button class="btn ghost sm" data-act="export-open">Exporter un mois ou une année (Excel / PDF)</button></div>
+  <div class="btns"><button class="btn ghost sm" data-act="export-open">Exporter (biens, mois ou années au choix · Excel / PDF)</button></div>
   <div class="card"><h2>Par bien</h2>${ids.map(id => { const s = stats(id, y); return `<div class="env" style="padding:6px 0"><div class="top"><b>${esc(bienName(id))}</b><span class="num ${signCl(s.cf)}">${eur(s.cf)}</span></div>
     <div class="small muted">Loyers ${eur(s.rec)} · charges ${eur(s.dep)} · solde fin d'année ${eur(soldeBien(id, y))}</div></div>`; }).join("")}
     ${kv("Argent mis en épargne cette année (net)", eur(st.ep), "muted")}</div>
@@ -1100,6 +1124,7 @@ document.addEventListener("click", ev => {
     case "go": V.tab = v; if (b.dataset.sub){ V.bsub = b.dataset.sub; if (b.dataset.bien) V.bsel = b.dataset.bien; } if (b.dataset.f){ V.mf = b.dataset.f; V.bf = "all"; } render(); break;
     case "yprev": setY(-1); break; case "ynext": setY(1); break;
     case "mprev": setMonth(-1); break; case "mnext": setMonth(1); break;
+    case "opv": V.opv = v; render(); break; case "opt": V.opt = v; render(); break;
     case "bf": V.bf = v; render(); break; case "mf": V.mf = v; render(); break;
     case "bsub": V.bsub = v; render(); break; case "bsel": V.bsel = v; render(); break;
     case "jtoggle": { const j = getJ(id); j.pointe = j.pointe === "x" ? "" : "x"; j.upd = Date.now(); onPointe(j); persist(); render(); { const sr = $("#sres"); if (sr) sr.innerHTML = searchRes(V.sq || ""); } break; }
@@ -1196,8 +1221,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.11";
+const APP_VERSION = "1.7.12";
 const CHANGELOG = [
+  {v:"1.7.12", date:"2026-11-10", titre:"Export au choix : biens, période, contenu", items:["Le bouton « Exporter » (Pointage et Bilan) ouvre une seule fenêtre : tu coches les biens (Studio, T2 ou les deux), tu choisis le premier et le dernier mois (un mois, plusieurs mois, plusieurs années d’un coup, avec les raccourcis Ce mois / Cette année / Année dernière / Tout) et le contenu (tout, dépenses seulement ou recettes seulement), en Excel ou en PDF.","Correction : quand un seul bien était affiché, l’export sortait quand même les deux biens. Le bien affiché est maintenant pré-coché et tu peux le changer.","Biens › Vue et Dépenses : la longue liste d’opérations est maintenant rangée par mois (un bandeau par mois avec ses recettes, ses dépenses et son résultat). Quatre présentations au choix : « Colonnes » (les mois côte à côte : 3 colonnes sur iPad en paysage, 2 en portrait, 1 sur téléphone, c’est choisi par défaut sur grand écran), « Par mois », « Tableau » (colonnes Date, Catégorie, Entrée, Sortie, Pointé, avec les totaux du mois) et « Liste ». Un filtre Tout / Dépenses / Recettes.","Charges par catégorie : une ligne entièrement payée affiche maintenant « payé ✓ » (avant, rien ne s’affichait, seul le « reste à payer » apparaissait).","Les exports choisis ont une synthèse, un « mois par mois », un « par catégorie » et la liste des opérations (avec la colonne « Hors compta »)."]},
   {v:"1.7.11", date:"2026-11-09", titre:"Barre d’onglets stable sur iPhone", items:["Correction : après avoir tapé un solde ou ouvert une liste déroulante, la barre d’onglets du bas ne remonte plus au milieu de l’écran. Les champs de saisie ont maintenant une taille de 16 px (l’iPhone ne zoome plus) et la barre est remise en bas toute seule."]},
   {v:"1.7.10", date:"2026-11-09", titre:"Cautions, hors compta dans l’import", items:["Rapprochement › lignes « Pas dans l’appli » : une case « Hors compta » sur chaque ligne et un bouton « Tout ajouter en hors compta ».","Nouveau groupe « Caution » dans la liste des catégories : « Caution reçue » et « Caution rendue ». Elles comptent dans le solde de la banque mais jamais dans la compta, le bénéfice ni « À saisir ». Une ligne du relevé qui contient « caution » ou « dépôt de garantie » est proposée dans ce groupe.","Nouvelles catégories d’épargne / virement : « Virement entre biens », « Apport perso » et « Retrait vers le perso » (comptent dans la banque, pas dans le bénéfice)."]},
   {v:"1.7.9", date:"2026-11-09", titre:"Hors compta et import de plusieurs relevés", items:["Nouveau bouton « Hors compta » sur une dépense ou une recette. L’opération compte dans le solde du compte (l’écart avec la banque reste juste) mais disparaît de « À saisir en compta », des totaux de la compta, de la liasse, du bénéfice et du bilan. Dans les listes, elle a une ligne violette et l’étiquette « hors compta ». Exporté dans le journal Excel (colonne HorsCompta).","Rapprochement : tu peux choisir plusieurs relevés d’un coup. Ils sont rangés du plus ancien au plus récent, une ligne présente dans deux relevés qui se chevauchent n’est pas comptée deux fois, et le solde de début et de fin est lu dans le premier et le dernier PDF."]},
@@ -1303,7 +1329,7 @@ const HELP = {
     "Carte « Comptes des biens » (vue Mois) : solde pointé de chaque bien, opérations pas encore pointées et écart avec ton dernier solde saisi ; « Comparer avec le relevé » importe l'extrait de compte.",
     "« À pointer » regroupe tout ce qui est passé mais pas encore vérifié. « À saisir en compta » : dépenses payées, pas encore saisies sur ton site de compta.",
     "Rechercher : un mot, un montant, une date ou un mois, dans tout le journal.",
-    "Exporter : le bilan d'un mois ou d'une année complète, en Excel ou en PDF.",
+    "Exporter : coche les biens, choisis le premier et le dernier mois (un mois, plusieurs mois ou plusieurs années) et le contenu (tout, dépenses seules ou recettes seules), en Excel ou en PDF. Pratique pour vérifier, contrôler ou envoyer à ton comptable.",
     "Clôturer le mois : tu saisis le solde réel du relevé, l'appli crée l'ajustement si besoin et te propose ce que tu peux mettre de côté.",
     "Les lignes prévues sont archivées 30 jours après pointage (elles restent comptées partout). Le lien « archivées » les montre."]},
   "bld-loyers":{t:"Biens › Loyers", p:"Les loyers du bien choisi, mois par mois.", l:[
@@ -1374,7 +1400,7 @@ const HELP = {
     "Le cash flow = loyers − charges (encaissé + prévu).",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
     "« Toutes les années » : résultats, soldes et bourse versée cumulée.",
-    "Le bouton Exporter produit le bilan d'un mois ou de l'année complète (par bien, mois par mois, par catégorie, toutes les opérations), en Excel ou en PDF."]},
+    "Le bouton Exporter produit un bilan au choix : un ou plusieurs biens, un mois, plusieurs mois ou plusieurs années, toutes les opérations ou seulement les dépenses ou les recettes (synthèse, mois par mois, par catégorie, liste des opérations), en Excel ou en PDF."]},
   set:{t:"Réglages", p:"Échange avec Excel, sécurité et confort.", l:[
     "Mise à jour des règles : « Exporter en Word » donne un fichier à coller dans une IA qui cherche sur internet ; « Importer la réponse » te montre chaque changement avec sa source. Rien ne s'applique sans ton accord, et l'historique garde la trace.",
     "Signature : à l'écran (signature + paraphe reproduit sur chaque page + preuves) ou sur papier (tu n'imprimes que la dernière page puis tu la rescannes). La signature à l'écran est une signature électronique simple : sa valeur dépend de l'accord des deux parties.",
@@ -1696,12 +1722,69 @@ function bilanAnPdf(y){
   if (!B.L.length) d.text(M, d.y, "Aucune opération cette année.", {size:10, color:"#5C6B66"});
   return d.finish("Bilan " + y);
 }
+/* ---------- Export choisi : biens, période (un ou plusieurs mois / années), contenu ---------- */
+const monthKeys = (a, b) => { const o = []; let y = +a.slice(0, 4), m = +a.slice(5, 7); const ye = +b.slice(0, 4), me = +b.slice(5, 7); while (y < ye || (y === ye && m <= me)){ o.push(y + "-" + pad(m)); if (++m > 12){ m = 1; y++; } } return o; };
+const monthLab = k => MOIS[+k.slice(5, 7) - 1] + " " + k.slice(0, 4);
+function rangeBilan(a, b, ids, kind){
+  const L = J().filter(j => { const k = j.date.slice(0, 7); return k >= a && k <= b && ids.includes(j.bien) && (kind === "all" || j.type === kind); }).sort((x, y) => x.date.localeCompare(y.date));
+  const sm = (l, t, pt) => r2(sum(l.filter(j => (t === "R" ? j.type === "Recette" : j.type === "Dépense") && (!pt || j.pointe === "x")).map(j => j.montant)));
+  const per = ids.map(id => { const l = L.filter(j => j.bien === id), rec = sm(l, "R"), dep = sm(l, "D"); return {id, rec, dep, res:r2(rec - dep), recP:sm(l, "R", 1), depP:sm(l, "D", 1)}; });
+  const mois = monthKeys(a, b).map(k => { const l = L.filter(j => j.date.slice(0, 7) === k), r = sm(l, "R"), d = sm(l, "D"); return {nom:monthLab(k), rec:r, dep:d, res:r2(r - d), n:l.length}; });
+  const cats = []; for (const id of ids) for (const t of ["Recette", "Dépense"]){ const g = {}; L.filter(j => j.bien === id && j.type === t).forEach(j => { const c = j.cat || "Sans catégorie"; (g[c] = g[c] || {t:0, n:0}); g[c].t += j.montant; g[c].n++; });
+    Object.keys(g).sort((x, y) => g[y].t - g[x].t).forEach(c => cats.push([bienName(id), t, c, r2(g[c].t), g[c].n])); }
+  const tot = {rec:r2(sum(per.map(p => p.rec))), dep:r2(sum(per.map(p => p.dep)))};
+  const KL = {all:"Toutes les opérations", "Dépense":"Dépenses seulement", "Recette":"Recettes seulement"};
+  const titre = (a === b ? monthLab(a) : monthLab(a) + " à " + monthLab(b));
+  return {a, b, ids, kind, L, per, mois, cats, tot, titre, contenu:KL[kind], biens:ids.map(bienName).join(" + "), bailleur:(S.cfg && S.cfg.bailleur) || "", badr:(S.cfg && S.cfg.bailleurAdr) || ""};
+}
+function rangeXlsx(a, b, ids, kind){
+  const B = rangeBilan(a, b, ids, kind), wb = XLSX.utils.book_new(), dt = iso => isoToSerial(iso), money = "#,##0.00 \"€\"";
+  const add = (name, aoa, widths, moneyCols, dateCols, firstRow) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws["!cols"] = widths.map(w => ({wch:w}));
+    for (const k of Object.keys(ws)){ if (k[0] === "!") continue; const c = ws[k], col = k.replace(/\d+/g, ""), row = +k.replace(/\D+/g, ""); if (c.t === "n" && row >= firstRow){ if (dateCols.includes(col)) c.z = "dd/mm/yyyy"; else if (moneyCols.includes(col)) c.z = money; } } XLSX.utils.book_append_sheet(wb, ws, name); };
+  add("Synthèse", [["Export " + B.titre], ["Biens : " + B.biens + " · " + B.contenu], [B.bailleur ? "Bailleur : " + B.bailleur + (B.badr ? " · " + B.badr : "") : ""], ["Bien", "Recettes prévues", "Dépenses prévues", "Résultat", "Recettes encaissées", "Dépenses payées"]]
+    .concat(B.per.map(p => [bienName(p.id), p.rec, p.dep, p.res, p.recP, p.depP])).concat([["Total", B.tot.rec, B.tot.dep, r2(B.tot.rec - B.tot.dep), r2(sum(B.per.map(p => p.recP))), r2(sum(B.per.map(p => p.depP)))]]), [24, 16, 16, 14, 18, 16], ["B", "C", "D", "E", "F"], [], 5);
+  add("Mois par mois", [["Mois", "Recettes", "Dépenses", "Résultat", "Nombre de lignes"]].concat(B.mois.map(m => [m.nom, m.rec, m.dep, m.res, m.n])).concat([["Total", B.tot.rec, B.tot.dep, r2(B.tot.rec - B.tot.dep), B.L.length]]), [20, 16, 16, 14, 16], ["B", "C", "D"], [], 2);
+  add("Par catégorie", [["Bien", "Type", "Catégorie", "Total", "Nombre de lignes"]].concat(B.cats), [22, 12, 30, 16, 16], ["D"], [], 2);
+  add("Opérations", [["Date", "Bien", "Type", "Catégorie", "Libellé", "Montant", "Compte", "Pointé", "Saisi compta", "Hors compta", "Fournisseur / n° facture", "Note"]].concat(B.L.map(j => [dt(j.date), bienName(j.bien), j.type, j.cat, j.lib, j.montant, j.compte || "Bien", j.pointe === "x" ? "x" : "", j.compta ? "x" : "", HC(j) ? "x" : "", j.fourn, j.note])),
+    [12, 16, 11, 26, 34, 14, 10, 8, 12, 11, 24, 30], ["F"], ["A"], 2);
+  return XLSX.write(wb, {type:"array", bookType:"xlsx", compression:true});
+}
+function rangePdf(a, b, ids, kind){
+  const B = rangeBilan(a, b, ids, kind), d = new PdfDoc("Export"), M = d.M, R = d.W - M, X = [285, 365, 445, R];
+  d.text(M, d.y, "Export " + B.titre, {size:20, bold:true}); d.y -= 24;
+  d.text(M, d.y, B.biens + " · " + B.contenu, {size:10, color:"#5C6B66"}); d.y -= 13;
+  if (B.bailleur) d.para("Bailleur : " + B.bailleur + (B.badr ? " - " + B.badr : ""), 10, 13);
+  d.h("Par bien");
+  ["Bien", "Recettes", "Dépenses", "Résultat"].forEach((t, i) => d.text(i ? X[i - 1] : M, d.y, t, {size:9, bold:true, right:i > 0, color:"#5C6B66"})); d.y -= 6; d.line(M, d.y, R, d.y); d.y -= 15;
+  for (const p of B.per){ d.pill(M, d.y, bienName(p.id), BIEN_COL[p.id] || "#0E6B5C"); [p.rec, p.dep, p.res].forEach((v, i) => d.text(X[i], d.y, eur(v), {size:10, right:true, bold:i === 2})); d.y -= 20; }
+  d.line(M, d.y + 8, R, d.y + 8); d.text(M, d.y - 4, "Total", {size:10, bold:true}); [B.tot.rec, B.tot.dep, r2(B.tot.rec - B.tot.dep)].forEach((v, i) => d.text(X[i], d.y - 4, eur(v), {size:10, right:true, bold:true})); d.y -= 22;
+  if (B.mois.length > 1){ d.h("Mois par mois");
+    ["Mois", "Recettes", "Dépenses", "Résultat"].forEach((t, i) => d.text(i ? X[i - 1] : M, d.y, t, {size:9, bold:true, right:i > 0, color:"#5C6B66"})); d.y -= 6; d.line(M, d.y, R, d.y); d.y -= 15;
+    for (const m of B.mois){ d.need(16); d.text(M, d.y, m.nom, {size:10}); [m.rec, m.dep, m.res].forEach((v, i) => d.text(X[i], d.y, eur(v), {size:10, right:true, bold:i === 2})); d.y -= 15; } }
+  d.h("Par catégorie");
+  let last = ""; for (const c of B.cats){ const k = c[0] + c[1]; if (k !== last){ d.need(34); d.y -= 4; d.pill(M, d.y, c[0].slice(0, 18), BIEN_COL[B.ids.find(i => bienName(i) === c[0])] || "#0E6B5C"); d.text(M + 120, d.y, c[1] === "Recette" ? "Recettes" : "Dépenses", {size:9.5, bold:true, color:"#5C6B66"}); d.y -= 16; last = k; }
+    d.need(15); d.text(M + 8, d.y, (c[2] || "").slice(0, 50) + (c[4] > 1 ? " (" + c[4] + ")" : ""), {size:9.5}); d.text(R, d.y, eur(c[3]), {size:9.5, right:true}); d.y -= 14; }
+  d.h("Opérations (" + B.L.length + ")");
+  const head = () => { ["Date", "Bien", "Catégorie · libellé"].forEach((t, i) => d.text([M, M + 58, M + 118][i], d.y, t, {size:9, bold:true, color:"#5C6B66"})); d.text(R - 40, d.y, "Montant", {size:9, bold:true, right:true, color:"#5C6B66"}); d.text(R, d.y, "Pointé", {size:9, bold:true, right:true, color:"#5C6B66"}); d.y -= 5; d.line(M, d.y, R, d.y); d.y -= 14; };
+  head();
+  for (const j of B.L){ if (d.y < 78){ d.newPage(); head(); }
+    d.text(M, d.y, frDate(j.date), {size:9}); d.pill(M + 58, d.y, String(j.bien).slice(0, 7), BIEN_COL[j.bien] || "#0E6B5C");
+    const lib = ((j.cat || "") + (j.lib && j.lib !== j.cat ? " · " + j.lib : "") + (HC(j) ? " (hors compta)" : "")).slice(0, 46); d.text(M + 118, d.y, lib, {size:9});
+    d.text(R - 40, d.y, (isIn(j) ? "+ " : "- ") + eur(j.montant), {size:9, right:true, color:isIn(j) ? "#1E7F4F" : "#1B2430"}); d.text(R, d.y, j.pointe === "x" ? "oui" : "", {size:9, right:true, color:"#5C6B66"}); d.y -= 15; }
+  if (!B.L.length) d.text(M, d.y, "Aucune opération sur cette période.", {size:10, color:"#5C6B66"});
+  return d.finish("Export " + B.titre);
+}
 function sheetExport(){
-  const set = new Set(J().map(j => j.date.slice(0, 7))); set.add(V.y + "-" + pad(V.m + 1)); const sel = V.y + "-" + pad(V.m + 1);
-  const list = [...set].sort().reverse().slice(0, 48);
-  const yrs = [...new Set(J().map(j => j.date.slice(0, 4)).concat([String(V.y)]))].sort().reverse();
-  openSheet(`<h2>Exporter un bilan</h2><label class="f">Période<select id="ex-m"><optgroup label="Année complète">${yrs.map(y => `<option value="A${y}">Année ${y}</option>`).join("")}</optgroup><optgroup label="Un mois">${list.map(k => `<option value="${k}" ${k === sel ? "selected" : ""}>${MOIS[+k.slice(5) - 1]} ${k.slice(0, 4)}</option>`).join("")}</optgroup></select></label>
-    <div class="small muted"><b>Un mois</b> : Excel en 3 feuilles (Bilan, Fixes, Opérations) ; PDF de plusieurs pages.<br><b>Année complète</b> : Excel en 4 feuilles (Bilan annuel, Mois par mois, Par catégorie, Opérations) ; PDF avec le bilan par bien, les 12 mois, les totaux par catégorie et toutes les opérations. Pratique pour la compta de fin d'année.<br>Ensuite, choisis « Enregistrer dans Fichiers ».</div>
+  const keys = J().map(j => j.date.slice(0, 7)), now = todayIso().slice(0, 7), lo = keys.length ? keys.reduce((x, y) => x < y ? x : y) : now, hi = keys.reduce((x, y) => x > y ? x : y, now);
+  const list = monthKeys(lo < now ? lo : now, hi), onMonth = V.tab === "month", mk = V.y + "-" + pad(V.m + 1);
+  const from = onMonth ? mk : V.y + "-01", to = onMonth ? mk : V.y + "-12", ids = bienIds(), sel = onMonth && V.bf !== "all" && ids.includes(V.bf) ? [V.bf] : ids;
+  const opt = (k, cur) => `<option value="${k}" ${k === cur ? "selected" : ""}>${monthLab(k)}</option>`;
+  openSheet(`<h2>Exporter</h2>
+    <div><div class="small muted" style="margin-bottom:4px">Biens</div><div class="btns">${ids.map(id => `<label class="small" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px"><input type="checkbox" data-ex-b="${esc(id)}" ${sel.includes(id) ? "checked" : ""}>${esc(bienName(id))}</label>`).join("")}</div></div>
+    <div class="grid2"><label class="f">Du mois<select id="ex-from">${list.map(k => opt(k, from)).join("")}</select></label><label class="f">Au mois<select id="ex-to">${list.map(k => opt(k, to)).join("")}</select></label></div>
+    <div class="btns"><button class="btn ghost sm" data-act="ex-quick" data-q="mois">Ce mois</button><button class="btn ghost sm" data-act="ex-quick" data-q="an">Cette année</button><button class="btn ghost sm" data-act="ex-quick" data-q="prev">Année dernière</button><button class="btn ghost sm" data-act="ex-quick" data-q="tout">Tout</button></div>
+    <label class="f">Contenu<select id="ex-kind"><option value="all">Toutes les opérations</option><option value="Dépense">Les dépenses seulement</option><option value="Recette">Les recettes seulement</option></select></label>
+    <div class="small muted">Un mois, plusieurs mois ou plusieurs années d'un coup : choisis le premier et le dernier mois. Excel : synthèse, mois par mois, par catégorie, toutes les opérations. Ensuite, « Enregistrer dans Fichiers ».</div>
     <div class="btns"><button class="btn" data-act="ex-xlsx" style="flex:1">Excel (.xlsx)</button><button class="btn" data-act="ex-pdf" style="flex:1">PDF</button></div><div class="btns"><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
 }
 
@@ -1807,11 +1890,15 @@ document.addEventListener("click", async ev => {
     case "clot-do": clotureDo(); break;
     case "clot-undo": { const c = (S.clotures || []).find(x => x.id === id); if (!c) break; const t = Date.now(); S.journal.forEach(j => { if (c.ids.includes(j.id)){ j.del = true; j.upd = t; } }); S.clotures = S.clotures.filter(x => x.id !== id); persist(); closeSheet(); toast("Clôture annulée"); render(); break; }
     case "export-open": sheetExport(); break;
-    case "ex-xlsx": case "ex-pdf": { const k = $("#ex-m").value;
-      if (k[0] === "A"){ const y = +k.slice(1), nm = "bilan-annee-" + y; if (a === "ex-xlsx") saveFile(nm + ".xlsx", bilanAnXlsx(y), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); else saveFile(nm + ".pdf", bilanAnPdf(y), "application/pdf"); break; }
-      const y = +k.slice(0, 4), m = +k.slice(5) - 1, nm = "bilan-" + k;
-      if (a === "ex-xlsx") saveFile(nm + ".xlsx", bilanXlsx(y, m), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      else saveFile(nm + ".pdf", bilanPdf(y, m), "application/pdf"); break; }
+    case "ex-quick": { const t = todayIso(), y = +t.slice(0, 4), set = (f, g) => { $("#ex-from").value = f; $("#ex-to").value = g; const lst = [...$("#ex-from").options].map(o => o.value); if (!lst.includes(f)) $("#ex-from").value = lst[0]; if (!lst.includes(g)) $("#ex-to").value = lst[lst.length - 1]; };
+      const q = b.dataset.q; if (q === "mois") set(t.slice(0, 7), t.slice(0, 7)); else if (q === "an") set(y + "-01", y + "-12"); else if (q === "prev") set((y - 1) + "-01", (y - 1) + "-12"); else { const o = [...$("#ex-from").options].map(x => x.value); set(o[0], o[o.length - 1]); } break; }
+    case "ex-xlsx": case "ex-pdf": { let f = $("#ex-from").value, t = $("#ex-to").value; if (f > t) [f, t] = [t, f];
+      const ids = [...document.querySelectorAll("[data-ex-b]")].filter(x => x.checked).map(x => x.dataset.exB), kind = $("#ex-kind").value; if (!ids.length) return toast("Choisis au moins un bien");
+      const X = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", all = ids.length === bienIds().length && kind === "all", xl = a === "ex-xlsx";
+      if (all && f === t){ const y = +f.slice(0, 4), m = +f.slice(5) - 1, nm = "bilan-" + f; if (xl) saveFile(nm + ".xlsx", bilanXlsx(y, m), X); else saveFile(nm + ".pdf", bilanPdf(y, m), "application/pdf"); break; }
+      if (all && f.slice(5) === "01" && t.slice(5) === "12" && f.slice(0, 4) === t.slice(0, 4)){ const y = +f.slice(0, 4), nm = "bilan-annee-" + y; if (xl) saveFile(nm + ".xlsx", bilanAnXlsx(y), X); else saveFile(nm + ".pdf", bilanAnPdf(y), "application/pdf"); break; }
+      const nm = "export-" + f + (f === t ? "" : "_a_" + t) + "-" + (ids.length === bienIds().length ? "tous" : ids.map(bienName).join("-").toLowerCase().replace(/[^a-z0-9-]/g, "")) + (kind === "all" ? "" : kind === "Dépense" ? "-depenses" : "-recettes");
+      if (xl) saveFile(nm + ".xlsx", rangeXlsx(f, t, ids, kind), X); else saveFile(nm + ".pdf", rangePdf(f, t, ids, kind), "application/pdf"); break; }
     case "quit": sheetQuittance(id); break;
     case "quit-pdf": { const j = S.journal.find(x => x.id === V.q), o = {bail:$("#q-bail").value.trim(), badr:$("#q-badr").value.trim(), loc:$("#q-loc").value.trim(), adr:$("#q-adr").value.trim(), loyer:parseNum($("#q-loyer").value) || 0, chg:parseNum($("#q-chg").value) || 0, recu:($("#q-recu").value.trim() === "" ? null : parseNum($("#q-recu").value)), ville:$("#q-ville").value.trim()};
       if (!(o.loyer + o.chg > 0)) return toast("Saisis le montant");
