@@ -69,6 +69,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body)
 h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
 h2{font-size:17px;letter-spacing:.01em}
 button,input,select,textarea{font:inherit;color:inherit}
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{font-size:max(16px,1em)}   /* iOS zoome la page sous 16 px et décale la barre du bas */
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1195,8 +1196,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.10";
+const APP_VERSION = "1.7.11";
 const CHANGELOG = [
+  {v:"1.7.11", date:"2026-11-09", titre:"Barre d’onglets stable sur iPhone", items:["Correction : après avoir tapé un solde ou ouvert une liste déroulante, la barre d’onglets du bas ne remonte plus au milieu de l’écran. Les champs de saisie ont maintenant une taille de 16 px (l’iPhone ne zoome plus) et la barre est remise en bas toute seule."]},
   {v:"1.7.10", date:"2026-11-09", titre:"Cautions, hors compta dans l’import", items:["Rapprochement › lignes « Pas dans l’appli » : une case « Hors compta » sur chaque ligne et un bouton « Tout ajouter en hors compta ».","Nouveau groupe « Caution » dans la liste des catégories : « Caution reçue » et « Caution rendue ». Elles comptent dans le solde de la banque mais jamais dans la compta, le bénéfice ni « À saisir ». Une ligne du relevé qui contient « caution » ou « dépôt de garantie » est proposée dans ce groupe.","Nouvelles catégories d’épargne / virement : « Virement entre biens », « Apport perso » et « Retrait vers le perso » (comptent dans la banque, pas dans le bénéfice)."]},
   {v:"1.7.9", date:"2026-11-09", titre:"Hors compta et import de plusieurs relevés", items:["Nouveau bouton « Hors compta » sur une dépense ou une recette. L’opération compte dans le solde du compte (l’écart avec la banque reste juste) mais disparaît de « À saisir en compta », des totaux de la compta, de la liasse, du bénéfice et du bilan. Dans les listes, elle a une ligne violette et l’étiquette « hors compta ». Exporté dans le journal Excel (colonne HorsCompta).","Rapprochement : tu peux choisir plusieurs relevés d’un coup. Ils sont rangés du plus ancien au plus récent, une ligne présente dans deux relevés qui se chevauchent n’est pas comptée deux fois, et le solde de début et de fin est lu dans le premier et le dernier PDF."]},
   {v:"1.7.8", date:"2026-11-09", titre:"Reprise de l’historique en compta", items:["Pointage › Saisie en compta : carte « Reprise de l’historique ». Tout ce qui est daté jusqu’à la fin de l’année de ta dernière liasse fiscale (ou l’année que tu choisis) est marqué d’un coup comme déjà saisi, échéances d’emprunt comprises, avec un bouton « Annuler ». Ensuite, tu continues mois par mois."]},
@@ -5114,6 +5116,18 @@ window.HAD_DATA = !!(lsGet(KEY) || lsGet(ENC));
 secCfgLoad();
 faceOK().then(v => { V.faceOK = v; });
 if (secAvailable() && lsGet(ENC)){ SEC.on = true; showLock(); } else startApp();
+
+/* barre d'onglets : sur iPhone, après le clavier, une liste déroulante ou un zoom, la barre fixe peut rester « coincée » en haut : on la remet en bas */
+(function(){
+  const fix = () => { const n = document.getElementById("tabs"); if (!n) return; const vv = window.visualViewport;
+    const off = vv ? Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop))) : 0;
+    n.style.transform = off > 2 && vv.scale <= 1.01 ? "translateY(" + (-off) + "px)" : "";
+    n.style.bottom = "0.5px"; requestAnimationFrame(() => { n.style.bottom = ""; }); };
+  const later = () => { setTimeout(fix, 60); setTimeout(fix, 350); };
+  document.addEventListener("focusout", later, true); document.addEventListener("change", later, true);
+  window.addEventListener("orientationchange", later); window.addEventListener("pageshow", later);
+  if (window.visualViewport){ visualViewport.addEventListener("resize", fix); visualViewport.addEventListener("scroll", fix); }
+})();
 
 </script>
 </body>
