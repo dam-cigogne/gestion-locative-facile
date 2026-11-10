@@ -1425,9 +1425,10 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.33";
+const APP_VERSION = "1.7.34";
 const CHANGELOG = [
-  {v:"1.7.33", date:"2026-11-10", titre:"iPhone : tableaux d'emprunt ajustés, relecture envoyable", items:["Compta › Emprunt et intérêts et Échéancier : la ligne « Remboursé à ce jour » passe à la ligne et les tableaux sont plus compacts, ce qui évite que la page déborde et se réduise sur iPhone.","Le PDF de relecture et les boutons « Créer le bail / le PDF » (bail, lettres, état des lieux, inventaire, quittance) ouvrent maintenant tous la fenêtre « Envoyer au locataire » au lieu du partage brut ; « Enregistrer sur l'appareil (Fichiers…) » y reste proposé."]},
+  {v:"1.7.34", date:"2026-11-10", titre:"PDF de relecture lisible à l'écran", items:["Bail, état des lieux, inventaire : « PDF de relecture » ouvre le PDF dans le lecteur de l'appli pour le relire tout de suite, au lieu de la fenêtre d'envoi. Le bouton « Partager » du lecteur permet de l'envoyer.","Fenêtre d'envoi simplifiée : un seul bouton « Envoyer le PDF » (Mail, Messages, WhatsApp…) avec le PDF toujours joint, l'e-mail ou le numéro du locataire copié. Les boutons « e-mail sans PDF » et « SMS » sans pièce jointe sont supprimés (un lien e-mail ou SMS ne peut pas joindre de fichier)."]},
+  {v:"1.7.33", date:"2026-11-10", titre:"iPhone : tableaux d'emprunt ajustés, relecture envoyable", items:["Compta › Emprunt et intérêts et Échéancier : la ligne « Remboursé à ce jour » passe à la ligne et les tableaux sont plus compacts, ce qui évite que la page déborde et se réduise sur iPhone.","Le PDF de relecture s'ouvre maintenant directement à l'écran pour être lu (bouton Partager pour l'envoyer). Les boutons « Créer le bail / le PDF » (bail, lettres, état des lieux, inventaire, quittance) ouvrent maintenant tous la fenêtre « Envoyer au locataire » au lieu du partage brut ; « Enregistrer sur l'appareil (Fichiers…) » y reste proposé."]},
   {v:"1.7.32", date:"2026-11-10", titre:"Bouton « Fiche » accessible", items:["Dans Biens › Locataires, le bouton « Fiche » du locataire actuel est passé à gauche, à côté du titre : il n'est plus caché par les onglets de logements sur le côté (iPad).","Signature sur papier : après la photo de la page signée, un encadré « ✓ Page signée enregistrée » s'affiche en haut de la fenêtre, et « 3 · Envoyer le dossier signé » ouvre la fenêtre « Envoyer au locataire » (pièce jointe, e-mail, SMS, ranger dans sa fiche) au lieu du partage brut de l'iPad."]},
   {v:"1.7.31", date:"2026-11-10", titre:"Après une signature : envoyer et ranger comme pour tous les documents", items:["Après une signature électronique (courrier, restitution du dépôt, bail), « Continuer » ouvre maintenant la même fenêtre « Envoyer au locataire » que les autres documents : pièce jointe, e-mail, SMS, « Ranger dans sa fiche » ou enregistrement sur l'appareil.","Ton exemplaire signé reste rangé automatiquement dans Biens › Documents du bien.","Arrivée et Départ d'un locataire : si le logement est soumis au permis de louer, une étape « Permis de louer » apparaît dans chaque liste (demande à la mairie avant le bail, à prévoir dès le départ) avec un bouton vers le suivi."]},
   {v:"1.7.30", date:"2026-11-10", titre:"Documents signés verrouillés, rangement dans la fiche, démo de mise en location", items:["Un état des lieux ou un inventaire signé est maintenant verrouillé : plus de modification par erreur. Un bouton « Déverrouiller (exceptionnel) » permet de le rouvrir ; la première modification efface alors les signatures.","« Envoyer au locataire » : nouveau bouton « Ranger dans sa fiche » qui garde une copie du PDF (signé s'il l'est) dans Biens › Locataires › sa fiche › Documents. Un envoi en pièce jointe en garde aussi une copie.","Ta pièce d'identité de bailleur se range dans Biens › carte « Bailleur et biens ». La case correspondante de « Renforcer la preuve » est cochée toute seule (comme celle du locataire si sa pièce est dans sa fiche).","Démo : un logement vacant « Appartement T3 » avec 7 candidats fictifs (demandes, visites, dossiers à vérifier, refusé) pour essayer tout le parcours jusqu'à l'état des lieux d'entrée."]},
@@ -4477,6 +4478,10 @@ function viewMvt(){
       <div class="btns"><button class="btn sm ghost" data-act="reg-ok">J'ai vérifié aujourd'hui</button></div>
       <div class="small muted">Tu peux aussi me demander dans Claude de contrôler les textes en vigueur avant un bail : je cherche les sources officielles et je te dis ce qui a changé.</div></div>`;
 }
+/* Le PDF de relecture s'ouvre directement à l'écran pour être lu (le bouton Partager du lecteur permet de l'envoyer). */
+async function relectOpen(name, bytes){
+  const fid = "relecture-tmp"; await flPut(fid, {name, type:"application/pdf", buf:new Uint8Array(bytes).buffer}); await viewFile(fid, name);
+}
 /* ---------- PDF de relecture : même document, sans signature, marqué « projet » ---------- */
 async function pdfRelect(fn, e){
   const was = RELECT, s = e && e.sig; RELECT = true; if (e) e.sig = null;
@@ -4495,9 +4500,9 @@ document.addEventListener("click", async ev => {
       break; }
     case "reg-ok": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.regVerif = todayIso(); persist(); render(); break;
     case "dx-rel": { if (!e) break; toast("Création du PDF de relecture…"); try { const bytes = await pdfRelect(() => V.doc.kind === "edl" ? edlPdf(e) : invPdf(e), e);
-        sendMark(e.bien || V.bsel, (V.doc.kind === "edl" ? "État des lieux" : "Inventaire du mobilier") + " (relecture, à relire avant signature)", e.date || todayIso()); saveFile("RELECTURE-" + (V.doc.kind === "edl" ? "etat-des-lieux-" : "inventaire-") + e.type + "-" + e.bien + "-" + e.date + ".pdf", bytes, "application/pdf"); } catch(err){ toast("PDF impossible : " + err.message); } break; }
+        await relectOpen("RELECTURE-" + (V.doc.kind === "edl" ? "etat-des-lieux-" : "inventaire-") + e.type + "-" + e.bien + "-" + e.date + ".pdf", bytes); } catch(err){ toast("PDF impossible : " + err.message); } break; }
     case "bail-rel": { const o = bailRead(); if (!o.loc || !o.debut) return toast("Indique au moins le locataire et la date de prise d'effet"); if (o.lhc <= 0) return toast("Indique le loyer hors charges");
-      const bytes = await pdfRelect(async () => bailPdf(o)); sendMark(V.bsel, "Bail (relecture, à relire avant signature)", o.debut || todayIso()); saveFile("RELECTURE-bail-meuble-" + V.bsel + "-" + o.debut + ".pdf", bytes, "application/pdf"); break; }
+      const bytes = await pdfRelect(async () => bailPdf(o)); await relectOpen("RELECTURE-bail-meuble-" + V.bsel + "-" + o.debut + ".pdf", bytes); break; }
   }
 });
 document.addEventListener("change", ev => {
@@ -5313,9 +5318,8 @@ function sendIntercept(name, data, mime){
     ${t ? `<label class="ck"><input type="checkbox" id="snd-fiche" checked> Ranger une copie dans la fiche de ${esc(t.nom)} (Documents)</label>` : ""}
     <label class="ck"><input type="checkbox" id="snd-dev" checked> Enregistrer sur cet appareil (Fichiers…)</label>
     <div class="small muted" style="margin:8px 0 2px"><b>2 · Choisis comment l'envoyer</b> (les cases cochées sont faites d'abord)</div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">PDF en pièce jointe (Mail, WhatsApp…)</button></div>
-    <div class="small muted">${t && t.email ? "L'e-mail du locataire est copié : colle-le dans « À : »." : "Ajoute son e-mail dans sa fiche pour le retrouver ici."}</div>
-    <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="mail">E-mail prérempli (sans PDF)</button><button class="btn ghost" style="flex:1" data-act="snd" data-v="sms">SMS prérempli</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">Envoyer le PDF (Mail, Messages, WhatsApp…)</button></div>
+    <div class="small muted">Le PDF est joint. Dans la fenêtre qui s'ouvre, choisis <b>Mail</b> (objet et message déjà remplis) ou <b>Messages</b>. ${t && t.email ? "L'e-mail du locataire (" + esc(t.email) + ") est copié : colle-le dans « À : »." : t && t.tel ? "Son numéro (" + esc(t.tel) + ") est copié." : "Ajoute son e-mail dans sa fiche pour le retrouver ici."}</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="only">Seulement ranger / enregistrer (sans envoyer)</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
     <div class="small muted">Si « Enregistrer sur cet appareil » est coché, l'enregistrement se fait en premier : ensuite touche de nouveau ton mode d'envoi. Une appli sur navigateur ne peut pas envoyer l'e-mail toute seule : l'envoi reste à valider par toi.</div>`);
   return true;
@@ -5333,9 +5337,16 @@ document.addEventListener("click", async ev => {
   if (v === "fiche"){ PEND = null; closeSheet(); render(); return; }
   if (v === "save"){ PEND = null; closeSheet(); return; }
   if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
-  if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
+  if (v === "sms"){
+    /* un lien sms: ne peut pas joindre de fichier : on passe par le partage du téléphone (Messages) avec le PDF, et on copie le numéro */
+    if (t && t.tel){ try { await navigator.clipboard.writeText(t.tel); toast("Numéro copié : " + t.tel + ". Choisis Messages."); } catch(e){} }
+    try { const file = new File([p.data], p.name, {type:p.mime});
+      if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.sj}); return; } }
+    catch(e){ if (e && e.name === "AbortError") return; }
+    if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche");
+    location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
   if (v === "att"){
-    if (t && t.email){ try { await navigator.clipboard.writeText(t.email); toast("E-mail copié : " + t.email); } catch(e){} }
+    { const cp = t && (t.email || t.tel); if (cp){ try { await navigator.clipboard.writeText(cp); toast((t.email ? "E-mail copié : " : "Numéro copié : ") + cp); } catch(e){} } }
     try { const file = new File([p.data], p.name, {type:p.mime});
       if (navigator.canShare && navigator.canShare({files:[file]})){ closeSheet(); PEND = null; await navigator.share({files:[file], title:p.sj, text:p.bj}); return; } }
     catch(e){ if (e && e.name === "AbortError") return; }
