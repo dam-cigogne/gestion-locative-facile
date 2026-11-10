@@ -215,7 +215,7 @@ body.welcome{padding-bottom:40px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}.kpi .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px}.kpi.good{border-color:var(--ok);background:#E6F4EC}.kpi.bad{border-color:var(--bad);background:var(--bad-soft)}
 .grid-an{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:900px){.grid-an{grid-template-columns:1fr 1.3fr;align-items:start}}
 .dv{display:grid;grid-template-columns:minmax(100px,1.1fr) 2.2fr minmax(92px,.9fr);gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.dv .dl{font-size:14px}.dv .dn{text-align:right;white-space:nowrap}.db{display:flex;height:16px}.db .half{flex:1;display:flex}.db .half.l{justify-content:flex-end;border-right:2px solid var(--line)}.db i{display:block;height:100%;border-radius:4px}.db i.good{background:var(--ok)}.db i.bad{background:var(--bad)}
-.anl{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.ot.an td:first-child b{white-space:nowrap}.anw{position:sticky;left:0;width:min(100%,calc(100vw - 100px));box-sizing:border-box}@media(max-width:700px){.anw .grid2{grid-template-columns:1fr}}.anit{padding:8px 0;border-bottom:1px solid var(--line)}.anit:last-child{border-bottom:0}.anop .small{line-height:1.35}.anx{margin-top:4px}.anx summary{cursor:pointer;color:var(--accent)}.ot.an tr.clk.hot td{background:var(--warn-soft)}.anl{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .ot.an tr.clk{cursor:pointer}.ot.an tr.clk:active{background:var(--accent-soft)}.ot.an tr.hot td{background:var(--warn-soft)}.ot.an tr.tot td{border-top:2px solid var(--line)}.ot.an td.why{font-size:12.5px;color:var(--muted)}@media(max-width:760px){.ot.an th.why,.ot.an td.why{display:none}.kpi .v{font-size:19px}}
 .glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:6px 12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bourse{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px -14px #53247A}
@@ -1031,6 +1031,16 @@ function anWhy(o, a, b){
   return bits.join(" · ") || "—";
 }
 const effCell = e => `<span class="num ${e < 0 ? "neg" : e > 0 ? "pos" : ""}">${e > 0 ? "+" : e < 0 ? "−" : ""} ${eur(Math.abs(e))}</span>`;
+function anDet(L, showBien){
+  if (!L.length) return '<div class="small muted">Aucune ligne</div>';
+  return L.slice().sort((p, q) => p.date.localeCompare(q.date)).map(j => { const sub = [j.fourn, j.note].filter(Boolean).map(esc).join(" · ");
+    return `<div class="kv anop"><span class="small"><b>${frDate(j.date)}</b>${showBien ? " " + bienPill(j.bien) : ""} · ${esc(j.lib || j.cat)}${sub ? `<br><span class="muted">${sub}</span>` : ""}${j.pointe !== "x" ? ' <span class="muted">(prévu, pas encore pointé)</span>' : ""}</span><span class="num small">${eur(N(j.montant))}</span></div>`; }).join("");
+}
+function anDetail(L1, L0, a, b, showBien){
+  const I = anItems(L1, L0, a, b).filter(o => Math.abs(o.eff) >= 0.5);
+  if (!I.length) return '<div class="small muted">Aucun écart à détailler.</div>';
+  return I.map(o => `<div class="anit"><div class="kv"><span><b>${esc(o.cat)}</b> <span class="small muted">${o.t === "Recette" ? "recette" : "charge"}</span></span>${effCell(o.eff)}</div><div class="small muted" style="margin-bottom:4px">${esc(anWhy(o, a, b))}</div><div class="grid2"><div><b class="small">${b}</b>${anDet(o.L0, showBien)}</div><div><b class="small">${a}</b>${anDet(o.L1, showBien)}</div></div></div>`).join("");
+}
 function analyseCard(years){
   const A = V.an = Object.assign({a:V.y, b:V.y - 1, bien:"all", sub:"syn", open:{}}, V.an || {}), ids = bienIds();
   const lo = Math.min(...years, V.y - 1), hi = Math.max(...years), ys = []; for (let y = hi; y >= lo; y--) ys.push([y, y]);
@@ -1056,23 +1066,23 @@ function viewAnalyse(){
   const seg = `<div class="seg" style="margin:10px 0">${subs.map(([k, l]) => `<button class="${A.sub === k ? "on" : ""}" data-act="an-sub" data-v="${k}">${l}</button>`).join("")}</div>`;
   let body = "";
   if (A.sub === "cat"){
-    const row = o => { const open = A.open[o.key], det = L => L.length ? L.slice().sort((p, q) => p.date.localeCompare(q.date)).map(j => `<div class="kv"><span class="small">${frDate(j.date)} · ${esc(j.lib || j.cat)}</span><span class="num small">${eur(N(j.montant))}</span></div>`).join("") : '<div class="small muted">Aucune ligne</div>';
+    const sb = bien === "all" && ids.length > 1, row = o => { const open = A.open[o.key], det = L => anDet(L, sb);
       return `<tr class="clk" data-act="an-cat" data-k="${esc(o.key)}"><td>${open ? "▾" : "▸"} ${esc(o.cat)}</td><td class="r">${o.v0 ? eur(o.v0) : "—"}<div class="small muted">${o.n0} ligne(s)</div></td><td class="r">${o.v1 ? eur(o.v1) : "—"}<div class="small muted">${o.n1} ligne(s)</div></td><td class="r">${effCell(o.eff)}</td><td class="why">${esc(anWhy(o, a, b))}</td></tr>`
-        + (open ? `<tr><td colspan="5" style="background:var(--accent-soft)"><div class="grid2"><div><b class="small">${b}</b>${det(o.L0)}</div><div><b class="small">${a}</b>${det(o.L1)}</div></div><div class="small" style="margin-top:6px">${esc(anWhy(o, a, b))}</div></td></tr>` : ""); };
+        + (open ? `<tr><td colspan="5" style="background:var(--accent-soft)"><div class="anw"><div class="grid2"><div><b class="small">${b}</b>${det(o.L0)}</div><div><b class="small">${a}</b>${det(o.L1)}</div></div><div class="small" style="margin-top:6px">${esc(anWhy(o, a, b))}</div></div></td></tr>` : ""); };
     const part = (t, titre) => { const I = items.filter(o => o.t === t); if (!I.length) return ""; return `<tr class="mh"><td colspan="5"><b>${titre}</b></td></tr>${I.map(row).join("")}<tr class="tot"><td><b>Total ${titre.toLowerCase()}</b></td><td class="r"><b>${eur(anSum(L0, t))}</b></td><td class="r"><b>${eur(anSum(L1, t))}</b></td><td class="r">${effCell(r2(t === "Recette" ? anSum(L1, t) - anSum(L0, t) : anSum(L0, t) - anSum(L1, t)))}</td><td></td></tr>`; };
     body = `<div class="card"><div class="small muted" style="margin-bottom:6px">Touche une ligne pour voir les opérations des deux années. « Effet » = ce que ça change au cash flow ${a} par rapport à ${b} (vert = favorable, rouge = défavorable).</div><div class="otw"><table class="ot an"><thead><tr><th>Catégorie</th><th class="r">${b}</th><th class="r">${a}</th><th class="r">Effet</th><th class="why">Explication</th></tr></thead><tbody>${part("Recette", "Recettes")}${part("Dépense", "Charges")}</tbody><tfoot><tr><td><b>Cash flow</b></td><td class="r"><b>${eur(cf0)}</b></td><td class="r"><b>${eur(cf1)}</b></td><td class="r">${effCell(d)}</td><td class="why"></td></tr></tfoot></table></div></div>`;
   } else if (A.sub === "mois"){
     const mm = (L, m) => L.filter(j => mo(j) === m), rows = MC.map((nm, m) => {
       const l1 = mm(L1, m), l0 = mm(L0, m), r1 = anSum(l1, "Recette"), p1 = anSum(l1, "Dépense"), r0 = anSum(l0, "Recette"), p0 = anSum(l0, "Dépense"), c1 = r2(r1 - p1), c0 = r2(r0 - p0), e = r2(c1 - c0), top = anItems(l1, l0, a, b)[0];
-      return {nm, r1, p1, r0, p0, c1, c0, e, why:top && Math.abs(top.eff) >= 0.5 ? `${top.cat} ${top.eff > 0 ? "+" : "−"} ${eur(Math.abs(top.eff))}` : "—"}; });
+      return {nm, m, l1, l0, r1, p1, r0, p0, c1, c0, e, why:top && Math.abs(top.eff) >= 0.5 ? `${top.cat} ${top.eff > 0 ? "+" : "−"} ${eur(Math.abs(top.eff))}` : "—"}; });
     const mx = Math.max(1, ...rows.map(r => Math.abs(r.e)));
-    body = `<div class="card"><div class="small muted" style="margin-bottom:6px">Pour chaque mois : loyers, charges et cash flow des deux années, l'écart, et la catégorie qui l'explique le plus.</div><div class="otw"><table class="ot an"><thead><tr><th>Mois</th><th class="r">Loyers ${b}</th><th class="r">Charges ${b}</th><th class="r">Cash ${b}</th><th class="r">Loyers ${a}</th><th class="r">Charges ${a}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${rows.map(r => `<tr${Math.abs(r.e) >= mx * 0.6 && Math.abs(r.e) >= 1 ? ' class="hot"' : ""}><td><b>${r.nm}</b></td><td class="r">${eur(r.r0)}</td><td class="r">${eur(r.p0)}</td><td class="r"><b>${eur(r.c0)}</b></td><td class="r">${eur(r.r1)}</td><td class="r">${eur(r.p1)}</td><td class="r"><b>${eur(r.c1)}</b></td><td class="r">${effCell(r.e)}</td><td class="small nw">${esc(r.why)}</td></tr>`).join("")}</tbody><tfoot><tr><td><b>Année</b></td><td class="r">${eur(anSum(L0, "Recette"))}</td><td class="r">${eur(anSum(L0, "Dépense"))}</td><td class="r"><b>${eur(cf0)}</b></td><td class="r">${eur(anSum(L1, "Recette"))}</td><td class="r">${eur(anSum(L1, "Dépense"))}</td><td class="r"><b>${eur(cf1)}</b></td><td class="r">${effCell(d)}</td><td></td></tr></tfoot></table></div></div>`;
+    body = `<div class="card"><div class="small muted" style="margin-bottom:6px">Pour chaque mois : loyers, charges et cash flow des deux années, l'écart, et la catégorie qui l'explique le plus. Touche un mois pour voir le détail : chaque opération avec sa date, son libellé, le fournisseur et la note.</div><div class="otw"><table class="ot an"><thead><tr><th>Mois</th><th class="r">Loyers ${b}</th><th class="r">Charges ${b}</th><th class="r">Cash ${b}</th><th class="r">Loyers ${a}</th><th class="r">Charges ${a}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${rows.map(r => { const k = "m" + r.m, op = A.open[k]; return `<tr class="clk${Math.abs(r.e) >= mx * 0.6 && Math.abs(r.e) >= 1 ? " hot" : ""}" data-act="an-cat" data-k="${k}"><td><b>${op ? "▾" : "▸"} ${r.nm}</b></td><td class="r">${eur(r.r0)}</td><td class="r">${eur(r.p0)}</td><td class="r"><b>${eur(r.c0)}</b></td><td class="r">${eur(r.r1)}</td><td class="r">${eur(r.p1)}</td><td class="r"><b>${eur(r.c1)}</b></td><td class="r">${effCell(r.e)}</td><td class="small nw">${esc(r.why)}</td></tr>` + (op ? `<tr><td colspan="9" style="background:var(--accent-soft)"><div class="anw">${anDetail(r.l1, r.l0, a, b, bien === "all" && ids.length > 1)}</div></td></tr>` : ""); }).join("")}</tbody><tfoot><tr><td><b>Année</b></td><td class="r">${eur(anSum(L0, "Recette"))}</td><td class="r">${eur(anSum(L0, "Dépense"))}</td><td class="r"><b>${eur(cf0)}</b></td><td class="r">${eur(anSum(L1, "Recette"))}</td><td class="r">${eur(anSum(L1, "Dépense"))}</td><td class="r"><b>${eur(cf1)}</b></td><td class="r">${effCell(d)}</td><td></td></tr></tfoot></table></div></div>`;
   } else if (A.sub === "bien"){
-    body = `<div class="card"><div class="otw"><table class="ot an"><thead><tr><th>Bien</th><th class="r">Cash ${b}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${ids.map(id => { const l1 = anLines(a, id), l0 = anLines(b, id), c1 = anCf(l1), c0 = anCf(l0), top = anItems(l1, l0, a, b).slice(0, 2).filter(o => Math.abs(o.eff) >= 0.5); return `<tr><td>${bienPill(id)}</td><td class="r">${eur(c0)}</td><td class="r"><b>${eur(c1)}</b></td><td class="r">${effCell(r2(c1 - c0))}</td><td class="small nw">${top.length ? top.map(o => esc(o.cat) + " " + (o.eff > 0 ? "+" : "−") + " " + eur(Math.abs(o.eff))).join("<br>") : "—"}</td></tr>`; }).join("")}</tbody></table></div></div>`;
+    body = `<div class="card"><div class="otw"><table class="ot an"><thead><tr><th>Bien</th><th class="r">Cash ${b}</th><th class="r">Cash ${a}</th><th class="r">Écart</th><th>Surtout dû à</th></tr></thead><tbody>${ids.map(id => { const l1 = anLines(a, id), l0 = anLines(b, id), c1 = anCf(l1), c0 = anCf(l0), top = anItems(l1, l0, a, b).slice(0, 2).filter(o => Math.abs(o.eff) >= 0.5); const k = "b:" + id, op = A.open[k]; return `<tr class="clk" data-act="an-cat" data-k="${esc(k)}"><td>${op ? "▾" : "▸"} ${bienPill(id)}</td><td class="r">${eur(c0)}</td><td class="r"><b>${eur(c1)}</b></td><td class="r">${effCell(r2(c1 - c0))}</td><td class="small nw">${top.length ? top.map(o => esc(o.cat) + " " + (o.eff > 0 ? "+" : "−") + " " + eur(Math.abs(o.eff))).join("<br>") : "—"}</td></tr>` + (op ? `<tr><td colspan="5" style="background:var(--accent-soft)"><div class="anw">${anDetail(l1, l0, a, b, false)}</div></td></tr>` : ""); }).join("")}</tbody></table></div><div class="small muted" style="margin-top:6px">Touche un bien pour voir le détail de chaque opération.</div></div>`;
   } else {
     const mx = Math.max(1, ...items.map(o => Math.abs(o.eff))), top = items.filter(o => Math.abs(o.eff) >= 0.5), big = top.slice(0, 8), rest = top.slice(8), restV = r2(sum(rest.map(o => o.eff)));
     const bars = big.map(o => { const w = Math.round(Math.abs(o.eff) / mx * 100); return `<div class="dv"><div class="dl">${esc(o.cat)}<div class="small muted">${o.t === "Recette" ? "recette" : "charge"}</div></div><div class="db"><div class="half l">${o.eff < 0 ? `<i class="bad" style="width:${w}%"></i>` : ""}</div><div class="half r">${o.eff > 0 ? `<i class="good" style="width:${w}%"></i>` : ""}</div></div><div class="dn">${effCell(o.eff)}</div></div>`; }).join("");
-    const lines = big.slice(0, 4).map(o => `<li><b>${esc(o.cat)}</b> : ${esc(anWhy(o, a, b))} <span class="muted">(${o.eff > 0 ? "+" : "−"} ${eur(Math.abs(o.eff))})</span></li>`).join("");
+    const sb2 = bien === "all" && ids.length > 1, lines = big.slice(0, 4).map(o => `<li><b>${esc(o.cat)}</b> : ${esc(anWhy(o, a, b))} <span class="muted">(${o.eff > 0 ? "+" : "−"} ${eur(Math.abs(o.eff))})</span><details class="anx"><summary class="small">Voir les opérations</summary><div class="grid2"><div><b class="small">${b}</b>${anDet(o.L0, sb2)}</div><div><b class="small">${a}</b>${anDet(o.L1, sb2)}</div></div></details></li>`).join("");
     const p1 = anPrevu(L1), p0 = anPrevu(L0), notes = [];
     if (p1.n) notes.push(`En ${a}, ${p1.n} ligne(s) ne sont pas encore pointées (${eur(p1.rec)} de loyers, ${eur(p1.dep)} de charges) : le cash flow les compte comme prévues.`);
     if (p0.n) notes.push(`En ${b}, ${p0.n} ligne(s) ne sont toujours pas pointées (${eur(p0.rec)} de loyers, ${eur(p0.dep)} de charges).`);
@@ -1083,7 +1093,8 @@ function viewAnalyse(){
       ${lines ? `<div class="small muted" style="margin-top:10px">Les raisons principales</div><ul class="anl">${lines}</ul>` : ""}${notes.length ? `<div class="small muted" style="margin-top:8px">${notes.map(esc).join("<br>")}</div>` : ""}</div>
       <div class="card"><h2>Ce qui pèse le plus</h2><div class="small muted" style="margin-bottom:6px">Vert à droite : ça améliore le cash flow ${a}. Rouge à gauche : ça le baisse.</div>${bars || '<div class="info">Aucun poste ne diffère.</div>'}${Math.abs(restV) >= 0.5 ? `<div class="dv"><div class="dl">Autres petits écarts<div class="small muted">${rest.length} poste(s)</div></div><div class="db"></div><div class="dn">${effCell(restV)}</div></div>` : ""}</div></div>`;
   }
-  return head + kpis + seg + body;
+  const exp = `<div class="btns" style="margin-top:10px"><button class="btn ghost sm" data-act="an-xlsx">Exporter en Excel</button><button class="btn ghost sm" data-act="an-pdf">Exporter en PDF</button></div>`;
+  return head + kpis + seg + body + exp;
 }
 function viewBilan(){
   const y = V.y, ids = bienIds(), st = stats(null, y);
@@ -1352,8 +1363,10 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.17";
+const APP_VERSION = "1.7.19";
 const CHANGELOG = [
+  {v:"1.7.19", date:"2026-11-10", titre:"Échéancier de la banque importé", items:["Compta › Emprunt et intérêts › Renseigner : nouveau bouton « Importer l’échéancier de la banque » (PDF texte, PDF scanné, photo, Excel ou CSV). L’appli lit le tableau, vérifie chaque ligne, reconstruit l’échéancier complet (même si quelques lignes du scan sont mal lues) et te montre les intérêts de chaque année pour les comparer à ta banque avant de valider.","Une fois importé, les intérêts, le capital remboursé, l’assurance et le capital restant dû de chaque année, ainsi que les échéances à saisir sur le site avec leurs vraies dates, sont ceux de la banque : plus rien à saisir d’une année sur l’autre. « Retirer l’échéancier importé » revient au calcul.","Les scans posés à l’horizontale sont maintenant redressés automatiquement avant la lecture (aussi pour les relevés de banque)."]},
+  {v:"1.7.18", date:"2026-11-10", titre:"Export de l’analyse des années", items:["Page « Pourquoi mes années sont différentes ? » : deux boutons en bas, « Exporter en Excel » et « Exporter en PDF ». Excel : synthèse, par catégorie (avec l’explication), mois par mois, par bien et toutes les opérations des deux années. PDF : résumé, raisons principales, catégories, mois par mois, par bien. Les exports suivent l’année, l’année comparée et le bien choisis.","Détail du détail : dans « Mois par mois » et « Par bien », touche une ligne pour voir chaque opération concernée (date, libellé, fournisseur, note, prévu ou pointé), année contre année. Dans « Par catégorie » et « Synthèse », les opérations affichent aussi le fournisseur et la note."]},
   {v:"1.7.17", date:"2026-11-10", titre:"Page dédiée « Pourquoi mes années sont différentes ? »", items:["Bilan › « Pourquoi mes années sont différentes ? » ouvre maintenant une page entière, claire et en colonnes (sur grand écran comme sur téléphone) : choisis l’année, l’année de comparaison et le bien.","Synthèse : trois cartes (cash flow de chaque année et écart), phrase d’explication, graphique, et colonne « Surtout dû à ».","Par catégorie : tableau 2025 / 2026 / Effet (vert = favorable, rouge = défavorable) ; touche une ligne pour voir les opérations des deux années.","Mois par mois : loyers, charges et cash flow des deux années, écart, et mois qui s’écartent le plus surlignés. Détail par bien.","Visite guidée et guide : 3 nouvelles diapos (synthèse, par catégorie, mois par mois)."]},
   {v:"1.7.16", date:"2026-11-10", titre:"Analyse des années, ajustements hors compta", items:["Tous les ajustements de rapprochement (« Écart de rapprochement ») sont maintenant automatiquement marqués « hors compta » : ils corrigent le solde du compte, jamais le bénéfice, le bilan ni la liste « à saisir en compta ». Les anciens ajustements sont mis à jour tout seuls.","Réglages › Démo et aide : l’entrée « Parcours guidé », qui ne servait pas, est retirée (la visite guidée plein écran et le guide restent).","Biens › Rapprochement › Historique des ajustements : touche une ligne pour la modifier ou l’annuler (suppression).","Bilan : nouvelle carte « Pourquoi mes années sont différentes ? » qui ouvre une page dédiée : synthèse avec graphique, tableau par catégorie (touche une ligne pour voir les opérations), mois par mois avec les mois qui s’écartent le plus surlignés, et détail par bien. Elle explique l’écart de cash flow entre deux années : dépenses ponctuelles avec leurs dates, paiements manquants, montants changés, lignes encore prévues.","Bilan › Mois par mois : le chiffre à droite est expliqué (cash flow du mois = loyers − charges) et les lignes hors compta n’y sont plus comptées, comme dans le reste du bilan."]},
   {v:"1.7.15", date:"2026-11-10", titre:"Soldes bien visibles, tarifs modifiables, jour de prélèvement", items:["Accueil : le solde de chaque compte est en gros, avec la couleur du bien.","Pointage › Comptes des biens : le solde de l’appli aujourd’hui en gros, et un champ « Solde de ma banque » directement dedans : tu le changes quand tu veux, l’écart se met à jour, et tu peux enregistrer l’ajustement.","Biens › Vue : le solde du compte aujourd’hui (à comparer avec la banque) en gros en haut de la carte.","Biens › Tarifs : touche une ligne de l’historique pour la corriger ou la supprimer.","Biens › Tarifs › « Changer le jour de prélèvement » : déplace en une fois toutes les lignes d’une catégorie au même jour du mois (crédit le 24, assurance le 5…), à partir d’une date."]},
@@ -1446,7 +1459,7 @@ const HELP = {
     "PDF : le dossier à imprimer, avec une case à cocher par ligne. Excel : mêmes colonnes que le site.",
     "Choisis l'année et le bien (ou « Tous »). Le résultat = loyers − charges − intérêts d'emprunt − assurance emprunteur.",
     "Les charges sont rangées par poste, comme sur le site. Le regroupement est indicatif : on l'ajustera.",
-    "Emprunt : renseigne capital, taux, durée et date de la 1re échéance. L'appli calcule les intérêts de chaque année.",
+    "Emprunt : renseigne capital, taux, durée et date de la 1re échéance. L'appli calcule les intérêts de chaque année. Plus simple : « Importer l'échéancier de la banque » (PDF, scan, Excel ou CSV) reprend les montants exacts de la banque, année après année.",
     "« À ne pas oublier » (Synthèse) : TA liste de déclaration, cochée automatiquement d'après le journal de l'année. ❌ = rien trouvé, à vérifier. « Personnaliser ma liste » : choisis les postes à suivre, par logement ou global. « Word ⬇ » exporte la liste en .docx à imprimer. « Word ⬆ » importe TA liste Word : l'appli reconnaît les postes, te montre ce qu'elle a compris et tu vérifies avant d'enregistrer.",
     "« À saisir en compta » ouvre les dépenses payées pas encore saisies sur le site.",
     "Excel ou PDF : un fichier prêt à garder ou à consulter pendant que tu remplis le site."]},
@@ -1542,8 +1555,9 @@ const HELP = {
     "Choisis les deux années (et un bien si tu veux) en haut de la page.",
     "Synthèse : l'écart en un coup d'œil, les raisons principales et un graphique : vert = ça améliore le cash flow, rouge = ça le baisse.",
     "Par catégorie : un tableau des deux années. Touche une ligne pour voir les opérations de chaque année.",
-    "Mois par mois : loyers, charges et cash flow de chaque mois, l'écart, et ce qui l'explique. Les mois qui s'écartent le plus sont surlignés.",
-    "Par bien : le cash flow de chaque bien et la raison principale de son écart."]},
+    "Mois par mois : loyers, charges et cash flow de chaque mois, l'écart, et ce qui l'explique. Les mois qui s'écartent le plus sont surlignés. Touche un mois pour voir chaque opération (date, libellé, fournisseur, note).",
+    "Par bien : le cash flow de chaque bien et la raison principale de son écart.",
+    "Exporter : deux boutons en bas de la page (Excel ou PDF) enregistrent l'analyse avec les années et le bien choisis."]},
   set:{t:"Réglages", p:"Échange avec Excel, sécurité et confort.", l:[
     "Mise à jour des règles : « Exporter en Word » donne un fichier à coller dans une IA qui cherche sur internet ; « Importer la réponse » te montre chaque changement avec sa source. Rien ne s'applique sans ton accord, et l'historique garde la trace.",
     "Signature : à l'écran (signature + paraphe reproduit sur chaque page + preuves) ou sur papier (tu n'imprimes que la dernière page puis tu la rescannes). La signature à l'écran est une signature électronique simple : sa valeur dépend de l'accord des deux parties.",
@@ -1917,6 +1931,51 @@ function rangePdf(a, b, ids, kind){
   if (!B.L.length) d.text(M, d.y, "Aucune opération sur cette période.", {size:10, color:"#5C6B66"});
   return d.finish("Export " + B.titre);
 }
+
+/* ---------- Export de l'analyse des années (Excel / PDF) ---------- */
+function anData(){
+  const A = V.an || {}, a = +A.a, b = +A.b, bien = A.bien || "all", ids = bienIds(), L1 = anLines(a, bien), L0 = anLines(b, bien), items = anItems(L1, L0, a, b), cf1 = anCf(L1), cf0 = anCf(L0);
+  const mois = MC.map((nm, m) => { const l1 = L1.filter(j => mo(j) === m), l0 = L0.filter(j => mo(j) === m), r1 = anSum(l1, "Recette"), p1 = anSum(l1, "Dépense"), r0 = anSum(l0, "Recette"), p0 = anSum(l0, "Dépense"), c1 = r2(r1 - p1), c0 = r2(r0 - p0), top = anItems(l1, l0, a, b)[0];
+    return {nm, r0, p0, c0, r1, p1, c1, e:r2(c1 - c0), why:top && Math.abs(top.eff) >= 0.5 ? top.cat + " " + (top.eff > 0 ? "+" : "-") + " " + eur(Math.abs(top.eff)) : ""}; });
+  const biens = bien === "all" ? ids.map(id => { const l1 = anLines(a, id), l0 = anLines(b, id), top = anItems(l1, l0, a, b).slice(0, 2).filter(o => Math.abs(o.eff) >= 0.5); return {nom:bienName(id), c0:anCf(l0), c1:anCf(l1), e:r2(anCf(l1) - anCf(l0)), why:top.map(o => o.cat + " " + (o.eff > 0 ? "+" : "-") + " " + eur(Math.abs(o.eff))).join(" ; ")}; }) : [];
+  const raisons = items.filter(o => Math.abs(o.eff) >= 0.5).slice(0, 8).map(o => o.cat + " : " + anWhy(o, a, b) + " (" + (o.eff > 0 ? "+" : "-") + " " + eur(Math.abs(o.eff)) + ")");
+  return {a, b, bien, bn:bien === "all" ? "Tous les biens" : bienName(bien), L1, L0, items, cf1, cf0, d:r2(cf1 - cf0), dRec:r2(anSum(L1, "Recette") - anSum(L0, "Recette")), dDep:r2(anSum(L1, "Dépense") - anSum(L0, "Dépense")), mois, biens, raisons, bailleur:(S.cfg && S.cfg.bailleur) || ""};
+}
+function anXlsx(){
+  const D = anData(), wb = XLSX.utils.book_new(), money = "#,##0.00 \"€\"";
+  const add = (name, aoa, widths, moneyCols, firstRow) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws["!cols"] = widths.map(w => ({wch:w}));
+    for (const k of Object.keys(ws)){ if (k[0] === "!") continue; const c = ws[k], col = k.replace(/\d+/g, ""), row = +k.replace(/\D+/g, ""); if (c.t === "n" && row >= firstRow && moneyCols.includes(col)) c.z = money; } XLSX.utils.book_append_sheet(wb, ws, name); };
+  add("Synthèse", [["Pourquoi " + D.a + " est différent de " + D.b], [D.bn + " · cash flow = loyers − charges (lignes hors compta exclues)"], [], ["", "Cash flow " + D.b, "Cash flow " + D.a, "Écart"], ["Cash flow", D.cf0, D.cf1, D.d], ["Loyers", anSum(D.L0, "Recette"), anSum(D.L1, "Recette"), D.dRec], ["Charges", anSum(D.L0, "Dépense"), anSum(D.L1, "Dépense"), D.dDep], [], ["Raisons principales"]].concat(D.raisons.map(r => [r])), [30, 18, 18, 16], ["B", "C", "D"], 5);
+  add("Par catégorie", [["Type", "Catégorie", String(D.b), String(D.a), "Effet sur le cash flow " + D.a, "Lignes " + D.b, "Lignes " + D.a, "Explication"]].concat(D.items.map(o => [o.t === "Recette" ? "Recette" : "Charge", o.cat, o.v0, o.v1, o.eff, o.n0, o.n1, anWhy(o, D.a, D.b)])).concat([["", "Cash flow", D.cf0, D.cf1, D.d, "", "", ""]]), [10, 30, 16, 16, 22, 11, 11, 60], ["C", "D", "E"], 2);
+  add("Mois par mois", [["Mois", "Loyers " + D.b, "Charges " + D.b, "Cash " + D.b, "Loyers " + D.a, "Charges " + D.a, "Cash " + D.a, "Écart", "Surtout dû à"]].concat(D.mois.map(m => [m.nm, m.r0, m.p0, m.c0, m.r1, m.p1, m.c1, m.e, m.why])).concat([["Année", anSum(D.L0, "Recette"), anSum(D.L0, "Dépense"), D.cf0, anSum(D.L1, "Recette"), anSum(D.L1, "Dépense"), D.cf1, D.d, ""]]), [10, 14, 14, 14, 14, 14, 14, 14, 36], ["B", "C", "D", "E", "F", "G", "H"], 2);
+  if (D.biens.length) add("Par bien", [["Bien", "Cash " + D.b, "Cash " + D.a, "Écart", "Surtout dû à"]].concat(D.biens.map(x => [x.nom, x.c0, x.c1, x.e, x.why])), [20, 16, 16, 14, 50], ["B", "C", "D"], 2);
+  const ops = []; [[D.b, D.L0], [D.a, D.L1]].forEach(([y, l]) => l.slice().sort((p, q) => p.date.localeCompare(q.date)).forEach(j => ops.push([y, isoToSerial(j.date), bienName(j.bien), j.type, j.cat, j.lib, j.montant])));
+  add("Opérations", [["Année", "Date", "Bien", "Type", "Catégorie", "Libellé", "Montant"]].concat(ops), [8, 12, 16, 11, 26, 34, 14], ["G"], 2);
+  const ws = wb.Sheets["Opérations"]; for (const k of Object.keys(ws)){ if (k[0] !== "!" && /^B\d+$/.test(k) && +k.slice(1) >= 2 && ws[k].t === "n") ws[k].z = "dd/mm/yyyy"; }
+  return XLSX.write(wb, {type:"array", bookType:"xlsx", compression:true});
+}
+function anPdf(){
+  const D = anData(), d = new PdfDoc("Analyse"), M = d.M, R = d.W - M, sg = v => (v > 0 ? "+ " : v < 0 ? "- " : "") + eur(Math.abs(v)), col = v => v > 0 ? "#1E7F4F" : v < 0 ? "#B3261E" : "#1B2430";
+  d.text(M, d.y, "Pourquoi " + D.a + " est différent de " + D.b, {size:19, bold:true}); d.y -= 22;
+  d.text(M, d.y, D.bn + " · cash flow = loyers − charges (hors compta exclu)", {size:10, color:"#5C6B66"}); d.y -= 20;
+  d.h("En bref");
+  d.para("Le cash flow " + D.a + " est " + (D.d < 0 ? "plus bas" : "plus haut") + " de " + eur(Math.abs(D.d)) + " que celui de " + D.b + ".", 11, 15);
+  [["Cash flow " + D.b, eur(D.cf0), "#1B2430"], ["Cash flow " + D.a, eur(D.cf1), "#1B2430"], ["Loyers (écart)", sg(D.dRec), col(D.dRec)], ["Charges (écart)", sg(-D.dDep), col(-D.dDep)], ["Écart du cash flow", sg(D.d), col(D.d)]].forEach(([l, v, c], i) => { d.need(16); d.text(M, d.y, l, {size:10, bold:i === 4}); d.text(R, d.y, v, {size:10, right:true, bold:true, color:c}); d.y -= 15; });
+  if (D.raisons.length){ d.y -= 4; d.text(M, d.y, "Les raisons principales", {size:9.5, bold:true, color:"#5C6B66"}); d.y -= 14; D.raisons.forEach(r => d.para("• " + r, 9.5, 13)); }
+  d.h("Par catégorie");
+  const X = [300, 370, 440, R];
+  const head = (t0) => { [t0, String(D.b), String(D.a), "Effet"].forEach((t, i) => d.text(i ? X[i - 1] : M, d.y, t, {size:9, bold:true, right:i > 0, color:"#5C6B66"})); d.y -= 6; d.line(M, d.y, R, d.y); d.y -= 14; };
+  head("Catégorie");
+  for (const t of ["Recette", "Dépense"]){ const I = D.items.filter(o => o.t === t); if (!I.length) continue; d.need(30); d.text(M, d.y, t === "Recette" ? "Recettes" : "Charges", {size:10, bold:true, color:"#0E6B5C"}); d.y -= 15;
+    for (const o of I){ d.need(28); d.text(M + 6, d.y, o.cat.slice(0, 34), {size:9.5}); d.text(X[0], d.y, o.v0 ? eur(o.v0) : "-", {size:9.5, right:true}); d.text(X[1], d.y, o.v1 ? eur(o.v1) : "-", {size:9.5, right:true}); d.text(X[2] + 0, d.y, "", {size:9}); d.text(R, d.y, sg(o.eff), {size:9.5, right:true, bold:true, color:col(o.eff)}); d.y -= 12;
+      const w = anWhy(o, D.a, D.b); if (w !== "—"){ d.text(M + 6, d.y, w.slice(0, 95), {size:8, color:"#5C6B66"}); d.y -= 12; } d.y -= 2; } }
+  d.need(20); d.line(M, d.y + 6, R, d.y + 6); d.text(M, d.y - 6, "Cash flow", {size:10, bold:true}); d.text(X[0], d.y - 6, eur(D.cf0), {size:10, right:true, bold:true}); d.text(X[1], d.y - 6, eur(D.cf1), {size:10, right:true, bold:true}); d.text(R, d.y - 6, sg(D.d), {size:10, right:true, bold:true, color:col(D.d)}); d.y -= 24;
+  d.h("Mois par mois");
+  const Y = [100, 175, 250, 325, 400, R]; ["Mois", "Loyers " + D.b, "Charges " + D.b, "Cash " + D.b, "Cash " + D.a, "Écart"].forEach((t, i) => d.text(i ? Y[i - 1] : M, d.y, t, {size:8.5, bold:true, right:i > 0, color:"#5C6B66"})); d.y -= 6; d.line(M, d.y, R, d.y); d.y -= 14;
+  for (const m of D.mois){ d.need(26); d.text(M, d.y, m.nm, {size:9.5, bold:true}); [m.r0, m.p0, m.c0, m.c1].forEach((v, i) => d.text(Y[i], d.y, eur(v), {size:9.5, right:true})); d.text(R, d.y, sg(m.e), {size:9.5, right:true, bold:true, color:col(m.e)}); d.y -= 12; if (m.why && Math.abs(m.e) >= 1){ d.text(M, d.y, "Surtout dû à : " + m.why.slice(0, 80), {size:8, color:"#5C6B66"}); d.y -= 11; } d.y -= 2; }
+  if (D.biens.length){ d.h("Par bien"); D.biens.forEach(x => { d.need(30); d.text(M, d.y, x.nom, {size:10, bold:true}); d.text(R - 160, d.y, eur(x.c0), {size:10, right:true}); d.text(R - 80, d.y, eur(x.c1), {size:10, right:true}); d.text(R, d.y, sg(x.e), {size:10, right:true, bold:true, color:col(x.e)}); d.y -= 13; if (x.why) { d.text(M, d.y, x.why.slice(0, 95), {size:8, color:"#5C6B66"}); d.y -= 12; } d.y -= 3; }); }
+  return d.finish("Analyse " + D.b + " " + D.a);
+}
 function sheetExport(){
   const keys = J().map(j => j.date.slice(0, 7)), now = todayIso().slice(0, 7), lo = keys.length ? keys.reduce((x, y) => x < y ? x : y) : now, hi = keys.reduce((x, y) => x > y ? x : y, now);
   const list = monthKeys(lo < now ? lo : now, hi), onMonth = V.tab === "month", mk = V.y + "-" + pad(V.m + 1);
@@ -2042,6 +2101,8 @@ document.addEventListener("click", async ev => {
       if (all && f.slice(5) === "01" && t.slice(5) === "12" && f.slice(0, 4) === t.slice(0, 4)){ const y = +f.slice(0, 4), nm = "bilan-annee-" + y; if (xl) saveFile(nm + ".xlsx", bilanAnXlsx(y), X); else saveFile(nm + ".pdf", bilanAnPdf(y), "application/pdf"); break; }
       const nm = "export-" + f + (f === t ? "" : "_a_" + t) + "-" + (ids.length === bienIds().length ? "tous" : ids.map(bienName).join("-").toLowerCase().replace(/[^a-z0-9-]/g, "")) + (kind === "all" ? "" : kind === "Dépense" ? "-depenses" : "-recettes");
       if (xl) saveFile(nm + ".xlsx", rangeXlsx(f, t, ids, kind), X); else saveFile(nm + ".pdf", rangePdf(f, t, ids, kind), "application/pdf"); break; }
+    case "an-xlsx": saveFile("analyse-" + V.an.b + "-" + V.an.a + ".xlsx", anXlsx(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); break;
+    case "an-pdf": saveFile("analyse-" + V.an.b + "-" + V.an.a + ".pdf", anPdf(), "application/pdf"); break;
     case "quit": sheetQuittance(id); break;
     case "quit-pdf": { const j = S.journal.find(x => x.id === V.q), o = {bail:$("#q-bail").value.trim(), badr:$("#q-badr").value.trim(), loc:$("#q-loc").value.trim(), adr:$("#q-adr").value.trim(), loyer:parseNum($("#q-loyer").value) || 0, chg:parseNum($("#q-chg").value) || 0, recu:($("#q-recu").value.trim() === "" ? null : parseNum($("#q-recu").value)), ville:$("#q-ville").value.trim()};
       if (!(o.loyer + o.chg > 0)) return toast("Saisis le montant");
@@ -2190,6 +2251,12 @@ const cdone = k => !!((S.cfg && S.cfg.cdone) || {})[k];
 /* emprunt d'un bien : {capital, taux, duree (mois), debut (AAAA-MM-JJ), assur (€/mois)} */
 function empOf(id){ const b = S.biens.find(x => x.id === id); return b && b.emprunt && b.emprunt.capital > 0 && b.emprunt.duree > 0 && b.emprunt.debut ? b.emprunt : null; }
 function amort(e){
+  if (e.ech && e.ech.length){ /* échéancier réel de la banque : [[AAAA-MM-JJ, intérêts, assurance, capital, échéance, restant dû], ...] */
+    const rows = e.ech.map((r, i) => ({k:i + 1, y:+r[0].slice(0, 4), m:+r[0].slice(5, 7) - 1, date:r[0], it:r[1], ass:r[2], kap:r[3], mens:r[4], crd:r[5]})), cnt = {};
+    rows.forEach(r => { if (r.kap > 0) cnt[r.mens] = (cnt[r.mens] || 0) + 1; });
+    const top = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+    return {mens:top !== undefined ? +top : (rows[0] ? rows[0].mens : 0), rows};
+  }
   const n = Math.round(e.duree), r = (e.taux || 0) / 1200, cap = e.capital;
   const m = r === 0 ? cap / n : cap * r / (1 - Math.pow(1 + r, -n));
   const rows = []; let crd = cap; const y0 = +e.debut.slice(0, 4), m0 = +e.debut.slice(5, 7) - 1;
@@ -2204,7 +2271,7 @@ function empYear(id, y){
   const e = empOf(id); if (!e) return null;
   const A = amort(e), R = A.rows.filter(x => x.y === y), prev = A.rows.filter(x => x.y < y);
   const crdFin = R.length ? R[R.length - 1].crd : (prev.length ? prev[prev.length - 1].crd : e.capital);
-  return {e, mens:A.mens, nb:R.length, it:r2(sum(R.map(x => x.it))), kap:r2(sum(R.map(x => x.kap))), assur:r2((e.assur || 0) * R.length), crd:crdFin};
+  return {e, mens:A.mens, nb:R.length, it:r2(sum(R.map(x => x.it))), kap:r2(sum(R.map(x => x.kap))), assur:e.ech ? r2(sum(R.map(x => x.ass || 0))) : r2((e.assur || 0) * R.length), crd:crdFin};
 }
 
 /* synthèse de l'année pour un bien */
@@ -2343,9 +2410,103 @@ function sheetEmprunt(id){
     <label class="f">Date de la première échéance<input id="em-deb" type="date" value="${e.debut || ""}"></label>
     <label class="f">Date de déblocage des fonds (comme sur le site)<input id="em-fonds" type="date" value="${e.fonds || ""}"></label>
     <label class="f">Assurance emprunteur (€ par mois)<input id="em-ass" inputmode="decimal" value="${e.assur ? fmtNum(e.assur) : ""}"></label>
-    <div class="small muted">Les intérêts sont calculés avec un tableau d'amortissement classique. Compare avec ton tableau de la banque.</div>
+    <div class="small muted">${e.ech ? "Échéancier de la banque importé (" + e.ech.length + " échéances) : les intérêts et l'assurance sont ceux de la banque." : "Les intérêts sont calculés avec un tableau d'amortissement classique. Compare avec ton tableau de la banque."}</div>
+    <label class="btn ghost" style="text-align:center;cursor:pointer">Importer l'échéancier de la banque (PDF, scan, Excel, CSV)<input id="em-file" type="file" accept=".pdf,.csv,.txt,.xlsx,.xls,application/pdf,text/csv,image/*" data-id="${esc(id)}" hidden></label>
+    ${e.ech ? `<button class="btn ghost sm" data-act="ech-del" data-id="${esc(id)}">Retirer l'échéancier importé (revenir au calcul)</button>` : ""}
     <div class="btns"><button class="btn" style="flex:1" data-act="emp-save" data-id="${esc(id)}">Enregistrer</button>${e.capital ? `<button class="btn danger" data-act="emp-del" data-id="${esc(id)}">Retirer</button>` : ""}<button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
+
+
+/* ---- Import de l'échéancier de la banque (PDF, scan, Excel, CSV) ---- */
+const ECH_N = /-?\d{1,3}(?:[   ]\d{3})*,\d{2}|-?\d+,\d{2}/g, echNum = x => parseFloat(String(x).replace(/[   ]/g, "").replace(",", "."));
+const echIso = d => { const m = String(d).match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/); if (m) return m[3] + "-" + pad(+m[2]) + "-" + pad(+m[1]); const k = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return k ? k[0] : ""; };
+const echAdd = (iso, k) => { const y0 = +iso.slice(0, 4), m0 = +iso.slice(5, 7) - 1 + k, y = y0 + Math.floor(m0 / 12), m = ((m0 % 12) + 12) % 12; return y + "-" + pad(m + 1) + "-" + iso.slice(8, 10); };
+const echMo = iso => +iso.slice(0, 4) * 12 + +iso.slice(5, 7) - 1;
+/* lignes de texte (PDF ou scan) -> {rows, hdr} ; une ligne = date + intérêts, assurances, accessoires, capital amorti, échéance, capital restant dû... */
+function echParseLines(lines){
+  const rows = [], hdr = {}, all = lines.join("\n");
+  let m = all.match(/TAUX\s+INT[EÉ]R[EÊ]T\D{0,6}(\d{1,2},\d{1,3})/i); if (m) hdr.taux = echNum(m[1]);
+  m = all.match(/DATE\s+DE\s+REALISATION\D{0,8}(\d{2}\/\d{2}\/\d{4})/i); if (m) hdr.real = echIso(m[1]);
+  m = all.match(/DUREE\s+TOTALE\D{0,6}(\d{2,3})/i); if (m) hdr.duree = +m[1];
+  m = all.match(/MONTANT\s+DU\s+PRET\D{0,6}(\d[\d  ]*,\d{2})/i); if (m) hdr.capital = echNum(m[1]);
+  for (let l of lines){
+    l = l.replace(/[€|_;]+/g, " "); const d = l.match(/(\d{2}\/\d{2}\/\d{4})/); if (!d) continue;
+    const v = (l.slice(l.indexOf(d[1]) + 10).match(ECH_N) || []).map(echNum); if (v.length < 6) continue;
+    rows.push({date:echIso(d[1]), it:v[0], ass:v[1], acc:v[2], cap:v[3], ech:v[4], crd:v[5]});
+  }
+  return {rows, hdr};
+}
+/* tableau (Excel / CSV) -> lignes complètes : colonnes reconnues par leur titre */
+function echParseTable(T){
+  let h = -1, col = {}; const find = (c, re) => c.findIndex(x => re.test(String(x).toLowerCase()));
+  for (let i = 0; i < Math.min(T.length, 15); i++){ const c = T[i], d = find(c, /date|[eé]ch[eé]ance\b.*date|jour/), it = find(c, /int[eé]r[eê]t/), cp = find(c, /capital.*amort|^capital$|amortissement|principal/), rs = find(c, /restant|crd|solde/), ec = find(c, /total|montant.*[eé]ch|^[eé]ch[eé]ance$|mensualit/), as = find(c, /assur/);
+    if (d >= 0 && it >= 0 && (cp >= 0 || ec >= 0)){ h = i; col = {d, it, cp, rs, ec, as}; break; } }
+  if (h < 0) return null;
+  const val = x => typeof x === "number" ? x : (echNum(String(x).replace(/\s/g, "")) || 0), rows = [];
+  for (const r of T.slice(h + 1)){ let dv = r[col.d]; const iso = dv instanceof Date ? dv.getFullYear() + "-" + pad(dv.getMonth() + 1) + "-" + pad(dv.getDate()) : echIso(dv); if (!iso) continue;
+    const it = val(r[col.it]), cap = col.cp >= 0 ? val(r[col.cp]) : 0, ass = col.as >= 0 ? val(r[col.as]) : 0, ech = col.ec >= 0 ? val(r[col.ec]) : r2(it + cap + ass), crd = col.rs >= 0 ? val(r[col.rs]) : 0;
+    rows.push({date:iso, it, ass, acc:0, cap:cap || r2(ech - it - ass), ech, crd}); }
+  return rows.length ? rows : null;
+}
+/* vérifie les lignes lues et reconstruit l'échéancier complet (un prêt à mensualité constante est entièrement déterminé) */
+function echBuild(parsed, hdr){
+  hdr = hdr || {}; const good = parsed.filter(r => r.it >= 0 && r.crd >= 0 && (Math.abs(r.it + r.ass + r.cap - r.ech) <= 0.03 || (r.cap === 0 && Math.abs(r.it + r.ass - r.ech) <= 0.03)) && r.ech > 0), amo = good.filter(r => r.cap > 0);
+  if (good.length < 3) throw new Error("trop peu de lignes lisibles (" + good.length + ")");
+  const rd = r2, cnt = {}; amo.forEach(r => cnt[r.ech] = (cnt[r.ech] || 0) + 1);
+  const mens = +(Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || good[0].ech), cap0 = r2(Math.max(...good.map(r => r.crd)));
+  /* taux : médiane de intérêts / capital dû avant paiement */
+  const rt = amo.filter(r => r.crd + r.cap > 0).map(r => r.it / (r.crd + r.cap) * 1200).sort((a, b) => a - b), est = rt.length ? Math.round(rt[Math.floor(rt.length / 2)] * 100) / 100 : 0;
+  const taux = hdr.taux && Math.abs(hdr.taux - est) < 0.06 ? hdr.taux : est;
+  const rr = taux / 1200, assM = (() => { const c = {}; amo.forEach(r => { if (r.ass > 0) c[r.ass] = (c[r.ass] || 0) + 1; }); const k = Object.keys(c).sort((a, b) => c[b] - c[a])[0]; return k ? +k : 0; })();
+  /* ligne de départ des amortissements : on cherche quelle ligne lue correspond à quel rang */
+  const simCrd = n => { let c = cap0; for (let i = 0; i < n; i++){ const it = rd(c * rr); c = rd(c - rd(mens - assM - it)); } return c; };
+  const idx = {}, votes = {}; let c = cap0; const byCrd = {};
+  for (let n = 1; n <= 480 && c > 0.005; n++){ const it = rd(c * rr); c = rd(c - rd(mens - assM - it)); byCrd[c.toFixed(2)] = n; }
+  for (const r of amo){ const n = byCrd[r.crd.toFixed(2)]; if (!n) continue; const first = echAdd(r.date, -(n - 1)); votes[first] = (votes[first] || 0) + 1; }
+  const firstAmo = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0]; if (!firstAmo) throw new Error("les montants lus ne correspondent à aucun prêt à mensualité constante");
+  /* phase d'intérêts seuls à capital plein et déblocages progressifs avant */
+  const full = good.filter(r => r.cap === 0 && Math.abs(r.crd - cap0) < 0.01 && Math.abs(r.it - rd(cap0 * rr)) < 0.02).map(r => r.date).sort()[0] || firstAmo;
+  const early = good.filter(r => r.date < full && r.it > 0 && r.cap === 0).sort((a, b) => a.date.localeCompare(b.date));
+  const t1 = early.length ? early[0].date : full, nTot = hdr.duree && hdr.duree > 12 ? hdr.duree : null;
+  const out = early.map(r => [r.date, r.it, r.ass, 0, r.ech, r.crd]);
+  const lastP = parsed.filter(r => r.ech > 0 && r.crd >= 0 && r.date).map(r => r.date).sort().pop(), last = nTot ? echAdd(t1, nTot - 1) : (good.length > 20 ? lastP : null); let date = full, crd = cap0, guard = 0;
+  while (guard++ < 600){
+    const it = rd(crd * rr);
+    if (date < firstAmo){ out.push([date, it, assM, 0, rd(it + assM), crd]); }
+    else { const end = (last && date >= last) || crd <= mens - assM + 0.005, cp = end ? crd : rd(mens - assM - it); crd = rd(crd - cp); out.push([date, end ? rd(mens - assM - cp) : it, assM, cp, mens, crd]); if (end) break; }
+    date = echAdd(date, 1);
+  }
+  /* concordance avec les lignes lues */
+  const key = new Map(out.map(r => [r[5].toFixed(2) + "|" + r[1].toFixed(2), 1])); let ok = 0; good.forEach(r => { if (key.has(r.crd.toFixed(2) + "|" + r.it.toFixed(2))) ok++; });
+  const by = {}; out.forEach(r => { const y = r[0].slice(0, 4); by[y] = r2((by[y] || 0) + r[1]); });
+  return {ech:out, info:{capital:cap0, taux, mens, nb:out.length, lues:parsed.length, bonnes:good.length, concordent:ok, premier:t1, real:hdr.real || "", debutAmo:firstAmo, fin:out[out.length - 1][0], parAn:by, assM}};
+}
+async function echReadFile(f){
+  const name = f.name || "", buf = await f.arrayBuffer();
+  if (/\.(xlsx|xls)$/i.test(name)){ if (typeof XLSX === "undefined") throw new Error("lecture Excel indisponible hors connexion : enregistre en CSV"); const wb = XLSX.read(new Uint8Array(buf), {type:"array", cellDates:true}), T = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:"", raw:true}), rows = echParseTable(T); if (!rows) throw new Error("colonnes non reconnues (il faut Date, Intérêts, Capital ou Échéance)"); return {rows, hdr:{}}; }
+  if (/\.(csv|txt)$/i.test(name)){ let txt = new TextDecoder("utf-8").decode(new Uint8Array(buf)); if (txt.includes("�")) txt = new TextDecoder("windows-1252").decode(new Uint8Array(buf));
+    const first = txt.split(/\r?\n/)[0] || "", sep = [";", "\t", ","].map(c => [c, first.split(c).length]).sort((a, b) => b[1] - a[1])[0][0], T = txt.split(/\r?\n/).filter(Boolean).map(l => l.split(sep).map(x => x.trim().replace(/^"|"$/g, ""))), rows = echParseTable(T); if (!rows) throw new Error("colonnes non reconnues"); return {rows, hdr:{}}; }
+  const ln = await pdfLines(buf); return echParseLines(ln);
+}
+function sheetEchPreview(){
+  const P = V.ech, I = P.info, ys = Object.keys(I.parAn).sort();
+  openSheet(`<h2>Échéancier de la banque · ${esc(bienName(P.id))}</h2>
+    <div class="info">Prêt de ${eur(I.capital)} à ${String(I.taux).replace(".", ",")} % · mensualité ${eur(I.mens)} · ${I.nb} échéances du ${frDate(I.premier)} au ${frDate(I.fin)}.</div>
+    <div class="small muted">${I.concordent} lignes lues sur ${I.bonnes} concordent exactement avec le calcul${I.lues > I.bonnes ? " (" + (I.lues - I.bonnes) + " lignes mal lues ignorées)" : ""}. Compare les intérêts de chaque année avec les totaux de ta banque :</div>
+    <div class="rows" style="max-height:34vh;overflow:auto">${ys.map(y => `<div class="kv"><span>Intérêts ${y}</span><span class="num">${eur(I.parAn[y])}</span></div>`).join("")}</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="ech-ok">Utiliser cet échéancier</button><button class="btn ghost" data-act="emp-open" data-id="${esc(P.id)}">Annuler</button></div>`);
+}
+document.addEventListener("change", async ev => {
+  const t = ev.target; if (!t || t.id !== "em-file" || !t.files || !t.files[0]) return; const id = t.dataset.id, f = t.files[0]; t.value = "";
+  try { toast("Lecture de l'échéancier…"); const R = await echReadFile(f), B = echBuild(R.rows, R.hdr); V.ech = {id, ech:B.ech, info:B.info}; sheetEchPreview(); }
+  catch(e){ toast("Lecture impossible : " + (e.message || e)); }
+});
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
+  if (a === "ech-ok" && V.ech){ const P = V.ech, I = P.info, bn = S.biens.find(x => x.id === P.id); if (!bn) return; const old = bn.emprunt || {};
+    bn.emprunt = {capital:I.capital, taux:I.taux, duree:I.nb, debut:I.premier, fonds:old.fonds || I.real || "", assur:I.assM || 0, ech:P.ech}; bn.upd = Date.now(); persist(); V.ech = null; closeSheet(); toast("Échéancier enregistré"); render(); }
+  if (a === "ech-del"){ const bn = S.biens.find(x => x.id === b.dataset.id); if (bn && bn.emprunt){ delete bn.emprunt.ech; bn.upd = Date.now(); persist(); closeSheet(); toast("Retour au calcul"); render(); } }
+});
 
 /* ---- exports ---- */
 function comptaData(y, sel){ const ids = sel === "all" ? bienIds() : [sel]; return {y, ids, D:ids.map(id => comptaBien(id, y))}; }
@@ -2421,7 +2582,7 @@ function cmpRecLines(y, ids){
 function cmpEchLines(y, ids){
   const rows = [];
   for (const id of ids){ const e = empOf(id); if (!e) continue; const A = amort(e), day = e.debut.slice(8, 10);
-    for (const r of A.rows) if (r.y === y) rows.push({k:"e|" + id + "|" + y + "-" + pad(r.m + 1), bien:id, date:y + "-" + pad(r.m + 1) + "-" + day, total:r.mens, kap:r.kap, it:r.it, frais:0, crd:r.crd, done:cdone("e|" + id + "|" + y + "-" + pad(r.m + 1))}); }
+    for (const r of A.rows) if (r.y === y) rows.push({k:"e|" + id + "|" + y + "-" + pad(r.m + 1), bien:id, date:r.date || (y + "-" + pad(r.m + 1) + "-" + day), total:r.mens, kap:r.kap, it:r.it, frais:0, crd:r.crd, done:cdone("e|" + id + "|" + y + "-" + pad(r.m + 1))}); }
   return rows;
 }
 const cmpGroup = (rows, f) => { const ids = [...new Set(rows.map(r => r.bien))]; return ids.map(id => f(id, rows.filter(r => r.bien === id))).join(""); };
@@ -2526,6 +2687,7 @@ document.addEventListener("click", ev => {
     case "emp-open": sheetEmprunt(id); break;
     case "emp-save": { const bn = S.biens.find(x => x.id === id); if (!bn) break;
       const e = {capital:parseNum($("#em-cap").value) || 0, taux:parseNum($("#em-taux").value) || 0, duree:Math.round(parseNum($("#em-dur").value) || 0), debut:$("#em-deb").value, fonds:$("#em-fonds").value, assur:parseNum($("#em-ass").value) || 0};
+      { const o = bn.emprunt; if (o && o.ech) e.ech = o.ech; }
       if (!(e.capital > 0 && e.duree > 0 && e.debut)) return toast("Capital, durée et date sont nécessaires");
       bn.emprunt = e; bn.upd = Date.now(); persist(); closeSheet(); toast("Emprunt enregistré"); render(); break; }
     case "ck-docx": checklistDocx(V.y, V.csel === "all" ? bienIds() : [V.csel]); break;
@@ -4194,11 +4356,15 @@ async function ocrPdf(doc){
   toast("Lecture du scan… (premier chargement : un peu long)");
   const w = await T.createWorker("fra", 1, {workerPath:TESS_WK, corePath:TESS_CORE, langPath:TESS_LANG});
   try {
+    let rot = null; /* page scannée couchée : on essaie 0°, 90° puis 270° sur la 1re page et on garde le meilleur sens */
+    const grab = async (pg, rt, sc) => { const vp = pg.getViewport({scale:sc, rotation:((pg.rotate || 0) + rt) % 360}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
+      await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; const r = await w.recognize(cv); return r.data.text.split(/\r?\n/).map(l => l.replace(/[|_]+/g, " ").replace(/\s+/g, " ").trim()).filter(Boolean); };
     for (let i = 1; i <= n; i++){
       toast("Lecture du scan : page " + i + " sur " + n);
-      const pg = await doc.getPage(i), vp = pg.getViewport({scale:2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
-      await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
-      const r = await w.recognize(cv); r.data.text.split(/\r?\n/).forEach(l => { l = l.replace(/[|_]+/g, " ").replace(/\s+/g, " ").trim(); if (l) out.push(l); });
+      const pg = await doc.getPage(i); let ls;
+      if (rot === null){ let best = -1; for (const rt of [0, 90, 270]){ const x = await grab(pg, rt, 2), sc = x.filter(l => /\d{2}[\/.]\d{2}[\/.]\d{4}/.test(l)).length * 3 + x.join(" ").length / 400; if (sc > best){ best = sc; rot = rt; ls = x; } if (best >= 9 && rt === 0) break; } }
+      else ls = await grab(pg, rot, 2);
+      ls.forEach(l => out.push(l));
     }
   } finally { try { await w.terminate(); } catch(e){} }
   OCR_USED = true; return out;
