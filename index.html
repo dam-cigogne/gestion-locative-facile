@@ -1421,8 +1421,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.30";
+const APP_VERSION = "1.7.31";
 const CHANGELOG = [
+  {v:"1.7.31", date:"2026-11-10", titre:"Après une signature : envoyer et ranger comme pour tous les documents", items:["Après une signature électronique (courrier, restitution du dépôt, bail), « Continuer » ouvre maintenant la même fenêtre « Envoyer au locataire » que les autres documents : pièce jointe, e-mail, SMS, « Ranger dans sa fiche » ou enregistrement sur l'appareil.","Ton exemplaire signé reste rangé automatiquement dans Biens › Documents du bien.","Arrivée et Départ d'un locataire : si le logement est soumis au permis de louer, une étape « Permis de louer » apparaît dans chaque liste (demande à la mairie avant le bail, à prévoir dès le départ) avec un bouton vers le suivi."]},
   {v:"1.7.30", date:"2026-11-10", titre:"Documents signés verrouillés, rangement dans la fiche, démo de mise en location", items:["Un état des lieux ou un inventaire signé est maintenant verrouillé : plus de modification par erreur. Un bouton « Déverrouiller (exceptionnel) » permet de le rouvrir ; la première modification efface alors les signatures.","« Envoyer au locataire » : nouveau bouton « Ranger dans sa fiche » qui garde une copie du PDF (signé s'il l'est) dans Biens › Locataires › sa fiche › Documents. Un envoi en pièce jointe en garde aussi une copie.","Ta pièce d'identité de bailleur se range dans Biens › carte « Bailleur et biens ». La case correspondante de « Renforcer la preuve » est cochée toute seule (comme celle du locataire si sa pièce est dans sa fiche).","Démo : un logement vacant « Appartement T3 » avec 7 candidats fictifs (demandes, visites, dossiers à vérifier, refusé) pour essayer tout le parcours jusqu'à l'état des lieux d'entrée."]},
   {v:"1.7.29", date:"2026-11-10", titre:"Plus de zoom au double appui", items:["Un double appui rapide sur un bouton ou une ligne ne zoome plus sur iPad et iPhone (le zoom au pincement reste possible, et la saisie de montants n'est pas touchée)."]},
   {v:"1.7.28", date:"2026-11-10", titre:"Compta : barre de progression en couleurs", items:["Compta › À saisir : la barre de progression a trois couleurs : vert = lignes saisies, orange = lignes cochées pas encore validées, gris = ce qu'il reste à faire, avec une légende.","Le texte explique que cocher ne suffit pas : il faut toucher « Marquer comme saisi » pour valider les lignes cochées.","Les onglets Dépenses, Recettes et Échéances affichent ✓ quand tout est saisi.","Revenir en arrière : le texte explique comment remettre une ligne à saisir (onglet « Déjà saisi », coche, « Remettre à saisir »), et le bouton Annuler reste 30 secondes au lieu de 12.","Plus de zoom involontaire quand on touche deux fois vite un bouton ou une ligne (le zoom au pincement reste possible)."]},
@@ -4203,7 +4204,7 @@ document.addEventListener("click", ev => {
         signFlow(parties, async res => { const pdf = letterPdf(v, o, res), fid = uid(), name = "signe-" + fn;
           await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer});
           docList("docs").push(Object.assign({id:fid, bien, kind:tn ? "loc" : "autre", nom:titre + " (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()}, tn ? {loc:tn.id, ptype:"Courrier signé"} : {}));
-          persist(); render(); await saveFile(name, pdf, "application/pdf", titre + " signé électroniquement le " + hhmm(res.ts) + "."); }, "ce courrier", JSON.stringify(o)); break; }
+          persist(); render(); sendMark(bien, titre, res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", titre + " signé électroniquement le " + hhmm(res.ts) + "."); }, "ce courrier", JSON.stringify(o)); break; }
       saveFile(fn, letterPdf(v, o), "application/pdf"); break; }
   }
 });
@@ -4411,7 +4412,7 @@ document.addEventListener("click", async ev => {
       const bien = V.bsel; signFlow([{key:"bailleur", label:"Bailleur", name:o.bail || "Bailleur"}, {key:"locataire", label:"Locataire", name:o.loc}], async res => {
         const pdf = bailPdf(o, res), fid = uid(), name = "Bail signé " + o.debut + ".pdf";
         await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer}); docList("docs").push({id:fid, bien, kind:"bail", nom:"Bail signé le " + frDate(res.ts.slice(0, 10)), fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()});
-        persist(); render(); await saveFile(name, pdf, "application/pdf", "Contrat de location meublée signé électroniquement le " + hhmm(res.ts) + "."); }, "ce contrat de location", JSON.stringify(o)); break; }
+        persist(); render(); sendMark(bien, "Bail de location", res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", "Contrat de location meublée signé électroniquement le " + hhmm(res.ts) + "."); }, "ce contrat de location", JSON.stringify(o)); break; }
     case "zip-bien": exportDossier([V.bsel], "Dossier " + cleanName(bienName(V.bsel))); break;
     case "zip-all": exportDossier(bienIds(), "Gestion Locative Facile"); break;
   }
@@ -4421,6 +4422,7 @@ document.addEventListener("click", async ev => {
 const MVT = {
   arr: {titre:"Arrivée d'un locataire", etapes:[
     ["dos", "Dossier du candidat vérifié", "Pièce d'identité, justificatifs de revenus, garant éventuel. Ne demande que les pièces autorisées par le décret n° 2015-1437 (liste limitative).", ["cand", "Candidatures"]],
+    ["pl", "Permis de louer : autorisation de la mairie obtenue", "Ce logement est soumis au permis de louer : la demande se fait avant la signature du bail, et l'autorisation s'annexe au bail. Le bouton ouvre le suivi (demande, rendez-vous, courrier).", ["permis", "Permis de louer"]],
     ["diag", "Diagnostics à jour", "DPE (le logement classé G ne peut plus être loué en résidence principale), risques (ERP), plomb avant 1949, électricité et gaz si installation de plus de 15 ans, amiante selon l'âge de l'immeuble. Garde-les dans les documents du bien.", ["docs", "Pièces à joindre"]],
     ["bail", "Bail préparé et relu", "Remplis le bail, puis crée le PDF de relecture et relis-le avec le locataire avant de signer.", ["bail", "Préparer le bail"]],
     ["inv", "Inventaire du mobilier d'entrée", "Obligatoire en meublé (liste minimale du décret n° 2015-981), inutile en logement vide. Tu peux le préparer avant la visite en reprenant la liste d'un autre logement.", ["inv-e", "Inventaire d'entrée"]],
@@ -4442,6 +4444,7 @@ const MVT = {
     ["ret", "Retenues justifiées", "Devis ou factures, en tenant compte de la vétusté. Rien sans justificatif.", null],
     ["res", "Dépôt de garantie restitué", "Sous 1 mois si l'état de sortie est conforme à l'entrée, sous 2 mois sinon (à vérifier sur le texte en vigueur).", ["depot", "Lettre de restitution"]],
     ["qui", "Dernière quittance et solde de tout compte", "À remettre une fois tout réglé.", null],
+    ["pl", "Permis de louer : prévoir la demande pour le prochain locataire", "Ce logement est soumis au permis de louer : une nouvelle autorisation est à demander avant chaque nouvelle location. Prépare-la dès le départ pour ne pas bloquer la relocation.", ["permis", "Permis de louer"]],
     ["clo", "Locataire clos dans l'appli et dans Excel", "Renseigne la date de fin du bail. Prépare les diagnostics et le bien pour la prochaine location.", ["loc", "Fiche locataire"]]
   ]}
 };
@@ -4453,14 +4456,14 @@ function mvtRec(bien, mv){
 function mvtHas(bien, k, type){ return docList(k).some(x => x.bien === bien && !x.del && x.type === type); }
 function viewMvt(){
   const id = V.bsel, t = tenantFor(id, todayIso());
-  const card = mv => { const M = MVT[mv], r = docList("docs").find(x => x.kind === "chk" && x.bien === id && x.mv === mv && !x.del) || {done:{}}, n = M.etapes.filter(e => r.done[e[0]]).length;
+  const card = mv => { const M = MVT[mv], r = docList("docs").find(x => x.kind === "chk" && x.bien === id && x.mv === mv && !x.del) || {done:{}}, n = M.etapes.filter(e => r.done[e[0]] && !(e[0] === "pl" && !plOn(id)) && !(e[0] === "inv" && bkind(id) === "vide")).length;
     const type = mv === "arr" ? "entree" : "sortie";
-    const rows = M.etapes.filter(e => !(e[0] === "inv" && bkind(id) === "vide")).map(([k, ti, hint, act]) => { const ok = !!r.done[k];
+    const vis = M.etapes.filter(e => !(e[0] === "inv" && bkind(id) === "vide") && !(e[0] === "pl" && !plOn(id))), rows = vis.map(([k, ti, hint, act]) => { const ok = !!r.done[k];
       const btn = act ? `<button class="mini" data-act="mv-go" data-v="${act[0]}">${act[1]}</button>` : "";
       const chip = (k === "inv" && mvtHas(id, "inv", type)) || (k === "edl" && mvtHas(id, "edl", type)) ? ' <span class="chip ok">créé</span>' : "";
       return `<div style="padding:10px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" data-mv="${mv}" data-k="${k}" ${ok ? "checked" : ""} style="margin-top:3px"><span><b style="font-size:14px">${esc(ti)}</b>${chip}${ok ? ` <span class="small muted">· ${frDate(r.done[k])}</span>` : ""}</span></label>
         <div class="small muted" style="margin:4px 0 6px 28px">${esc(hint)}</div>${btn ? `<div style="margin-left:28px">${btn}</div>` : ""}</div>`; }).join("");
-    return `<div class="card"><div class="top"><h2>${M.titre}</h2><span class="chip ${n === M.etapes.filter(e => !(e[0] === "inv" && bkind(id) === "vide")).length ? "ok" : "warn"}">${n}/${M.etapes.length}</span></div>${rows}</div>`; };
+    return `<div class="card"><div class="top"><h2>${M.titre}</h2><span class="chip ${n === vis.length ? "ok" : "warn"}">${n}/${vis.length}</span></div>${rows}</div>`; };
   return `<div class="info">${t ? "Locataire actuel : " + esc(t.nom) + (t.debut ? " · depuis le " + frDate(t.debut) : "") : "Aucun locataire en cours pour ce bien : tu es dans la phase d'arrivée."} Coche les étapes au fur et à mesure ; les boutons ouvrent directement le bon document.</div>
     ${card("dep")}${card("arr")}<div class="small muted" style="padding:0 4px 12px">Repères généraux : la réglementation change.</div>
     <div class="card"><h2>Vérifier la réglementation</h2><div class="small muted">L'appli ne peut pas se mettre à jour toute seule sur la loi. Avant chaque nouveau bail, contrôle ces sources officielles${S.cfg && S.cfg.regVerif ? " (dernier contrôle noté le " + frDate(S.cfg.regVerif) + ")" : ""}.</div>
@@ -4479,6 +4482,7 @@ document.addEventListener("click", async ev => {
   switch (a){
     case "mv-go": {
       if (v === "cand"){ V.tab = "rent"; V.lsel = V.bsel; V.lsub = "cand"; render(); break; }
+      if (v === "permis"){ if (plOn(V.bsel)) sheetPermis(V.bsel, "mvt"); break; }
       if (v === "docs" || v === "loc"){ V.bsub = v; render(); break; }
       if (v === "bail"){ V.bsub = "loc"; render(); sheetBail(); break; }
       if (v === "impaye" || v === "depot" || v === "rappel"){ V.bsub = "loc"; render(); sheetLettre(v); break; }
@@ -5289,6 +5293,7 @@ document.addEventListener("click", ev => {
   if (j) date = j.date;
   SEND = {bien: j ? j.bien : V.bsel, titre, date};
 }, true);
+function sendMark(bien, titre, date){ SEND = {bien, titre, date, signed:true}; }
 function sendTenant(bien){ return tenantFor(bien, todayIso()) || (soldeLoc(bien) || {}).t || null; }
 /* Remplace l'enregistrement normal quand l'envoi a été demandé. Rend true si pris en charge. */
 function sendIntercept(name, data, mime){
@@ -5298,6 +5303,7 @@ function sendIntercept(name, data, mime){
   const bj = (t && t.nom ? "Bonjour " + t.nom.split(" ")[0] + ",\n\n" : "Bonjour,\n\n") + "Veuillez trouver ci-joint : " + c.titre.toLowerCase() + " (" + bienName(c.bien) + ", " + frDate(c.date) + ").\n\nCordialement";
   PEND.sj = sj; PEND.bj = bj; PEND.t = t;
   openSheet(`<h2>Envoyer au locataire</h2><div class="info"><b>${esc(c.titre)}</b> · ${esc(bienName(c.bien))}<br>${t ? esc(t.nom) + (t.email ? " · " + esc(t.email) : " · <i>pas d'e-mail</i>") + (t.tel ? " · " + esc(t.tel) : "") : "Aucun locataire enregistré pour ce bien."}</div>
+    ${c.signed ? `<div class="info">✓ Ton exemplaire signé est déjà rangé dans <b>Biens › Documents du bien</b>${t ? " (et dans la fiche du locataire avec « Ranger dans sa fiche »)" : ""}.</div>` : ""}
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">PDF en pièce jointe</button></div>
     <div class="small muted">Le PDF s'ouvre dans le partage de ton téléphone (Mail, WhatsApp…). ${t && t.email ? "L'e-mail du locataire est copié : colle-le dans « À : »." : ""}</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="mail">E-mail prérempli (sans PDF)</button><button class="btn ghost" style="flex:1" data-act="snd" data-v="sms">SMS prérempli</button></div>
