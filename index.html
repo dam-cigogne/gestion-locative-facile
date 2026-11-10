@@ -1425,9 +1425,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.36";
+const APP_VERSION = "1.7.37";
 const CHANGELOG = [
-  {v:"1.7.36", date:"2026-11-10", titre:"Fenêtre d'envoi qui reste ouverte, inventaire en vue compacte", items:["Inventaire du mobilier : nouvelle « Vue compacte (d'ensemble) » par défaut, une ligne par article (nom, quantité, état), toutes les catégories dépliées, pour tout voir d'un coup pendant la visite. Le bouton « ＋ / 📝 » ouvre l'observation d'un article ; « Vue détaillée » revient à l'ancien affichage.","Après « Enregistrer sur l'appareil », « Autres (PDF joint) » ou « Seulement ranger dans la fiche », la fenêtre « Envoyer au locataire » reste ouverte avec un message de confirmation : tu peux enregistrer le PDF puis enchaîner avec Mail ou SMS et le joindre."]},
+  {v:"1.7.37", date:"2026-11-10", titre:"Bouton Outlook, état des lieux compact", items:["Fenêtre « Envoyer au locataire » : nouveau bouton « Outlook » qui ouvre directement l'appli Outlook (e-mail du locataire, objet et texte préremplis) ; si elle n'est pas installée, Outlook sur le web s'ouvre à la place. Le PDF reste à joindre à la main (l'e-mail ne peut pas l'attacher seul).","PDF rangé dans la fiche du locataire : il apparaît aussi dans la carte du bien (États des lieux, Inventaire, Bail et lettres), avec la mention « fiche locataire ».","État des lieux : même « Vue compacte » que l'inventaire (une ligne par élément, observation à la demande).","Inventaire du mobilier : nouvelle « Vue compacte (d'ensemble) » par défaut, une ligne par article (nom, quantité, état), toutes les catégories dépliées, pour tout voir d'un coup pendant la visite. Le bouton « ＋ / 📝 » ouvre l'observation d'un article ; « Vue détaillée » revient à l'ancien affichage.","Après « Enregistrer sur l'appareil », « Autres (PDF joint) » ou « Seulement ranger dans la fiche », la fenêtre « Envoyer au locataire » reste ouverte avec un message de confirmation : tu peux enregistrer le PDF puis enchaîner avec Mail ou SMS et le joindre."]},
   {v:"1.7.35", date:"2026-11-10", titre:"Lecteur PDF : toutes les pages", items:["Dans le lecteur de l'appli, un bouton « Toutes les pages » ouvre le PDF dans le lecteur du téléphone, qui permet de défiler sur toutes les pages (l'aperçu intégré de l'iPad n'affichait que la première)."]},
   {v:"1.7.34", date:"2026-11-10", titre:"PDF de relecture lisible à l'écran", items:["Bail, état des lieux, inventaire : « PDF de relecture » ouvre le PDF dans le lecteur de l'appli pour le relire tout de suite, au lieu de la fenêtre d'envoi. Le bouton « Partager » du lecteur permet de l'envoyer.","Fenêtre d'envoi : trois boutons « Mail » (destinataire, objet et texte remplis), « SMS » (numéro et texte remplis) et « Autres » (PDF joint, partage du téléphone). Mail et SMS ne peuvent pas joindre le PDF (limite du téléphone). « Autres » ouvre une seule fois le partage du téléphone (Mail, Messages, WhatsApp, et aussi « Enregistrer dans Fichiers » pour garder un exemplaire). La case « Ranger dans la fiche » est cochée par défaut ; « Enregistrer sur l'appareil » et « Seulement ranger dans la fiche » sont des boutons à part. Fenêtre d'envoi simplifiée : un seul bouton « Envoyer le PDF » (Mail, Messages, WhatsApp…) avec le PDF toujours joint, l'e-mail ou le numéro du locataire copié. Les boutons « e-mail sans PDF » et « SMS » sans pièce jointe sont supprimés (un lien e-mail ou SMS ne peut pas joindre de fichier)."]},
   {v:"1.7.33", date:"2026-11-10", titre:"iPhone : tableaux d'emprunt ajustés, relecture envoyable", items:["Compta › Emprunt et intérêts et Échéancier : la ligne « Remboursé à ce jour » passe à la ligne et les tableaux sont plus compacts, ce qui évite que la page déborde et se réduise sur iPhone.","Le PDF de relecture s'ouvre maintenant directement à l'écran pour être lu (bouton Partager pour l'envoyer). Les boutons « Créer le bail / le PDF » (bail, lettres, état des lieux, inventaire, quittance) ouvrent maintenant tous la fenêtre « Envoyer au locataire » au lieu du partage brut ; « Enregistrer sur l'appareil (Fichiers…) » y reste proposé."]},
@@ -1594,7 +1594,8 @@ const HELP = {
     "Les papiers personnels d'un locataire (identité, contrat…) se rangent dans sa fiche, pas ici.",
     "Inventaire ou état des lieux d\'entrée : tu peux choisir un fichier (PDF, Excel, CSV) : l\'appli le recopie vierge dans la liste. « Garder comme modèle » ★ en fait ta liste standard, proposée par défaut pour chaque nouveau document.",
     "Avant de signer, « PDF de relecture » sort le document sans signature pour le relire avec le locataire.",
-    "Inventaire du mobilier : la « Vue compacte » affiche une ligne par article (nom, quantité, état) avec toutes les catégories dépliées, pratique pendant la visite. Le bouton ＋ ouvre l\'observation ; « Vue détaillée » revient à l\'affichage large.",
+    "Envoyer au locataire : le bouton « Outlook » ouvre l\'appli Outlook avec l\'e-mail du locataire, l\'objet et le texte préremplis (sinon Outlook sur le web). Le PDF se joint à la main : enregistre-le d\'abord avec « Enregistrer sur l\'appareil ».",
+    "Inventaire du mobilier et état des lieux : la « Vue compacte » affiche une ligne par article (nom, quantité, état) avec toutes les catégories dépliées, pratique pendant la visite. Le bouton ＋ ouvre l\'observation ; « Vue détaillée » revient à l\'affichage large.",
     "À la création d'un état des lieux ou d'un inventaire, tu peux reprendre la liste d'un autre document pour le préparer à l'avance.",
     "Le solde montre ce qui a été reçu par rapport à ce qui est dû depuis le début du bail. « Relancer » prépare le message.",
     "État des lieux : choisis les pièces, ouvre-en une, note l'état de chaque élément (Neuf, Bon, Moyen, Mauvais), ajoute des observations et des photos. Les compteurs et les clés se notent en haut.",
@@ -3861,16 +3862,16 @@ function viewDocsTenant(){
   <div class="card"><div class="top"><h2>États des lieux</h2></div><div class="small muted">Pièce par pièce, avec photos, puis PDF à faire signer.</div>
     <div class="btns"><button class="btn sm" data-act="dx-new" data-v="edl" data-t="entree">Nouvel état d'entrée</button><button class="btn sm ghost" data-act="dx-new" data-v="edl" data-t="sortie">État de sortie</button></div>
     <div class="btns"><button class="btn sm ghost" data-act="im-open" data-v="edl">Importer un état déjà fait</button></div>
-    <div class="rows">${E.map(e => row("edl", e)).join("") || '<div class="empty">Aucun état des lieux pour ce bien.</div>'}${fileDocs(id, "edl").filter(d => !E.some(e => e.fichier === d.id)).map(fileRow).join("")}</div></div>
+    <div class="rows">${E.map(e => row("edl", e)).join("") || '<div class="empty">Aucun état des lieux pour ce bien.</div>'}${fileDocs(id, "edl").filter(d => !E.some(e => e.fichier === d.id)).map(fileRow).join("")}${locFiles(id, "État des lieux").map(fileRow).join("")}</div></div>
   ${bkind(id) === "vide" ? "" : `<div class="card"><div class="top"><h2>Inventaire du mobilier</h2></div><div class="small muted">Obligatoire pour un meublé : liste minimale du décret, à compléter.</div>
     <div class="btns"><button class="btn sm" data-act="dx-new" data-v="inv" data-t="entree">Nouvel inventaire d'entrée</button><button class="btn sm ghost" data-act="dx-new" data-v="inv" data-t="sortie">Inventaire de sortie</button></div>
     <div class="btns"><button class="btn sm ghost" data-act="im-open" data-v="inv">Importer un inventaire déjà fait</button></div>
-    <div class="rows">${I.map(e => row("inv", e)).join("") || '<div class="empty">Aucun inventaire pour ce bien.</div>'}${fileDocs(id, "inv").filter(d => !I.some(e => e.fichier === d.id)).map(fileRow).join("")}</div></div>`}
+    <div class="rows">${I.map(e => row("inv", e)).join("") || '<div class="empty">Aucun inventaire pour ce bien.</div>'}${fileDocs(id, "inv").filter(d => !I.some(e => e.fichier === d.id)).map(fileRow).join("")}${locFiles(id, "Inventaire").map(fileRow).join("")}</div></div>`}
   <div class="card"><h2>Bail et lettres</h2><div class="small muted">Les PDF se remplissent avec les données du bien et du locataire.</div>
     <div class="btns"><button class="btn sm" data-act="bail-open">${bkind(id) === "vide" ? "Bail logement vide (PDF)" : "Bail meublé (PDF)"}</button></div>
     <div class="btns"><button class="btn sm ghost" data-act="let-open" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="let-open" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="let-open" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="let-open" data-v="rappel">Rappel avant état de sortie</button></div>
     <div class="btns"><button class="btn sm ghost" data-act="im-open" data-v="bail">Importer le bail signé</button></div>
-    <div class="rows">${fileDocs(id, "bail").map(fileRow).join("")}</div></div>
+    <div class="rows">${fileDocs(id, "bail").map(fileRow).join("")}${locFiles(id, "Bail / avenant").concat(locFiles(id, "Courrier")).map(fileRow).join("")}</div></div>
   <div class="card"><h2>Anciens locataires</h2><div class="small muted">Leur fiche et leurs documents restent conservés.</div>
     <div class="rows">${live(S.locataires).filter(t => t.bien === id && t.fin && t.fin < todayIso()).sort((a, b) => b.fin.localeCompare(a.fin)).map(t => `<div class="row"><button class="rowbtn" data-act="ledit" data-id="${t.id}"><div class="t">${esc(t.nom)}</div><div class="s">Bail ${t.debut ? frDate(t.debut) : "?"} → ${frDate(t.fin)}</div></button><span class="chip">Terminé</span></div>`).join("") || '<div class="empty">Aucun ancien locataire.</div>'}</div></div>`;
 }
@@ -3893,8 +3894,17 @@ function dxTop(e, titre){
 }
 function viewEdl(e){
   const sortie = e.type === "sortie", ref = sortie && e.ref ? docGet("edl", e.ref) : null, open = V.doc.open = V.doc.open || {};
+  const compact = V.doc.compact !== false, obs = V.doc.obs = V.doc.obs || {}; if (!V.doc.cinit){ V.doc.cinit = 1; if (compact) for (const q of e.pieces) open[q.id] = 1; }
   const rooms = e.pieces.map(p => { const done = p.items.filter(i => i.etat).length, isOpen = open[p.id];
     const items = !isOpen ? "" : p.items.map(it => { const worse = sortie && it.e0 && it.etat && RANK[it.etat] > RANK[it.e0];
+      if (compact){ const more = !!(it.com || (it.ph || []).length || obs[it.id]);
+        return `<div style="padding:5px 0;border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(96px,150px) 30px;gap:6px;align-items:center">
+          <b style="font-size:13px;line-height:1.2;overflow-wrap:anywhere">${esc(it.nom)}</b>${etatSel(it.etat, `style="padding:6px 4px;font-size:13px" data-dx="etat" data-p="${p.id}" data-i="${it.id}"`)}
+          <button class="mini" data-act="inv-obs" data-i="${it.id}" aria-label="Détails">${it.com || (it.ph || []).length ? "📝" : "＋"}</button></div>
+          ${sortie && it.e0 ? `<div class="small muted" style="font-size:11px">Entrée : ${esc(it.e0)}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}${worse ? '<div class="small neg" style="font-size:11px">Plus dégradé qu\'à l\'entrée</div>' : ""}
+          ${more ? `<div class="dxi" style="margin-top:4px"><input style="padding:6px 8px;font-size:13px" data-dx="com" data-p="${p.id}" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>
+          <div class="dxph">${(it.ph || []).map(pid => `<span class="dxp"><img data-ph="${pid}" alt="photo"><button data-act="ph-del" data-p="${p.id}" data-i="${it.id}" data-id="${pid}" aria-label="Retirer la photo">×</button></span>`).join("")}
+          <label class="mini">+ Photo<input type="file" accept="image/*" multiple hidden data-edl-ph data-p="${p.id}" data-i="${it.id}"></label><button class="mini" data-act="edl-delitem" data-p="${p.id}" data-i="${it.id}" aria-label="Supprimer">× Supprimer</button></div>` : ""}</div>`; }
       return `<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="top"><b style="font-size:14px">${esc(it.nom)}</b><button class="mini" data-act="edl-delitem" data-p="${p.id}" data-i="${it.id}" aria-label="Supprimer">×</button></div>
         ${sortie && it.e0 ? `<div class="small muted">À l'entrée : ${esc(it.e0)}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}${worse ? '<div class="small neg">Plus dégradé qu\'à l\'entrée</div>' : ""}
         <div class="grid2 dxi">${etatSel(it.etat, `data-dx="etat" data-p="${p.id}" data-i="${it.id}"`)}<input data-dx="com" data-p="${p.id}" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>
@@ -3903,7 +3913,7 @@ function viewEdl(e){
       `<div class="grid2 dxi" style="margin-top:8px"><input id="ni-${p.id}" placeholder="Ajouter un élément"><button class="btn sm ghost" data-act="edl-additem" data-p="${p.id}">Ajouter</button></div>
        <div class="btns"><button class="btn sm danger" data-act="edl-delroom" data-p="${p.id}">Supprimer la pièce</button></div>`;
     return `<div class="card" style="padding:12px 16px"><button class="rowbtn" data-act="dx-room" data-p="${p.id}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600">${esc(p.nom)}</div><div class="s">${done}/${p.items.length} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>${items}</div>`; }).join("");
-  return topbar("État des lieux") + dxTop(e, "État des lieux") + fileLink(e) + `
+  return topbar("État des lieux") + dxTop(e, "État des lieux") + fileLink(e) + `<div class="btns" style="margin:6px 0 0"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button></div>`+`
     <div class="small muted" style="margin-top:6px">Relevés des compteurs${ref ? " (entrée : élec. " + esc(ref.elec || "—") + " · eau " + esc(ref.eau || "—") + " · gaz " + esc(ref.gaz || "—") + ")" : ""}</div>
     <div class="grid2 dxi"><label class="f">Électricité<input data-dxh="elec" inputmode="decimal" value="${esc(e.elec || "")}"></label><label class="f">Eau<input data-dxh="eau" inputmode="decimal" value="${esc(e.eau || "")}"></label></div>
     <div class="grid2 dxi"><label class="f">Gaz<input data-dxh="gaz" inputmode="decimal" value="${esc(e.gaz || "")}"></label><label class="f">Clés remises<input data-dxh="cles" inputmode="numeric" value="${esc(e.cles || "")}"></label></div>
@@ -4243,9 +4253,10 @@ const FKIND = {bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autr
 const MIMES = {pdf:"application/pdf", jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", heic:"image/heic", doc:"application/msword", docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document", xls:"application/vnd.ms-excel", xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv:"text/csv", txt:"text/plain"};
 const mimeOf = n => MIMES[(String(n).split(".").pop() || "").toLowerCase()] || "application/octet-stream";
 const sizeStr = n => n >= 1048576 ? (n / 1048576).toFixed(1).replace(".", ",") + " Mo" : Math.max(1, Math.round(n / 1024)) + " Ko";
+const locFiles = (bien, pt) => docList("docs").filter(x => x.bien === bien && !x.del && x.kind === "loc" && x.ptype === pt);
 const fileDocs = (bien, kind) => docList("docs").filter(x => x.bien === bien && !x.del && (!kind || x.kind === kind));
 function fileRow(d){
-  return `<div class="row">${thumb(d.id, d.fname || d.nom, d.type)}<div class="main"><div class="t">${esc(d.nom)}</div><div class="s">${esc(d.sub ? annexLabel(d.sub) : (FKIND[d.kind] || "Document"))} · ${frDate(d.date)} · ${sizeStr(d.size || 0)}</div></div>
+  return `<div class="row">${thumb(d.id, d.fname || d.nom, d.type)}<div class="main"><div class="t">${esc(d.nom)}</div><div class="s">${esc(d.sub ? annexLabel(d.sub) : (d.kind === "loc" && d.ptype ? d.ptype + " · fiche locataire" : (FKIND[d.kind] || "Document")))} · ${frDate(d.date)} · ${sizeStr(d.size || 0)}</div></div>
     <button class="mini" data-act="fl-open" data-id="${d.id}">Ouvrir</button><button class="mini" data-act="fl-del" data-id="${d.id}" aria-label="Supprimer">×</button></div>`;
 }
 function fileLink(e){
@@ -5330,7 +5341,8 @@ function sendIntercept(name, data, mime){
     ${c.signed ? `<div class="info">✓ Ton exemplaire signé est déjà rangé dans <b>Biens › Documents du bien</b>.</div>` : ""}
     ${t ? `<label class="ck"><input type="checkbox" id="snd-fiche" checked> Ranger aussi une copie dans la fiche de ${esc(t.nom)} (Documents)</label>` : ""}
     <div class="small muted" style="margin:6px 0 2px"><b>Envoyer par :</b></div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="mail">✉️ Mail${t && t.email ? " à " + esc(t.email) : ""}</button><button class="btn" style="flex:1" data-act="snd" data-v="sms">💬 SMS${t && t.tel ? " au " + esc(t.tel) : ""}</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="mail">✉️ Mail${t && t.email ? " à " + esc(t.email) : ""}</button><button class="btn" style="flex:1" data-act="snd" data-v="olk">📨 Outlook${t && t.email ? " à " + esc(t.email) : ""}</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="sms">💬 SMS${t && t.tel ? " au " + esc(t.tel) : ""}</button></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">📎 Autres (PDF joint : Mail, Messages, WhatsApp…)</button></div>
     <div class="small muted">⚠️ Mail et SMS ouvrent le message avec le destinataire et le texte déjà remplis, mais <b>le téléphone ne permet pas de joindre le PDF à partir d'une appli web</b> : joins-le toi-même (trombone ▸ Fichiers, après « Enregistrer sur l'appareil »). Pour un envoi avec le PDF déjà joint, utilise « Autres » (l'e-mail ou le numéro du locataire est copié).</div>
     <div id="snd-status" class="info" style="display:none"></div>
@@ -5348,6 +5360,7 @@ document.addEventListener("click", async ev => {
   if (fi && fi.checked && t) st("Copie rangée dans la fiche de " + esc(t.nom) + ".");
   if (v === "only"){ if (!(fi && fi.checked)) toast("Coche d'abord « Ranger aussi une copie dans la fiche »"); return; }
   if (v === "save"){ SEND = null; await saveFile(p.name, p.data, p.mime); st("Enregistrement proposé sur l'appareil." + (fi && fi.checked && t ? " Copie rangée dans la fiche de " + esc(t.nom) + "." : "") + " Tu peux maintenant choisir Mail, SMS ou Autres ci-dessus."); return; }
+  if (v === "olk"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); const q = "to=" + encodeURIComponent(t.email) + "&subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); location.href = "ms-outlook://compose?" + q; setTimeout(() => { if (!document.hidden) window.open("https://outlook.live.com/mail/0/deeplink/compose?" + q, "_blank"); }, 1800); return; }
   if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
   if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
   if (v === "att"){
