@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.63";
+const APP_VERSION = "1.7.64";
 const CHANGELOG = [
+  {v:"1.7.64", date:"2026-11-11", titre:"Nouvelle notice d'information 2026", items:["Le lien « 🔗 Notice officielle » mène à la nouvelle annexe (arrêté du 9 octobre 2026, JO du 17/10/2026), obligatoire pour les baux conclus ou renouvelés depuis le 18/10/2026.","Une notice importée avec une date d'avant le 18/10/2026 passe en « À refaire » : télécharge la nouvelle version et remplace-la."]},
   {v:"1.7.63", date:"2026-11-11", titre:"Dossier du bail : fin de bail ou nouveau bail", items:["Dossier du bail : deux onglets « 🚪 Fin de bail (sortie) » et « 🔑 Nouveau bail (entrée) ». En sortie, seuls le bail, l'état des lieux de sortie et l'inventaire de sortie sont cochés. En entrée, bail, diagnostics et annexes obligatoires, état des lieux et inventaire d'entrée.","Chaque pièce porte une étiquette Obligatoire / Conseillé / Facultatif / À ne pas joindre avec la raison ; les documents personnels du locataire et sa candidature ne sont jamais cochés."]},
   {v:"1.7.62", date:"2026-11-11", titre:"« À faire faire » sur chaque pièce", items:["Pièces à joindre : le bouton « 📌 À faire faire » sur une ligne sans document (plomb, électricité, gaz…) la marque comme à faire pour la prochaine location : elle remonte dans l'alerte en haut et dans le récapitulatif imprimé, même si le logement était « non concerné ». Retire-la d'un tap quand c'est fait."]},
   {v:"1.7.61", date:"2026-11-11", titre:"Plusieurs dossiers complets de diagnostics", items:["Pièces à joindre › Autres diagnostics / dossier complet : tu peux maintenant importer plusieurs dossiers complets (bouton « ＋ Importer un autre dossier »). Chacun a sa ligne avec ✂ Découper, Voir, la date et ×, et tous sont joints au bail."]},
@@ -6396,7 +6397,8 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 /* ============ Pièces à joindre : par bien / par location, date d'édition, validité, vue d'ensemble ============ */
 /* m : durée en mois (0 = sans limite, null = pas de suivi) · loc : à refaire à chaque nouvelle location */
 const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, bruit:{m:6, na:true}, vetuste:{m:null, na:true}, anah:{m:null, na:true}, boutin:{m:0}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:36}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
-const NOTICE_URL = "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000030649902";
+const NOTICE_URL = "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000054992497"; /* arrêté du 9/10/2026 (JO 17/10/2026) : nouvelle annexe, baux conclus ou renouvelés dès le 18/10/2026 */
+const NOTICE_NEW = "2026-10-18";
 const AV_RES = {plomb:1, amiante:1}, ERP_URL = "https://errial.georisques.gouv.fr/#/";
 const AV_BIEN = ["dpe", "erp", "bruit", "boutin", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "vetuste", "anah", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
 const avCfg = (k, bien) => { const A = (S.cfg || {}).annexV || {}; return Object.assign({}, ANNEX_VAL[k] || {m:null}, A[k] || {}, A[bien + "|" + k] || {}); };
@@ -6421,6 +6423,7 @@ function avStat(bien, k){
   if (c.na && !d) return {st:"na", c};
   if (!d) return {st:"manque", c};
   const t = tenantFor(bien, todayIso()), today = todayIso();
+  if (k === "notice" && d.date && d.date < NOTICE_NEW) return {st:"refaire", d, c, why:"ancienne version : nouvelle notice obligatoire depuis le 18/10/2026 (arrêté du 9/10/2026)"};
   if (AV_RES[k] && d.res === "absence") c.m = 0;
   if (c.loc && t && t.debut && d.date && d.date < t.debut) return {st:"refaire", d, c, why:"antérieur au bail de " + t.nom};
   if (c.m === null || c.m === undefined) return {st:"ok", d, c, txt:"Au dossier"};
