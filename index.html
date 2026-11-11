@@ -1496,8 +1496,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.53";
+const APP_VERSION = "1.7.54";
 const CHANGELOG = [
+  {v:"1.7.54", date:"2026-11-11", titre:"Lire un bail existant", items:["Biens › Location › Bail : « 📥 Lire un bail existant » lit un ancien contrat (scan, PDF ou photo : modèle « contrat de location meublée » à cases, contrat de stationnement) et remplit le formulaire : bailleur, locataire, adresse, étage, surface, chauffage, eau chaude, durée, date, loyer, charges, dépôt, annexes cochées. L'écriture manuelle n'est pas lue : les champs douteux sont signalés pour que tu les saisisses ; tu peux ensuite créer le bail au format de l'appli."]},
   {v:"1.7.53", date:"2026-11-11", titre:"Relire la date des documents déjà importés", items:["Pièces à joindre : un bouton ↻ à côté de chaque document relit la date écrite sur le papier à partir du fichier déjà importé (plus besoin de le réimporter) ; « ↻ Relire la date de tous les documents importés » le fait pour tout le bien d'un coup. Si le document n'est pas lisible, la date se saisit avec 📅.","État des lieux et inventaire : un bloc « Bailleur et locataire (modifiables) » permet de corriger ou compléter nom, adresse, téléphone, e-mail et naissance, repris dans le PDF. Bail : adresse et naissance du locataire ajoutées.","Comparer entrée / sortie côte à côte : case « Défilement lié » pour faire défiler les deux documents ensemble."]},
   {v:"1.7.52", date:"2026-11-11", titre:"Ancien état des lieux validé, sortie prête, date lue sur le papier", items:["Ancien état des lieux importé : « ✅ Valider la retranscription » crée le PDF de l'appli, rangé dans la fiche du locataire, et prépare la sortie (copie de l'entrée). L'écran montre l'entrée à gauche et la sortie préparée à droite ; « ✅ La sortie est prête » l'affiche sous le nom du locataire (pastille verte, « en préparation » en orange).","Pièces à joindre : la durée de validité (6 mois, 6 ans, 10 ans, sans limite…) s'affiche à côté de chaque pièce et dans la vue d'ensemble.","Pièces à joindre (diagnostics…) : à l'import, l'appli lit la date écrite sur le document (PDF, scan ou photo) et vérifie qu'il parle bien du type choisi ; la date reste modifiable (📅) à tout moment."]},
   {v:"1.7.51", date:"2026-11-11", titre:"Visale, garanties et validité des pièces", items:["Un bandeau rouge (documents périmés ou à refaire) ou orange (bientôt périmés) s'affiche en haut de chaque bien et sur l'accueil.","Biens › Documents : « Vue d'ensemble des biens » (diagnostics de chaque bien d'un coup d'œil) ; pièces séparées entre celles du bien (DPE, ERP, plomb, électricité, gaz, amiante, copro, PNO, taxe foncière…) et celles de la location ; date d'édition, validité et état (à jour, bientôt, périmé, à refaire) ; ⚙ règle la durée par bien ou marque « non concerné ».","Fiche locataire : choix de la garantie (Visale, assurance loyers impayés, autre) avec numéro de visa, validité, contact, lien direct, note et import du contrat.","Biens : nouvel onglet « Visale » qui réunit les garanties des locataires du bien, avec alerte d'expiration et lien vers visale.fr."]},
@@ -1718,6 +1719,7 @@ const HELP = {
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
     "Diagnostics et pièces à joindre : à l'import, la date d'édition est lue sur le document (PDF, scan, photo) et le type est vérifié ; 📅 corrige la date, ↻ la relit depuis le fichier déjà importé.",
+    "Bail : « 📥 Lire un bail existant » (scan, PDF, photo) remplit le formulaire à partir d'un ancien contrat ; l'écriture manuelle est à saisir.",
     "Valider la retranscription : crée le PDF d'entrée dans la fiche du locataire et prépare la sortie ; entrée à gauche, sortie à droite ; « La sortie est prête » met une pastille sous le nom du locataire.",
     "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
     "Pièces à joindre : la date du document sert à voir s'il est à jour ; ⚙ règle la durée de validité et « à refaire à chaque location ».",
@@ -4234,6 +4236,7 @@ const optSel = (id, label, list, val) => dxS(id, label, list.map(x => [x, x]), v
 function sheetBail(){
   const id = V.bsel, t = tenantFor(id, todayIso()) || {}, de = bienDesc(id), c = bailleurInfo(), lhc = t.loyer ? r2(N(t.loyer) - N(t.charges)) : "";
   openSheet(`<h2>${bkind(id) === "vide" ? "Bail logement vide" : "Bail meublé"} · ${esc(bienName(id))}</h2><div class="info">Contrat de location ${bkind(id) === "vide" ? "non meublée" : "meublée"}, résidence principale, établi d'après le contrat type du décret n° 2015-587. Relis chaque champ avant de le faire signer.</div>
+    <div class="btns"><label class="btn ghost" style="flex:1;cursor:pointer;text-align:center">📥 Lire un bail existant (scan, PDF, photo)<input type="file" id="bk-file" accept="application/pdf,image/*" hidden></label></div><div class="small muted" id="bk-note">Reprend les champs d'un ancien bail pour le refaire au format de l'appli.</div>
     ${dxF("bl-bail", "Bailleur (nom, prénom)", c.nom)}${dxF("bl-badr", "Adresse du bailleur", c.adr)}${dxF("bl-loc", "Locataire (nom, prénom)", t.nom || "")}${dxF("bl-adr", "Adresse du logement", bienAdr(id))}
     <div class="grid2">${dxF("bl-type", "Nature du logement", de.type || "Appartement")}${dxF("bl-surf", "Surface habitable (m²)", de.surface || "", 'inputmode="decimal"')}</div>
     <div class="grid2">${dxF("bl-etage", "Étage / lot", de.etage || "")}${dxF("bl-pieces", "Pièces principales", de.pieces || "", 'inputmode="numeric"')}</div>
@@ -6444,6 +6447,113 @@ document.addEventListener("click", async ev => { const b = ev.target.closest("[d
   persist(); render();
   const msg = ok + " date(s) relue(s)" + (warn.length ? " · ⚠️ type à vérifier : " + warn.join(", ") : "") + (bad.length ? " · à saisir avec 📅 : " + bad.join(", ") : "");
   toast(msg); const n = $("#av-rr-note"); if (n) n.textContent = msg; });
+
+/* Lecture d'un bail existant (scan, PDF, photo) : remplit le formulaire de bail */
+const BK_MOIS = {janvier:1, fevrier:2, février:2, mars:3, avril:4, mai:5, juin:6, juillet:7, aout:8, août:8, septembre:9, octobre:10, novembre:11, decembre:12, décembre:12};
+const BK_CH = /^[X×x%&®@☒✗✘Kk\\\/]$/, BK_UN = /^[OoQ0CcGgD□❑\[\]()|]$/;
+function bkClean(s){ const r = (s || "").replace(/[.…_·]{2,}/g, " ").replace(/\s+/g, " ").trim(); return /^[^\p{L}\d]*$/u.test(r) ? "" : r; }
+function bkDate(s){
+  s = s || ""; let m = /(?<!\d)(\d{1,2})\s*[\/.\-]\s*(\d{1,2})\s*[\/.\-]\s*(\d{4}|\d{2})(?!\d)/.exec(s);
+  if (m){ let y = +m[3]; if (y < 100) y += 2000; const mo = +m[2], d = +m[1]; if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0"); }
+  m = /(?<!\d)(\d{1,2})(?:er)?\s+([A-Za-zéûèôàç]{3,9})\.?\s+(\d{4})/.exec(s);
+  if (m){ const mo = BK_MOIS[m[2].toLowerCase()]; if (mo) return m[3] + "-" + String(mo).padStart(2, "0") + "-" + String(+m[1]).padStart(2, "0"); }
+  return "";
+}
+function bkNum(s){ const m = /(\d[\d\s]*(?:[.,]\d{1,2})?)\s*(?:€|euros?|eur\b)/i.exec(s || ""); return m ? parseFloat(m[1].replace(/\s/g, "").replace(",", ".")) : null; }
+/* case cochée devant un libellé : true / false / null (illisible) */
+function bkChk(T, label){
+  const m = new RegExp("(\\S)\\s*" + label, "i").exec(T); if (!m) return null;
+  return BK_CH.test(m[1]) ? true : BK_UN.test(m[1]) ? false : null;
+}
+function bkPair(seg, a, b){   // deux cases côte à côte : retourne "a", "b" ou ""
+  const x = bkChk(seg, a), y = bkChk(seg, b);
+  if (x === true && y !== true) return a; if (y === true && x !== true) return b;
+  if (x === false && y == null) return b; if (y === false && x == null) return a; return "";
+}
+function bkParty(block){
+  const L = block.split("\n").map(x => x.trim()).filter(Boolean), p = {};
+  const first = L.find(x => !/^n[ée]e?\(?e?\)?\s+le|^demeurant/i.test(x));
+  if (first){ const nom = bkClean(first.replace(/^\s*(?:ET\s+)?(?:M\.?\s*,?\s*)?(?:Mme\.?\s*,?\s*)?(?:Mel+e\.?|Mlle\.?|Monsieur|Madame|M\.|Mme)?\s*/i, "")); if (nom && !/^[,.\s]*$/.test(nom)) p.nom = nom; }
+  const ne = L.find(x => /n[ée]e?\(?e?\)?\s+le/i.test(x));
+  if (ne){ const d = bkDate(ne); if (d) p.ne = d; const l = /\d{4}\s*[aà4]\s+([A-ZÉÈÊa-zéèêç][A-Za-zÉÈÊéèêçï' -]{2,})/.exec(ne); if (l) p.lieu = bkClean(l[1]); else { const l2 = /\s[àa]\s*([A-ZÉÈÊ][A-ZÉÈÊa-zéèêç' -]{2,})\s*$/.exec(bkClean(ne)); if (l2) p.lieu = l2[1]; } }
+  const di = L.findIndex(x => /demeurant/i.test(x));
+  if (di >= 0){ let a = bkClean(L[di].replace(/^.*?demeurant/i, "")); if (a && !/\b\d{5}\b/.test(a) && L[di + 1]) a = bkClean(a + " " + L[di + 1]); if (a) p.adr = a; }
+  return p;
+}
+function bkParse(txt){
+  const T = (txt || "").replace(/\r/g, ""), R = {f:{}, warn:[], info:[]}, f = R.f;
+  R.kind = /parking|garage|box ferm|stationnement/i.test(T.slice(0, 600)) && !/MEUBL/i.test(T.slice(0, 300)) ? "parking" : /NON\s+MEUBL|VIDE/i.test(T.slice(0, 300)) ? "vide" : "meuble";
+  if (!/CONTRAT DE LOCATION|BAIL/i.test(T.slice(0, 600))) R.warn.push("Le document ne ressemble pas à un contrat de location : vérifie le fichier choisi.");
+  if (R.kind === "parking"){
+    const names = [...T.matchAll(/Pr[ée]nom\(s\),?\s*Nom\(s\)\s*:?\s*([^\n]*)/gi)].flatMap(m => m[1].split(/Pr[ée]nom\(s\),?\s*Nom\(s\)\s*:?/i)).map(bkClean);
+    if (names[0]) f.bail = names[0]; if (names[1]) f.loc = names[1];
+    const ad = [...T.matchAll(/Adresse\s*:\s*([^\n]*)/gi)].flatMap(m => m[1].split(/Adresse\s*:/i)).map(bkClean); if (ad[0]) f.badr = ad[0]; if (ad[1]) f.ladr = ad[1];
+    const tel = [...T.matchAll(/T[ée]l[ée]phone\s*:\s*([^\n]*)/gi)].flatMap(m => m[1].split(/T[ée]l[ée]phone\s*:/i)).map(bkClean); if (tel[0]) f.bmob = tel[0]; if (tel[1]) f.lmob = tel[1];
+    const lo = bkNum(T.slice(T.search(/6\.\s*Loyer/i) >= 0 ? T.search(/6\.\s*Loyer/i) : 0)); if (lo) f.lhc = lo;
+    const dp = /somme de\s*:?([^\n]*(?:\n[^\n]*)?)/i.exec(T); if (dp){ const n = bkNum(dp[1]); if (n) f.dep = n; }
+    const d = /commenceront\s+[àa]\s+courir\s+le([^\n]*)/i.exec(T); if (d){ const x = bkDate(d[1]); if (x) f.debut = x; }
+    f.type = "Emplacement de stationnement"; f.duree = "3 mois";
+    R.warn.push("Contrat de stationnement : seuls les champs communs au bail du formulaire sont repris, le reste est à saisir.");
+    return R;
+  }
+  const iA = T.search(/SOUSSIGN/i), iB = T.search(/BAILLEUR/i), iL = T.search(/LOCATAIRE/i), iE = T.search(/ET\s+M\.?\s*,?\s*Mme/i);
+  if (iA >= 0 && iB > iA){ const p = bkParty(T.slice(iA, iB).replace(/^[^\n]*\n/, "").replace(/CI[\s-]*APR[ÈE]S[^\n]*$/i, "")); if (p.nom) f.bail = p.nom; if (p.adr) f.badr = p.adr; R.bailleur = p; }
+  if (iE >= 0 && iL > iE){ const p = bkParty(T.slice(iE, iL).replace(/CI[\s-]*APR[ÈE]S[^\n]*$/i, "")); if (p.nom) f.loc = p.nom; if (p.adr) f.ladr = p.adr; if (p.ne) f.lne = p.ne.split("-").reverse().join("/") + (p.lieu ? " à " + p.lieu : ""); R.locataire = p; }
+  if (!f.loc) R.warn.push("Locataire non rempli sur le document (ou écrit à la main) : à saisir.");
+  const da = /Adresse des locaux lou[ée]s?\s*:?\s*\n?([^\n]*)/i.exec(T); if (da && bkClean(da[1])) f.adr = bkClean(da[1]);
+  const et = /[ée]tage\s*:?\s*([^\s]+)/i.exec(T), po = /porte\s*:?\s*n\s*[°o]?\s*([^\s]+)/i.exec(T), su = /superficie\s*:?\s*(\d+[.,]?\d*)\s*[mn]/i.exec(T);
+  if (et && !/porte/i.test(et[1]) && !/^[-.:]+$/.test(et[1])) f.etage = "Étage " + et[1].replace(/[°o]$/i, "°") + (po ? ", porte n° " + po[1] : "");
+  if (su) f.surf = su[1].replace(",", "."); else R.warn.push("Surface illisible (écriture manuelle) : à vérifier.");
+  const ap = bkChk(T, "Appartement"), mi = bkChk(T, "Maison\\s+individuelle");
+  f.type = mi === true && ap !== true ? "Maison" : "Appartement"; if (ap == null && mi == null) R.warn.push("Appartement ou maison : case illisible, à vérifier.");
+  const cons = /\n\s*\+\s*([^\n]+)/.exec(T.slice(T.search(/Consistance/i) >= 0 ? T.search(/Consistance/i) : 0, T.search(/plus cave/i) >= 0 ? T.search(/plus cave/i) : undefined)); if (cons){ const a = bkClean(cons[1]); if (a) f.annex = a; }
+  const sc = T.search(/Chauffage/i), se = T.search(/Eau chaude/i), sq = T.search(/Equipements?\s+communs/i);
+  if (sc >= 0 && se > sc){ const c = bkPair(T.slice(sc, se), "collectif", "individuel"); if (c) f.chauf = c === "collectif" ? "Collectif" : "Individuel"; }
+  if (se >= 0){ const c = bkPair(T.slice(se, sq > se ? sq : se + 120), "collective", "individuelle"); if (c) f.eau = c === "collective" ? "Collective" : "Individuelle"; }
+  if (sq >= 0){ const seg = T.slice(sq, T.search(/Le d[ée]tail/i) > sq ? T.search(/Le d[ée]tail/i) : sq + 400), eq = []; for (const [k, l] of [["antenne", "antenne"], ["interphone", "interphone"], ["gardiennage", "gardiennage"], ["ascenseur", "ascenseur"], ["digicode", "digicode"], ["câble", "c[âa]ble"]]) if (bkChk(seg, l) === true) eq.push(k); if (eq.length) R.info.push("Équipements communs cochés : " + eq.join(", ")); }
+  const iD = T.search(/DUR[ÉE]E/i); if (iD >= 0){ const sg = T.slice(iD, T.search(/CONDITIONS PARTICULI/i) > iD ? T.search(/CONDITIONS PARTICULI/i) : iD + 600);
+    const d12 = /de\s*1\s*an\s*[àa]\s*compter\s*du([^\n]*)/i.exec(sg), d9 = /de\s*9\s*mois\s*[àa]\s*compter\s*du([^\n]*)/i.exec(sg), x12 = d12 && bkDate(d12[1]), x9 = d9 && bkDate(d9[1]);
+    if (x9 && !x12){ f.duree = "9"; f.debut = x9; } else if (x12){ f.duree = "12"; f.debut = x12; } else R.warn.push("Durée et date de début non lisibles : à saisir."); }
+  const iLo = T.search(/Loyers? mensuel/i); if (iLo >= 0){ const sg = T.slice(iLo, T.search(/payable/i) > iLo ? T.search(/payable/i) : iLo + 300), n = bkNum(sg); if (n) f.lhc = n; else R.warn.push("Loyer non lisible (en lettres ou à la main) : à saisir."); }
+  const pj = /entre\s*le\s*(\d{1,2})\s*et\s*le\s*(\d{1,2})/i.exec(T); if (pj) f.jour = pj[1];
+  if (/comprises dans le loyer/i.test(T) && bkChk(T, "comprises dans le loyer") === true){ f.chg = 0; }
+  const pv = /provision mensuelle de([^\n]*)/i.exec(T), ff = /forfaitairement\s+fix[ée]es\s+[àa]([^\n]*)/i.exec(T);
+  if (ff && bkNum(ff[1]) && bkChk(T, "forfaitairement") === true){ f.chg = bkNum(ff[1]); f.regchg = "forf"; } else if (pv && bkNum(pv[1])){ f.chg = bkNum(pv[1]); f.regchg = "prov"; }
+  const dg = /D[ée]p[ôo]t de garantie[\s\S]{0,260}/i.exec(T); if (dg){ const n = bkNum(dg[0].replace(/^D[ée]p[ôo]t de garantie/i, "")); if (n) f.dep = n; }
+  const rv = /r[ée]vis[ée]\s+le\s*([^\n,]*?)\s*,\s*de chaque/i.exec(T); if (rv && bkClean(rv[1])) R.info.push("Révision du loyer le " + bkClean(rv[1]));
+  const ir = /trimestre\s+de\s+l.ann[ée]e\s*([\d]{4})\s*d.une\s+valeur\s+de\s*([\d.,]+)/i.exec(T); if (ir) f.irl = "trimestre " + ir[1] + " : " + ir[2].replace(".", ",");
+  const an = []; for (const [k, l] of [["état des lieux", "(?:Un|Le)\\s+[ée]tat des lieux"], ["diagnostics", "Le dossier de diagnostic"], ["règlement de copropriété", "Les extraits du r[èe]glement"], ["inventaire", "Un inventaire"], ["acte de caution", "Un acte de caution"]]) if (bkChk(T, l) === true) an.push(k);
+  if (an.length) R.info.push("Annexes cochées : " + an.join(", "));
+  const cl = /Cl[ée]\(s\)\s*remises\s*:?([^\n]*)/i.exec(T); if (cl && bkClean(cl[1])) R.info.push("Clés remises : " + bkClean(cl[1]));
+  const fa = /Fait et sign[ée]\s*[àa]\s*([^\n]*?)\s+le\b([^\n]*)/i.exec(T); if (fa){ const v = bkClean(fa[1]); if (v && !/^[,.\s]*$/.test(v)) f.ville = v; }
+  return R;
+}
+const BK_IDS = {bail:"bl-bail", badr:"bl-badr", loc:"bl-loc", adr:"bl-adr", type:"bl-type", surf:"bl-surf", etage:"bl-etage", pieces:"bl-pieces", chauf:"bl-chauf", eau:"bl-eau", annex:"bl-annex", duree:"bl-duree", debut:"bl-debut", lhc:"bl-lhc", chg:"bl-chg", regchg:"bl-regchg", jour:"bl-jour", dep:"bl-dep", irl:"bl-irl", bmob:"bl-bmob", lmob:"bl-lmob", ladr:"bl-ladr", lne:"bl-lne", ville:"bl-ville"};
+function bkApply(R){
+  const done = [];
+  for (const k in R.f){ const el = document.getElementById(BK_IDS[k]); if (!el) continue; let v = R.f[k]; if (typeof v === "number") v = fmtNum(v); v = String(v); if (el.tagName === "SELECT" && ![...el.options].some(o => o.value === v)) continue; el.value = v; done.push(k); }
+  return done;
+}
+async function bkReadFile(f){
+  const type = f.type || mimeOf(f.name);
+  if (type === "application/pdf" || /\.pdf$/i.test(f.name)){
+    const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; let txt = "";
+    for (let i = 1; i <= Math.min(pdf.numPages, 3); i++){
+      const pg = await pdf.getPage(i), tc = await pg.getTextContent(); let t = tc.items.map(x => x.str + (x.hasEOL ? "\n" : " ")).join("");
+      if (t.replace(/\s/g, "").length < 80){ const vp = pg.getViewport({scale:2.2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; t = await avOcr(cv); }
+      txt += "\n" + t;
+    }
+    return txt;
+  }
+  return await avReadFile(f);
+}
+document.addEventListener("change", async ev => { const t = ev.target; if (!t || t.id !== "bk-file") return; const f = t.files && t.files[0]; const note = $("#bk-note"); if (!f || !note) return;
+  note.textContent = "Lecture du bail (quelques secondes, plus longtemps pour un scan)…";
+  try {
+    const txt = await bkReadFile(f); if (txt === null){ note.textContent = "Format non lisible : choisis un PDF ou une photo."; return; }
+    const R = bkParse(txt), done = bkApply(R);
+    note.innerHTML = `<b>${done.length} champ(s) repris du document.</b> Relis-les : l'écriture manuelle n'est pas lue.` + (R.warn.length ? `<br>⚠️ ${R.warn.map(esc).join("<br>⚠️ ")}` : "") + (R.info.length ? `<br>${R.info.map(esc).join("<br>")}` : "");
+  } catch(e){ note.textContent = "Lecture impossible (" + (e && e.message || "erreur") + ") : saisis les champs à la main."; } });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
