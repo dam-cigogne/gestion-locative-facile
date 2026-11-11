@@ -556,6 +556,15 @@ function demoData(rich){
   d.cand.push(cd("Sophie Modèle", "dos", -12, {visite:dd(-6), contrat:"CDI", rev:3100, garant:"Visale"}));
   d.cand.push(cd("Sam Refus", "ref", -15, {visite:dd(-10), contrat:"Étudiant", rev:900, note:"Revenus insuffisants (fictif)"}));
   d.annonces = {T3:{statut:"publiee", upd:Date.now()}};
+  /* Nouveautés à voir en démo : fiche bailleur, factures, départ en cours, bail en pré-lecture, documents préparés d'avance */
+  d.cfg = Object.assign(d.cfg || {adr:{}}, {bailleur:"Jean Exemple", bailleurAdr:"12 rue de l'Exemple, 00000 Ville-Test", bl:{tel:"06 00 00 00 00", mail:"jean@exemple.fr", statut:BL_STATUTS[1], siret:"123 456 789 00012", regime:BL_REGIMES[2]}});
+  const DEMO_FACT = [["STUDIO","Plomberie Exemple","Remplacement chauffe-eau",412.5,-30,"#0E6B5C"],["STUDIO","Bricolage Exemple","Peinture et fournitures",86.9,-75,"#B45309"],["STUDIO","Assurance Exemple","Prime PNO",134,-110,"#1D4ED8"],["T2","Électricité Exemple","Remplacement tableau",268,-45,"#7C3AED"],["T2","Mairie Exemple","Taxe foncière",612,-60,"#0F766E"]];
+  DEMO_FACT.forEach((f, i) => d.docs.push({id:"demo-fact-" + i, bien:f[0], kind:"fact", nom:f[1], fourn:f[1], objet:f[2], prix:f[3], fname:"facture-" + i + ".png", date:dd(f[4]), type:"image/png", size:2000, upd:0}));
+  ["STUDIO", "T2"].forEach(b => d.docs.push({id:"demo-diag-" + b, bien:b, kind:"autre", sub:"diag", nom:"Diagnostics (exemple)", fname:"diagnostics.png", date:dd(-200), type:"image/png", size:2000, upd:0}));
+  d.docs.push({id:uid(), kind:"chk", bien:"STUDIO", mv:"dep", done:{con:dd(-20), dat:dd(-15)}, upd:0});
+  d.docs.push({id:uid(), kind:"chk", bien:"T3", mv:"arr", done:{dos:dd(-3), diag:dd(-3), bail:dd(-2)}, relu:dd(-1), upd:0});
+  d.edl.push({id:uid(), bien:"STUDIO", type:"sortie", date:dd(7), loc:"Camille Essai", elec:"", eau:"", gaz:"", cles:"", fumee:"", rem:"Préparé d'avance (exemple)", ref:"", upd:0, pieces:EDL_PIECES.slice(0, 4).map(p => mkPiece(p[0], p[1]))});
+  d.edl.push({id:uid(), bien:"T3", type:"entree", date:dd(10), loc:"", elec:"", eau:"", gaz:"", cles:"", fumee:"", rem:"Préparé d'avance (exemple)", ref:"", upd:0, pieces:EDL_PIECES.slice(0, 4).map(p => mkPiece(p[0], p[1]))});
   return d;
 }
 
@@ -638,6 +647,18 @@ async function saveFile(name, data, mime, note){
   const url = URL.createObjectURL(new Blob([data],{type:mime})); const a = document.createElement("a");
   a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
   toast("Fichier prêt : " + name);
+}
+
+/* Images fictives (factures, diagnostics) du mode démo : fabriquées sur place, rangées comme de vrais fichiers */
+function demoPng(titre, l1, l2, col){
+  const c = document.createElement("canvas"); c.width = 300; c.height = 400; const x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0, 0, 300, 400); x.fillStyle = col; x.fillRect(0, 0, 300, 50); x.fillStyle = "#fff"; x.font = "bold 22px sans-serif"; x.fillText(titre, 14, 34);
+  x.fillStyle = "#555"; x.font = "14px sans-serif"; [l1, l2, "Exemple fictif"].forEach((t, i) => { x.fillText(t, 14, 92 + i * 30); x.fillRect(14, 100 + i * 30, 270, 1); });
+  const u = atob(c.toDataURL("image/png").split(",")[1]); return Uint8Array.from(u, ch => ch.charCodeAt(0));
+}
+async function demoFiles(){
+  try { for (const d of S.docs.filter(x => /^demo-(fact|diag)/.test(x.id))){ const f = d.kind === "fact", by = demoPng(f ? "FACTURE" : "DIAGNOSTICS", d.nom, f ? "Total TTC " + d.prix + " €" : "DPE · ERP · électricité", f ? "#0E6B5C" : "#1D4ED8"); d.size = by.length; await flPut(d.id, {name:d.fname, type:"image/png", buf:by.buffer}); }
+    if (DEMO) render(); } catch(e){}
 }
 
 /* ============ Vue ============ */
@@ -1468,8 +1489,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.44";
+const APP_VERSION = "1.7.45";
 const CHANGELOG = [
+  {v:"1.7.45", date:"2026-11-11", titre:"Factures du bien : scan, vignettes, envoi groupé", items:["Biens › Documents : nouvelle carte « Factures du bien ». Scanne une facture avec l'appareil photo ou choisis plusieurs photos / PDF d'un coup.","Les factures sont rangées avec un aperçu en vignette, le fournisseur, la date et le montant (modifiables).","Coche plusieurs factures puis « Envoyer » : elles partent en un seul PDF avec une page de garde (liste et total). Possible aussi de l'enregistrer. Elles sont aussi dans l'export ZIP du bien (dossier 05 Factures).","Mode démo rempli avec les nouveautés : factures avec vignettes, fiche bailleur fictive, départ en cours, bail en pré-lecture et documents préparés d'avance."]},
   {v:"1.7.44", date:"2026-11-11", titre:"Arrivée / Départ en 3 temps : préparatif, Jour J, dossier d'envoi", items:["Biens › Arrivée/Départ est maintenant découpé en trois : 1 · Préparatif (à cocher avant), 2 · Jour J pas à pas, 3 · Après.","Un écran d'explication s'ouvre quand tu touches « Départ du locataire », et « Prêt pour le jour J ? » liste les étapes avant de démarrer.","Jour J : l'étape en cours est mise en avant avec un gros bouton qui ouvre le bon document (état des lieux, inventaire, signatures…) puis « Fait, étape suivante ». Tu enchaînes sans chercher.","Prépare à l'avance (arrivée et départ) : le bail peut être envoyé en pré-lecture au locataire (bouton dans le bail), l'état des lieux et l'inventaire peuvent être préparés avant. Le jour J, ils sont marqués « préparé : attend le jour J » et le bail « envoyé en pré-lecture : attend la signature","Quand tout le Jour J est fait : gros bouton « Dossier d'envoi ». Tu coches les pièces (bail, ERP, diagnostics, permis, états des lieux, inventaires), tu peux relire le PDF complet, puis l'envoyer ou l'enregistrer."]},
   {v:"1.7.43", date:"2026-11-11", titre:"Fiche bailleur, bouton Départ, dossier du bail en un PDF", items:["Fiche bailleur imprimable (PDF) : identité, adresse, téléphone, e-mail, statut (LMNP…), SIRET, régime fiscal, CGA, comptable, assurance PNO, IBAN, nombre de biens et détail de chaque bien (locataire, bail, loyer, dépôt, permis). Réglages › Bailleur et biens.","Gros bouton « Départ du locataire » (ou « Arrivée d'un locataire ») toujours visible dans Biens, et « Clôturer le locataire » en haut de l'écran Arrivée/Départ.","Dossier du bail : tu coches bail, pièces à joindre (diagnostics, ERP…), état des lieux et inventaire ; l'appli les assemble en un seul PDF avec page de garde, puis propose de l'envoyer. Les photos et PDF sont assemblés ; Word et Excel restent à joindre à part."]},
   {v:"1.7.42", date:"2026-11-11", titre:"Page Permis de louer", items:["Réglages › Permis de louer : nouveau bouton « Ouvrir la page Permis de louer ».","Gros bouton « Déposer mon dossier en ligne » vers le formulaire de la Métropole ; le lien est modifiable (gardé dans tes règles) avec la date de la dernière vérification.","Autorisation de chaque logement : scan ou ajout (photo, PDF), rangée dans les documents du logement et envoyable au locataire (copie dans sa fiche).","Liste de conformité par logement à cocher : VMC, détecteur de fumée, prise de terre inférieure à 100 Ω, DGPC sous 1 m 80, diagnostics.","Mise à jour des règles : le lien du dossier en ligne et la liste de conformité sont dans le fichier Word donné à l\'IA. Si l\'IA propose de changer la liste, l\'import montre chaque ajout et chaque retrait (avec la source) ; « Appliquer » met la liste à jour, les cases déjà cochées sont gardées et le détail est noté dans l\'historique."]},
@@ -1680,6 +1702,7 @@ const HELP = {
     "Départ : « Clôturer ce locataire » (fiche du locataire) coche seul les étapes retenues, dépôt restitué et locataire clos.",
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
+    "Factures du bien : « Scanner / ajouter » (photo ou plusieurs fichiers), vignettes à cocher, puis « Envoyer » pour envoyer plusieurs factures en un seul PDF.",
     "Modèles vierges à imprimer : bail, état des lieux, inventaire (meublé) et lettres types, sans aucune donnée, à remplir à la main.",
     "Pièces à joindre au bail : importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail.",
     "Documents du bien : DPE, assurance PNO, taxe foncière, copropriété, diagnostics… gardés sur ce téléphone avec le dossier du logement.",
@@ -2374,7 +2397,7 @@ document.addEventListener("click", ev => {
 });
 
 /* ---------- Mode démo en mémoire : rien n'est enregistré, les vraies données ne sont pas touchées ---------- */
-function enterDemo(){ if (!DEMO){ REAL_S = S; } DEMO = true; S = demoData(true); migrate(); V.tab = "home"; V.doc = null; V.bsel = null; closeSheet(); render(); toast("Mode démo : rien n'est enregistré"); }
+function enterDemo(){ if (!DEMO){ REAL_S = S; } DEMO = true; S = demoData(true); migrate(); V.tab = "home"; V.doc = null; V.bsel = null; closeSheet(); render(); demoFiles(); toast("Mode démo : rien n'est enregistré"); }
 function exitDemo(){ if (!DEMO) return; DEMO = false; S = REAL_S || emptyData(); REAL_S = null; V.doc = null; V.bsel = null; V.pending = null; V.tab = live(S.biens).length ? "home" : "welcome"; if (V.tab === "welcome") V.wz = V.wz || {step:0}; try { history.replaceState(null, "", location.pathname); } catch(e){} closeSheet(); render(); window.scrollTo(0, 0); }
 function demoBar(){ let el = document.getElementById("demobar");
   if (!DEMO){ if (el) el.remove(); document.body.classList.remove("demo"); return; }
@@ -3968,6 +3991,7 @@ function viewDocs(){
   const dr = docsDrill(); if (dr) return dr;
   const id = V.bsel, vide = bkind(id) === "vide";
   return `<div class="card"><h2>Dossier du bail</h2><div class="small muted">Regroupe en <b>un seul PDF</b> le bail, les pièces à joindre (diagnostics, ERP…), l'état des lieux et l'inventaire, puis l'envoie au locataire.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Préparer et envoyer le dossier du bail</button></div></div>
+  ${facturesCard(id)}
   <div class="card"><h2>Modèles vierges à imprimer</h2><div class="small muted">Documents types sans aucune donnée, à imprimer et remplir à la main. Pour un document rempli avec un locataire, va dans l'onglet Locataires.</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="blank" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="blank" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="blank" data-v="rappel">Rappel avant état de sortie</button></div></div>
@@ -4339,7 +4363,7 @@ async function flDel(fid){ const db = PH.db || await phOpen(); if (!db) return;
 const ANNEXES = [["diag", "Dossier de diagnostics (DPE, risques, plomb, électricité, gaz…)"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
 const annexLabel = k => (ANNEXES.find(a => a[0] === k) || [0, ""])[1];
 const annexHas = (bien, k) => fileDocs(bien, "autre").some(d => d.sub === k);
-const FKIND = {bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autre document"};
+const FKIND = {fact:"Facture", bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autre document"};
 const MIMES = {pdf:"application/pdf", jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", heic:"image/heic", doc:"application/msword", docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document", xls:"application/vnd.ms-excel", xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv:"text/csv", txt:"text/plain"};
 const mimeOf = n => MIMES[(String(n).split(".").pop() || "").toLowerCase()] || "application/octet-stream";
 const sizeStr = n => n >= 1048576 ? (n / 1048576).toFixed(1).replace(".", ",") + " Mo" : Math.max(1, Math.round(n / 1024)) + " Ko";
@@ -4505,7 +4529,7 @@ async function dossierFiles(id){
   await addFiles("edl", "02 États des lieux");
   for (const e of docList("inv").filter(x => x.bien === id && !x.del)){ if (e.fichier && !e.items.some(i => i.etat || i.com)) continue;
     add("03 Inventaires", e.date + " - Inventaire " + (e.type === "sortie" ? "sortie" : "entrée") + (e.sig ? " (signé)" : "") + ".pdf", invPdf(e)); }
-  await addFiles("inv", "03 Inventaires"); await addFiles("autre", "04 Autres documents");
+  await addFiles("inv", "03 Inventaires"); await addFiles("autre", "04 Autres documents"); await addFiles("fact", "05 Factures");
   return out;
 }
 async function exportDossier(ids, nom){
@@ -5672,6 +5696,74 @@ document.addEventListener("click", async ev => {
     catch(e){ const i = $("#dk-info"); if (i){ i.style.display = "block"; i.textContent = "Assemblage impossible : " + (e && e.message || e); } }
   }
 });
+
+/* ============ Factures du bien : scan / ajout, rangement en vignettes, envoi de plusieurs en un seul PDF ============ */
+const faList = id => fileDocs(id, "fact").sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.upd || 0) - (a.upd || 0));
+const faSel = () => (V.fsel = V.fsel || {});
+function facturesCard(id){
+  const L = faList(id), S0 = faSel(), n = L.filter(d => S0[d.id]).length, tot = r2(L.filter(d => S0[d.id]).reduce((a, d) => a + (N(d.prix) || 0), 0));
+  const cell = d => `<div style="border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0;${S0[d.id] ? "outline:2px solid var(--accent,#0E6B5C)" : ""}">
+    ${thumb(d.id, d.fname || d.nom, d.type).replace('class="thumb"', 'class="thumb" style="width:100%;height:110px;border-radius:8px;object-position:top"')}
+    <label style="display:flex;gap:6px;align-items:center;min-width:0"><input type="checkbox" data-fsel="${d.id}" ${S0[d.id] ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span style="min-width:0;font-size:12px;line-height:1.2;overflow-wrap:anywhere"><b>${esc(d.fourn || d.nom)}</b><br>${frDate(d.date)}${d.prix ? " · " + eur(N(d.prix)) : ""}</span></label>
+    <button class="mini" data-act="fa-edit" data-id="${d.id}">Modifier</button></div>`;
+  return `<div class="card"><div class="top"><h2>Factures du bien</h2><span class="chip">${L.length}</span></div><div class="small muted">Scanne ou ajoute tes factures (travaux, charges, assurance…) : elles sont rangées ici avec un aperçu. Coche-en plusieurs pour les envoyer ensemble en un seul PDF.</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="fa-add">📷 Scanner / ajouter des factures</button></div>
+    ${L.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:10px 0">${L.map(cell).join("")}</div>
+    <div class="btns"><button class="btn sm ghost" data-act="fa-all">${n === L.length ? "Tout décocher" : "Tout cocher"}</button><button class="btn" style="flex:1" data-act="fa-send" ${n ? "" : "disabled"}>📤 Envoyer ${n ? n + " facture" + (n > 1 ? "s" : "") + (tot ? " · " + eur(tot) : "") : "la sélection"}</button><button class="btn sm ghost" data-act="fa-save" ${n ? "" : "disabled"}>Enregistrer en PDF</button></div>` : '<div class="empty">Aucune facture pour ce bien.</div>'}</div>`;
+}
+function sheetFactureAdd(){
+  openSheet(`<h2>Ajouter des factures</h2><div class="small muted">Photographie une facture, ou choisis plusieurs photos / PDF d'un coup. Le fournisseur et la date s'appliquent à toutes ; le montant seulement si tu n'ajoutes qu'une facture (sinon, utilise « Modifier » ensuite).</div>
+    <div class="btns"><label class="btn" style="flex:1;text-align:center;cursor:pointer">📷 Photographier<input id="fa-cam" type="file" accept="image/*" capture="environment" hidden></label><label class="btn ghost" style="flex:1;text-align:center;cursor:pointer">🖼 Choisir (plusieurs)<input id="fa-pick" type="file" accept="image/*,.pdf" multiple hidden></label></div>
+    <div id="fa-n" class="small muted" style="margin:6px 0">Aucun fichier choisi.</div>
+    ${dxF("fa-fourn", "Fournisseur (facultatif)", "", 'placeholder="Ex. Leroy Merlin"')}${dxF("fa-date", "Date", todayIso(), 'type="date"')}${dxF("fa-prix", "Montant TTC (€, facultatif)", "", 'inputmode="decimal"')}${dxF("fa-obj", "Objet (facultatif)", "", 'placeholder="Ex. Chauffe-eau"')}
+    <div class="btns"><button class="btn" style="flex:1" data-act="fa-ok">Ranger</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+}
+function sheetFactureEdit(id){
+  const d = docList("docs").find(x => x.id === id); if (!d) return;
+  openSheet(`<h2>Facture</h2>${dxF("fe-fourn", "Fournisseur", d.fourn || "")}${dxF("fe-date", "Date", d.date || todayIso(), 'type="date"')}${dxF("fe-prix", "Montant TTC (€)", d.prix ? fmtNum(d.prix) : "", 'inputmode="decimal"')}${dxF("fe-obj", "Objet", d.objet || "")}
+    <div class="btns"><button class="btn" style="flex:1" data-act="fe-ok" data-id="${id}">Enregistrer</button><button class="btn ghost" data-act="fl-open" data-id="${id}">Ouvrir</button><button class="btn danger" data-act="fl-del" data-id="${id}">Supprimer</button></div>`);
+}
+async function faMerge(bien){
+  const L = faList(bien).filter(d => faSel()[d.id]); if (!L.length){ toast("Coche au moins une facture"); return null; }
+  toast("Assemblage des factures…");
+  const PL = await loadPdfLib(), out = await PL.PDFDocument.create(), skipped = [];
+  const cv = new PdfDoc("Factures"); cv.text(cv.W / 2, cv.y, "Factures", {size:20, bold:true, center:true, color:"#0E6B5C"}); cv.y -= 28;
+  cv.text(cv.W / 2, cv.y, bienName(bien), {size:12, center:true}); cv.y -= 34; let tot = 0;
+  L.forEach((d, i) => { cv.need(18); tot += N(d.prix) || 0; cv.text(cv.M, cv.y, (i + 1) + ". " + (d.fourn || d.nom) + (d.objet ? " - " + d.objet : "") + "  (" + frDate(d.date) + ")" + (d.prix ? "  " + eur(N(d.prix)) : ""), {size:10.5}); cv.y -= 16; });
+  if (tot){ cv.y -= 8; cv.text(cv.M, cv.y, "Total : " + eur(r2(tot)), {size:11, bold:true}); }
+  const cover = await PL.PDFDocument.load(cv.finish("Factures")); (await out.copyPages(cover, cover.getPageIndices())).forEach(p => out.addPage(p));
+  for (const d of L){ try { const r = await flGet(d.id), data = new Uint8Array(r.buf);
+      if (dkIsPdf(data)){ const src = await PL.PDFDocument.load(data, {ignoreEncryption:true}); (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p)); }
+      else { const k = dkImg(data); if (!k) throw 0; const im = k === "png" ? await out.embedPng(data) : await out.embedJpg(data), W = 595, H = 842, m = 36, sc = Math.min((W - 2 * m) / im.width, (H - 2 * m) / im.height, 1), w = im.width * sc, h = im.height * sc, pg = out.addPage([W, H]); pg.drawImage(im, {x:(W - w) / 2, y:(H - h) / 2, width:w, height:h}); }
+    } catch(e){ skipped.push(d.fourn || d.nom); } }
+  if (skipped.length) toast("Non lues (format) : " + skipped.join(", "));
+  return {bytes:await out.save(), name:"Factures - " + cleanName(bienName(bien)) + " - " + todayIso() + ".pdf"};
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
+  switch (a){
+    case "fa-add": sheetFactureAdd(); break;
+    case "fa-edit": sheetFactureEdit(id); break;
+    case "fa-all": { const L = faList(V.bsel), s = faSel(), all = L.every(d => s[d.id]); L.forEach(d => { if (all) delete s[d.id]; else s[d.id] = 1; }); render(); break; }
+    case "fa-ok": {
+      const fs = [...($("#fa-cam") ? $("#fa-cam").files : []), ...($("#fa-pick") ? $("#fa-pick").files : [])]; if (!fs.length) return toast("Choisis ou photographie au moins une facture");
+      try { const date = dxV("fa-date") || todayIso(), fourn = dxV("fa-fourn"), objet = dxV("fa-obj"), prix = fs.length === 1 ? (parseNum(dxV("fa-prix")) || 0) : 0;
+        for (const f of fs){ if (f.size > 25e6){ toast(f.name + " : trop gros (25 Mo max)"); continue; }
+          const fid = uid(), type = f.type || mimeOf(f.name); await flPut(fid, {name:f.name, type, buf:await f.arrayBuffer()});
+          docList("docs").push({id:fid, bien:V.bsel, kind:"fact", nom:fourn || f.name, fourn, objet, prix, fname:f.name, date, type, size:f.size, upd:Date.now()}); }
+        persist(); closeSheet(); toast(fs.length + " facture(s) rangée(s)"); render(); } catch(err){ toast("Ajout impossible : " + err.message); }
+      break; }
+    case "fe-ok": { const d = docList("docs").find(x => x.id === id); if (d){ d.fourn = dxV("fe-fourn"); d.nom = d.fourn || d.fname; d.objet = dxV("fe-obj"); d.date = dxV("fe-date") || d.date; d.prix = parseNum(dxV("fe-prix")) || 0; d.upd = Date.now(); persist(); } closeSheet(); render(); break; }
+    case "fa-save": case "fa-send": {
+      try { const r = await faMerge(V.bsel); if (!r) return;
+        if (a === "fa-save"){ await saveFile(r.name, r.bytes, "application/pdf"); return; }
+        sendMark(V.bsel, "Factures", todayIso()); SEND.signed = false; sendIntercept(r.name, r.bytes, "application/pdf"); }
+      catch(e){ toast("Assemblage impossible : " + (e && e.message || e)); }
+      break; }
+  }
+});
+document.addEventListener("change", ev => { const t = ev.target; if (t && t.dataset && t.dataset.fsel){ const s = faSel(); if (t.checked) s[t.dataset.fsel] = 1; else delete s[t.dataset.fsel]; render(); }
+  if (t && (t.id === "fa-cam" || t.id === "fa-pick")){ const n = ($("#fa-cam").files.length || 0) + ($("#fa-pick").files.length || 0), e = $("#fa-n"); if (e) e.textContent = n ? n + " fichier(s) choisi(s)." : "Aucun fichier choisi."; } });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
