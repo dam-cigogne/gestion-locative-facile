@@ -1496,8 +1496,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.52";
+const APP_VERSION = "1.7.53";
 const CHANGELOG = [
+  {v:"1.7.53", date:"2026-11-11", titre:"Relire la date des documents déjà importés", items:["Pièces à joindre : un bouton ↻ à côté de chaque document relit la date écrite sur le papier à partir du fichier déjà importé (plus besoin de le réimporter) ; « ↻ Relire la date de tous les documents importés » le fait pour tout le bien d'un coup. Si le document n'est pas lisible, la date se saisit avec 📅.","État des lieux et inventaire : un bloc « Bailleur et locataire (modifiables) » permet de corriger ou compléter nom, adresse, téléphone, e-mail et naissance, repris dans le PDF. Bail : adresse et naissance du locataire ajoutées.","Comparer entrée / sortie côte à côte : case « Défilement lié » pour faire défiler les deux documents ensemble."]},
   {v:"1.7.52", date:"2026-11-11", titre:"Ancien état des lieux validé, sortie prête, date lue sur le papier", items:["Ancien état des lieux importé : « ✅ Valider la retranscription » crée le PDF de l'appli, rangé dans la fiche du locataire, et prépare la sortie (copie de l'entrée). L'écran montre l'entrée à gauche et la sortie préparée à droite ; « ✅ La sortie est prête » l'affiche sous le nom du locataire (pastille verte, « en préparation » en orange).","Pièces à joindre : la durée de validité (6 mois, 6 ans, 10 ans, sans limite…) s'affiche à côté de chaque pièce et dans la vue d'ensemble.","Pièces à joindre (diagnostics…) : à l'import, l'appli lit la date écrite sur le document (PDF, scan ou photo) et vérifie qu'il parle bien du type choisi ; la date reste modifiable (📅) à tout moment."]},
   {v:"1.7.51", date:"2026-11-11", titre:"Visale, garanties et validité des pièces", items:["Un bandeau rouge (documents périmés ou à refaire) ou orange (bientôt périmés) s'affiche en haut de chaque bien et sur l'accueil.","Biens › Documents : « Vue d'ensemble des biens » (diagnostics de chaque bien d'un coup d'œil) ; pièces séparées entre celles du bien (DPE, ERP, plomb, électricité, gaz, amiante, copro, PNO, taxe foncière…) et celles de la location ; date d'édition, validité et état (à jour, bientôt, périmé, à refaire) ; ⚙ règle la durée par bien ou marque « non concerné ».","Fiche locataire : choix de la garantie (Visale, assurance loyers impayés, autre) avec numéro de visa, validité, contact, lien direct, note et import du contrat.","Biens : nouvel onglet « Visale » qui réunit les garanties des locataires du bien, avec alerte d'expiration et lien vers visale.fr."]},
   {v:"1.7.50", date:"2026-11-11", titre:"Mandat facture électronique, documents soignés, onglet Mise à jour", items:["Facture électronique : lien « Page officielle » corrigé (l'ancien donnait une erreur 404) et possibilité d'importer le mandat / l'attestation de la plateforme (PDF ou photo) pour l'ouvrir ou le partager à tout moment.","Réglages : nouvel onglet « Mise à jour » avec le bouton de mise à jour et la liste complète de toutes les versions.","La note (et le fournisseur / n° de facture) s'affiche sous chaque opération dans les listes.","Tous les PDF (états des lieux, inventaires, quittances, comparatifs…) : bandeau vert en en-tête, tableaux à en-têtes colorés et lignes alternées, états en couleur (vert, orange, rouge), cartes bailleur / locataire / logement."]},
@@ -1716,7 +1717,7 @@ const HELP = {
     "Départ : « Clôturer ce locataire » (fiche du locataire) coche seul les étapes retenues, dépôt restitué et locataire clos.",
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
-    "Diagnostics et pièces à joindre : à l'import, la date d'édition est lue sur le document (PDF, scan, photo) et le type est vérifié ; 📅 corrige la date.",
+    "Diagnostics et pièces à joindre : à l'import, la date d'édition est lue sur le document (PDF, scan, photo) et le type est vérifié ; 📅 corrige la date, ↻ la relit depuis le fichier déjà importé.",
     "Valider la retranscription : crée le PDF d'entrée dans la fiche du locataire et prépare la sortie ; entrée à gauche, sortie à droite ; « La sortie est prête » met une pastille sous le nom du locataire.",
     "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
     "Pièces à joindre : la date du document sert à voir s'il est à jour ; ⚙ règle la durée de validité et « à refaire à chaque location ».",
@@ -4246,13 +4247,14 @@ function sheetBail(){
     <div class="grid2">${dxS("bl-enc", "Loyers encadrés", [["Non", "Non"], ["Oui", "Oui"]], "Non")}${dxS("bl-tendue", "Zone tendue", [["Non", "Non"], ["Oui", "Oui"]], "Non")}</div>
     ${dxF("bl-encinfo", "Si encadré ou zone tendue : loyer de référence, majoré, complément, loyer du précédent locataire", "", 'placeholder="À reprendre sur le site officiel de ta ville"')}
     <div class="grid2">${dxF("bl-bmob", "Mobile bailleur (facultatif)", "", 'inputmode="tel"')}${dxF("bl-lmob", "Mobile locataire (facultatif)", t.tel || "", 'inputmode="tel"')}</div>
+    <div class="grid2">${dxF("bl-ladr", "Adresse du locataire (facultatif)", "")}${dxF("bl-lne", "Né(e) le, à (facultatif)", "", 'placeholder="Ex. 17/12/1980 à Marseille"')}</div>
     <div class="small muted">Baux signés à partir du 1er octobre 2026 : nouvelle clause résolutoire (décret n° 2026-596). Clauses facultatives :</div>
     <div class="grid2">${dxS("bl-assclause", "Défaut d'assurance", [["Non", "Non"], ["Oui", "Oui"]], "Non")}${dxS("bl-trouble", "Troubles de voisinage", [["Non", "Non"], ["Oui", "Oui"]], "Non")}</div>
     ${dxS("bl-servit", "Servitude de résidence principale (secteur du PLU)", [["Non", "Non"], ["Oui", "Oui"]], "Non")}
     ${dxF("bl-ville", "Fait à", (S.cfg && S.cfg.ville) || "")}
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-rel">PDF de relecture</button><button class="btn ghost" style="flex:1" data-act="bail-pre">Envoyer en pré-lecture au locataire</button></div><div class="btns"><button class="btn" style="flex:1" data-act="bail-pdf" data-send="Bail de location">Créer le bail (PDF)</button><button class="btn" style="flex:1" data-act="bail-sign">Faire signer à l'écran</button></div><div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-paper">Signer sur papier (1 page à imprimer)</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div><div class="small muted">Signature à l'écran : simple et sans imprimante, preuve moins forte. Papier : tu imprimes seulement la dernière page, tu la fais signer à la main et tu la rescannes ici.</div>`);
 }
-function bailRead(){ const o = {}; for (const k of ["bail", "badr", "loc", "adr", "type", "surf", "etage", "pieces", "copro", "dpe", "chauf", "eau", "annex", "duree", "debut", "regchg", "jour", "irl", "enc", "tendue", "encinfo", "ville", "bmob", "lmob", "assclause", "trouble", "servit"]) o[k] = dxV("bl-" + k);
+function bailRead(){ const o = {}; for (const k of ["bail", "badr", "loc", "adr", "type", "surf", "etage", "pieces", "copro", "dpe", "chauf", "eau", "annex", "duree", "debut", "regchg", "jour", "irl", "enc", "tendue", "encinfo", "ville", "bmob", "lmob", "assclause", "trouble", "servit", "ladr", "lne"]) o[k] = dxV("bl-" + k);
   o.lhc = parseNum(dxV("bl-lhc")) || 0; o.chg = parseNum(dxV("bl-chg")) || 0; o.dep = parseNum(dxV("bl-dep")) || 0; return o; }
 function bailPdf(o, sig){
   const VIDE = bkind(V.bsel) === "vide", d = new PdfDoc(VIDE ? "Bail logement vide" : "Bail meublé"), M = d.M, P = (s, sz) => d.para(s, sz || 10, 13.5), Hh = s => d.h(s, 11.5), mois = +o.duree, fin = endBail(o.debut, mois), tot = r2(o.lhc + o.chg);
@@ -4260,7 +4262,7 @@ function bailPdf(o, sig){
   d.para("Contrat établi d'après le contrat type annexé au décret n° 2015-587 du 29 mai 2015" + (o.debut >= "2026-10-01" ? ", modifié par le décret n° 2026-596 du 6 juillet 2026 (baux conclus ou renouvelés à compter du 1er octobre 2026)" : "") + ". À relire avant signature ; ce document ne remplace pas un conseil juridique.", 8.5, 11.5); d.y -= 4;
   Hh("1. Désignation des parties");
   P("Le bailleur : " + (o.bail || "………") + ", demeurant " + (o.badr || "………") + (o.bmob ? ", mobile " + o.bmob : "") + ", désigné « le bailleur ».");
-  P("Le locataire : " + (o.loc || "………") + (o.lmob ? ", mobile " + o.lmob : "") + ", désigné « le locataire ». S'ils sont plusieurs, les locataires sont tenus solidairement et indivisiblement.");
+  P("Le locataire : " + (o.loc || "………") + (o.lne ? ", né(e) le " + o.lne : "") + (o.ladr ? ", demeurant " + o.ladr : "") + (o.lmob ? ", mobile " + o.lmob : "") + ", désigné « le locataire ». S'ils sont plusieurs, les locataires sont tenus solidairement et indivisiblement.");
   Hh("2. Objet du contrat");
   P("Le bailleur loue au locataire le logement suivant, situé " + (o.adr || "………") + " : " + (o.type || "logement") + (o.etage ? ", " + o.etage : "") + ", d'une surface habitable de " + (o.surf || "…") + " m², comprenant " + (o.pieces || "…") + " pièce(s) principale(s). Immeuble en copropriété : " + o.copro.toLowerCase() + ". Dépendances et annexes : " + (o.annex || "aucune") + ".");
   P("Équipements : chauffage " + (o.chauf || "………") + " ; eau chaude " + (o.eau || "………") + ". " + (VIDE ? "Le logement est loué non meublé." : "Le logement est loué meublé : le mobilier est décrit dans l'inventaire et l'état du mobilier annexés au présent contrat.") + "");
@@ -5869,7 +5871,7 @@ function cmpRender(){
     const esSeg = `<div class="seg"><button class="${c.esv === "pdf" ? "on" : ""}" data-cm="esv" data-v="pdf">Documents côte à côte</button><button class="${c.esv === "pdf" ? "" : "on"}" data-cm="esv" data-v="list">Différences</button></div>`;
     ctl += esSeg + (B && B.type === "sortie" ? `<div class="vbar">${B.pret ? `<span class="vok">✅ Sortie prête depuis le ${esc(frDate(B.pret))}</span><button class="btn sm ghost" data-cm="pret-no">Remettre en préparation</button>` : `<span class="cm">Sortie en préparation (copie de l'entrée, états à remplir le jour J)</span><button class="btn sm" data-cm="pret">✅ La sortie est prête</button>`}<button class="btn sm ghost" data-cm="corrb">✏️ Ouvrir la sortie</button></div>` : "");
     if (c.esv === "pdf"){ const pa = `<div class="pane" id="cmp-ea"><div class="ph">${c.kind === "inv" ? "Inventaire" : "État des lieux"} d'entrée · ${A ? esc(frDate(A.date)) : "?"}</div><div class="small muted">Création du document…</div></div>`, pb = `<div class="pane" id="cmp-eb"><div class="ph">${B ? (B.pret ? "Sortie prête" : "Sortie préparée") : "Sortie"} · ${B ? esc(frDate(B.date)) : "?"}</div><div class="small muted">Création du document…</div></div>`;
-      ctl += wide ? "" : `<div class="seg"><button class="${c.tab === "b" ? "" : "on"}" data-cm="tab" data-v="a">Entrée</button><button class="${c.tab === "b" ? "on" : ""}" data-cm="tab" data-v="b">Sortie</button></div>`; body = wide ? pa + pb : (c.tab === "b" ? pb : pa); c.pa = A; c.pb = B; }
+      ctl += wide ? `<label style="font-size:13px"><input type="checkbox" data-cm="sync" ${c.sync ? "checked" : ""}> Défilement lié</label>` : `<div class="seg"><button class="${c.tab === "b" ? "" : "on"}" data-cm="tab" data-v="a">Entrée</button><button class="${c.tab === "b" ? "on" : ""}" data-cm="tab" data-v="b">Sortie</button></div>`; body = wide ? pa + pb : (c.tab === "b" ? pb : pa); c.pa = A; c.pb = B; }
     else
     body = `<div class="pane" style="grid-column:1/-1"><div class="ph">${nd} point(s) à regarder sur ${rows.length} · entrée ${A ? frDate(A.date) : "?"} → sortie ${B ? frDate(B.date) : "?"}</div><div class="rw" style="border:0;font-size:11px;color:#5b6f69"><span>Élément</span><span>Entrée</span><span>Sortie</span></div>${h || '<div class="empty" style="padding:14px 0">' + (A && B ? "Aucune différence." : "Aucun document à comparer pour ce bien (" + (c.kind === "inv" ? "inventaire" : "état des lieux") + "). Choisis un autre bien ou l\\'autre type en haut, ou crée / importe d\\'abord les documents.") + "</div>"}</div>`;
   } else { const L = cmpDocs(c.bien, c.kind).filter(d => d.fichier), d = L.find(x => x.id === c.doc) || L[0];
@@ -5888,7 +5890,7 @@ function cmpRender(){
   if (!es && document.getElementById("cmp-orig") && !c.fid) document.getElementById("cmp-orig").textContent = "Aucun document importé."; else if (!es && document.getElementById("cmp-orig")) cmpOrig(document.getElementById("cmp-orig"), c.fid, c.dname);
   if (es && c.esv === "pdf"){ if (document.getElementById("cmp-ea")) cmpGen2(document.getElementById("cmp-ea"), c.kind, c.pa); if (document.getElementById("cmp-eb")) cmpGen2(document.getElementById("cmp-eb"), c.kind, c.pb); }
   if (!es && c.view !== "list" && document.getElementById("cmp-gen")) cmpGen(document.getElementById("cmp-gen"), c.kind, c.cur);
-  if (!es && wide){ const a = document.getElementById("cmp-a"), b = document.getElementById("cmp-b"); let lock = 0; const sy = (f, t) => f.addEventListener("scroll", () => { if (!c.sync || lock) return; lock = 1; t.scrollTop = f.scrollTop / Math.max(1, f.scrollHeight - f.clientHeight) * (t.scrollHeight - t.clientHeight); setTimeout(() => lock = 0, 30); }); if (a && b){ sy(a, b); sy(b, a); } }
+  if (wide){ const a = document.getElementById(es ? "cmp-ea" : "cmp-a"), b = document.getElementById(es ? "cmp-eb" : "cmp-b"); let lock = 0; const sy = (f, t) => f.addEventListener("scroll", () => { if (!c.sync || lock) return; lock = 1; t.scrollTop = f.scrollTop / Math.max(1, f.scrollHeight - f.clientHeight) * (t.scrollHeight - t.clientHeight); setTimeout(() => lock = 0, 30); }); if (a && b){ sy(a, b); sy(b, a); } }
 }
 async function cmpPdfPages(el, data){ const L = await loadPdfJs(), doc = await L.getDocument({data}).promise, w = Math.max(300, el.clientWidth || 400); el.innerHTML = "";
   for (let i = 1; i <= Math.min(doc.numPages, 30); i++){ const pg = await doc.getPage(i), vp0 = pg.getViewport({scale:1}), vp = pg.getViewport({scale:w * 2 / vp0.width}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; el.appendChild(cv); await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; } }
@@ -6174,13 +6176,31 @@ function prInfoTables(d, e){ const tw = d.W - 2 * d.M, R = prInfoRows(e);
   if ((e.clesL || []).length){ d.need(60); d.h("Clés", 12); dTable(d, [{h:"Type de clé", w:170}, {h:"Nombre", w:55}, {h:"Date de remise", w:90}, {h:"Commentaire", w:tw - 315}], e.clesL.map(c => [c.type || "", c.nb || "", c.date || "", c.com || ""])); }
   if ((e.parties || []).length){ d.need(60); d.h("Parties privatives attachées au logement", 12); dTable(d, [{h:"Partie privative", w:140}, {h:"N°", w:60}, {h:"Descriptif et état", w:tw - 200}], e.parties.map(p => [p.nom, p.n || "", p.desc || ""])); }
 }
-function prInfoCard(e){ if (!e.info && !e.bailleur && !e.locataire && !(e.clesL || []).length) return "";
+function prInfoCard(e){ if (!e.info && !(e.clesL || []).length) return partiesCard(e);
   const li = a => a ? a.filter(Boolean).map(x => esc(x)).join("<br>") : "";
-  return `<details class="card" style="padding:12px 16px"><summary style="font-weight:700;cursor:pointer">Reprises du document importé</summary>
-    <div class="small" style="margin-top:8px">${e.bailleur ? `<b>Bailleur</b><br>${li(prPartyLines(e.bailleur))}<br><br>` : ""}${e.locataire ? `<b>Locataire</b><br>${li(prPartyLines(e.locataire))}<br><br>` : ""}
+  return partiesCard(e) + `<details class="card" style="padding:12px 16px"><summary style="font-weight:700;cursor:pointer">Reprises du document importé</summary>
+    <div class="small" style="margin-top:8px">
     ${prInfoRows(e).map(r => `<b>${esc(r[0])}</b> : ${esc(String(r[1]))}`).join("<br>")}
     ${(e.clesL || []).length ? `<br><br><b>Clés</b><br>${e.clesL.map(c => esc([c.type, c.nb ? "× " + c.nb : "", c.date, c.com].filter(Boolean).join(" · "))).join("<br>")}` : ""}</div>
     <div class="small muted" style="margin-top:6px">Ces informations figurent aussi dans le PDF de l'appli.</div></details>`; }
+
+/* parties (bailleur / locataire) modifiables : état des lieux, inventaire */
+function prPartyDefault(e, w){
+  if (w === "bailleur"){ const c = S.cfg || {}, b = c.bl || {}; return {nom:c.bailleur || "", adr:c.bailleurAdr || "", tel:b.tel || "", mail:b.mail || ""}; }
+  const t = (S.locataires || []).find(x => x.bien === e.bien && x.nom === e.loc) || (S.locataires || []).find(x => x.nom === e.loc) || {};
+  return {nom:e.loc || t.nom || "", adr:"", tel:t.tel || "", mail:t.email || ""};
+}
+function partiesCard(e){
+  const F = [["prenom", "Prénom"], ["nom", "Nom"], ["adr", "Adresse"], ["tel", "Téléphone"], ["mail", "E-mail"], ["ne", "Né(e) le"], ["lieu", "Lieu de naissance"], ["nat", "Nationalité"]];
+  const blk = (w, titre) => { const p = e[w] || prPartyDefault(e, w);
+    return `<div class="small" style="margin:8px 0 2px"><b>${titre}</b></div><div class="grid2">${F.map(f => `<label class="f">${f[1]}<input data-dxp="${w}.${f[0]}" value="${esc(p[f[0]] || "")}"></label>`).join("")}</div>`; };
+  return `<details class="card" style="padding:12px 16px"><summary style="font-weight:700;cursor:pointer">Bailleur et locataire (modifiables)</summary>
+    <div class="small muted" style="margin-top:6px">Ce qui s'écrit dans le PDF. Corrige une faute de lecture ou complète une information.</div>${blk("bailleur", "Bailleur")}${blk("locataire", "Locataire")}</details>`;
+}
+document.addEventListener("change", ev => { const t = ev.target; if (!t || !t.dataset || !t.dataset.dxp || !V.doc) return; const e = docCur(); if (!e) return;
+  const [w, k] = t.dataset.dxp.split("."); if (!e[w]) e[w] = prPartyDefault(e, w); e[w][k] = t.value.trim();
+  if (w === "locataire" && (k === "nom" || k === "prenom")) e.loc = [e.locataire.prenom, e.locataire.nom].filter(Boolean).join(" ") || e.loc;
+  dxTouch(e); persist(); });
 
 /* ============ Classeur : tous les documents scannés / importés, rangés par bien, triés ============ */
 const CLS_CSS = document.createElement("style"); CLS_CSS.textContent = `#cls{position:fixed;inset:0;z-index:60;background:var(--bg,#f3f6f5);display:flex;flex-direction:column}
@@ -6317,7 +6337,7 @@ function avRow(id, k){
   const s = avStat(id, k), a = k;
   if (s.st === "na") return `<div class="row" style="opacity:.55"><div class="main"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
   const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
-  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
 }
 function avSummary(id, keys){
   const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
@@ -6330,7 +6350,7 @@ function visaleRow(id){
 }
 function annexRows(id){
   const name = typeof bienName === "function" ? bienName(id) : id;
-  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div>${avSummary(id, AV_BIEN)}<div class="rows">${AV_BIEN.map(k => avRow(id, k)).join("")}</div>
+  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div><div class="btns" style="margin:8px 0"><button class="btn ghost" data-act="av-reread-all" data-b="${esc(id)}">↻ Relire la date de tous les documents importés</button></div><div class="small muted" id="av-rr-note"></div>${avSummary(id, AV_BIEN)}<div class="rows">${AV_BIEN.map(k => avRow(id, k)).join("")}</div>
     <div class="small" style="margin-top:12px"><b>👤 Documents de la location</b> : à refaire à chaque nouveau locataire.</div>${avSummary(id, AV_LOC)}<div class="rows">${AV_LOC.map(k => avRow(id, k)).join("")}${visaleRow(id)}</div>`;
 }
 const AV_SYM = {ok:["✓", "#1A7A4C"], bientot:["⏳", "#B26A00"], perime:["✗", "#B3261E"], refaire:["✗", "#B3261E"], manque:["–", "#8A9690"], na:["·", "#B5BDB9"]};
@@ -6406,6 +6426,24 @@ document.addEventListener("change", async ev => { const t = ev.target; if (!t ||
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-date'],[data-act='av-date-ok']"); if (!b) return;
   if (b.dataset.act === "av-date"){ const d = docList("docs").find(x => x.id === b.dataset.id); if (!d) return; openSheet(`<h2>Date d'édition</h2><div class="small muted">${esc(d.nom)} : la date écrite sur le papier, pas celle de l'import.</div><label class="f">Date d'édition<input id="av-d" type="date" value="${esc(d.date || "")}"></label><div class="btns"><button class="btn" style="flex:1" data-act="av-date-ok" data-id="${d.id}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`); }
   else { const d = docList("docs").find(x => x.id === b.dataset.id), v = $("#av-d").value; if (d && v){ d.date = v; d.upd = Date.now(); persist(); closeSheet(); render(); toast("Date enregistrée"); } } });
+
+/* relire la date d'une pièce déjà importée (lecture du fichier stocké) */
+async function avRereadDoc(d){
+  const r = await flGet(d.id); if (!r || !r.buf) return {err:"fichier introuvable"};
+  const f = new File([r.buf], d.fname || d.nom || "doc", {type:r.type || mimeOf(d.fname || "")});
+  const txt = await avReadFile(f); if (txt === null) return {err:"format non lisible"};
+  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt);
+  if (!dt) return {err:"aucune date trouvée"};
+  d.date = dt; d.upd = Date.now(); return {date:dt, match};
+}
+document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act='av-reread'],[data-act='av-reread-all']"); if (!b) return;
+  const list = b.dataset.act === "av-reread" ? docList("docs").filter(x => x.id === b.dataset.id) : fileDocs(b.dataset.b, "autre").filter(d => AV_KW[d.sub] || d.sub);
+  if (!list.length) return; let ok = 0, bad = [], warn = [];
+  for (const d of list){ toast("Lecture : " + (d.nom || avLab(d.sub)) + "…");
+    try { const r = await avRereadDoc(d); if (r.err) bad.push((d.nom || avLab(d.sub)) + " (" + r.err + ")"); else { ok++; if (!r.match) warn.push(avLab(d.sub)); } } catch(e){ bad.push((d.nom || avLab(d.sub)) + " (lecture impossible)"); } }
+  persist(); render();
+  const msg = ok + " date(s) relue(s)" + (warn.length ? " · ⚠️ type à vérifier : " + warn.join(", ") : "") + (bad.length ? " · à saisir avec 📅 : " + bad.join(", ") : "");
+  toast(msg); const n = $("#av-rr-note"); if (n) n.textContent = msg; });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
