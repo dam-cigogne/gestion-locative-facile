@@ -1492,8 +1492,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.48";
+const APP_VERSION = "1.7.49";
 const CHANGELOG = [
+  {v:"1.7.49", date:"2026-11-11", titre:"Classeur, scans lus, validation de l'état des lieux", items:["Classeur : bouton « ✏️ Renommer », aperçu des PDF, sélection de plusieurs documents puis envoi ou PDF unique.","Document scanné : lecture des pièces, des clés, du bailleur et du locataire, et des croix manuscrites dans les cases d'état.","Comparer › Original / Retranscrit : « ✅ Valider la retranscription » crée la sortie prête (en attente) pour comparer ensuite l'entrée et la sortie réelles ; « ✏️ Corriger » ouvre le document, « ↻ Relire » refait la lecture."]},
   {v:"1.7.48", date:"2026-11-11", titre:"Lecture complète des PDF d'état des lieux et d'inventaire", items:["Un état des lieux ou un inventaire en PDF (non scanné) est maintenant lu en entier : pièces et éléments avec leurs commentaires, états, quantités, bailleur, locataire, adresse, compteurs, ancien occupant et tableau des clés.","Les pièces du modèle jamais remplies (chambres, WC… pour un studio) ne sont pas reprises.","Le PDF fabriqué par l'appli reproduit ces informations, et « Comparer » compare aussi les clés. Les PDF scannés gardent l'ancienne lecture optique (à relire).","Nouveau « Classeur » (Biens › Documents) : tous les scans et imports de tous les biens, filtrés par bien ou par type, triés par date, nom, type ou bien, avec recherche et déplacement vers un autre bien.","Factures, pièces des locataires et photos : la « Sauvegarde complète avec fichiers (.zip) » les emporte et les remet en place à la restauration sur un autre appareil (textes d'aide corrigés : seul le .json ne les contient pas)."]},
   {v:"1.7.47", date:"2026-11-11", titre:"Comparer : choix libre et vrai document", items:["« Comparer » est toujours accessible : tu choisis le bien, puis les deux documents à comparer (entrée, sortie, importés ou préparés d'avance), même si le locataire n'est pas parti.","À droite de « Original / Retranscrit », on voit maintenant le vrai document fabriqué par l'appli (en-tête, relevés, clés, pièces), avec un bouton « Liste » pour revenir à la vue ligne par ligne.","« Entrée / Sortie » compare aussi les relevés de compteurs, les clés, le détecteur de fumée et les remarques."]},
   {v:"1.7.46", date:"2026-11-11", titre:"Comparer : entrée / sortie et original / retranscrit", items:["Biens › Documents : nouvelle carte « Comparer ». « Entrée / Sortie » aligne chaque ligne de l'état des lieux (ou de l'inventaire) d'entrée et de sortie, surligne ce qui est pire, manquant ou ajouté, avec le filtre « Différences ».","« Original / Retranscrit » : sur iPad, ton document importé (PDF, photo, Excel) à gauche et ce que l'appli en a lu à droite, avec défilement lié ; sur iPhone, deux onglets. Les lignes sans état ou au nom douteux sont marquées ⚠.","Bouton « PDF » : comparatif entrée / sortie à relire, envoyer ou joindre au dossier.","Noms d'éléments de l'état des lieux et de l'inventaire : plus coupés sur iPhone, ils passent sur toute la largeur."]},
@@ -1709,7 +1710,8 @@ const HELP = {
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
     "Import d'un état des lieux ou d'un inventaire en PDF : l'appli lit le document en entier (pièces, états, clés, bailleur, locataire) et le refabrique dans son propre format.",
-    "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; le menu « Ranger dans… » d'un document le déplace vers un autre bien.",
+    "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; « ✏️ Renommer » change son nom, « Ranger dans… » le déplace vers un autre bien.",
+    "Original / Retranscrit : quand la lecture est bonne, « Valider la retranscription » prépare la sortie en attente (même si le locataire ne part pas) ; « Corriger » ouvre le document, « Relire » refait la lecture.",
     "Comparer (Biens › Documents) : « Entrée / Sortie » montre les différences ligne par ligne ; « Original / Retranscrit » vérifie qu'un document importé a été bien lu ; bouton PDF pour garder le comparatif.",
     "Factures du bien : « Scanner / ajouter » (photo ou plusieurs fichiers), vignettes à cocher, puis « Envoyer » pour envoyer plusieurs factures en un seul PDF.",
     "Modèles vierges à imprimer : bail, état des lieux, inventaire (meublé) et lettres types, sans aucune donnée, à remplir à la main.",
@@ -5741,19 +5743,22 @@ function sheetFactureEdit(id){
 }
 async function faMerge(bien){
   const L = faList(bien).filter(d => faSel()[d.id]); if (!L.length){ toast("Coche au moins une facture"); return null; }
-  toast("Assemblage des factures…");
+  return docsMerge(L, "Factures", bienName(bien), "Factures - " + cleanName(bienName(bien)) + " - " + todayIso() + ".pdf");
+}
+async function docsMerge(L, titre, sousTitre, fname){ /* un seul PDF : page de garde avec la liste, puis chaque document (PDF ou image) */
+  toast("Assemblage des documents…");
   const PL = await loadPdfLib(), out = await PL.PDFDocument.create(), skipped = [];
-  const cv = new PdfDoc("Factures"); cv.text(cv.W / 2, cv.y, "Factures", {size:20, bold:true, center:true, color:"#0E6B5C"}); cv.y -= 28;
-  cv.text(cv.W / 2, cv.y, bienName(bien), {size:12, center:true}); cv.y -= 34; let tot = 0;
-  L.forEach((d, i) => { cv.need(18); tot += N(d.prix) || 0; cv.text(cv.M, cv.y, (i + 1) + ". " + (d.fourn || d.nom) + (d.objet ? " - " + d.objet : "") + "  (" + frDate(d.date) + ")" + (d.prix ? "  " + eur(N(d.prix)) : ""), {size:10.5}); cv.y -= 16; });
+  const cv = new PdfDoc(titre); cv.text(cv.W / 2, cv.y, titre, {size:20, bold:true, center:true, color:"#0E6B5C"}); cv.y -= 28;
+  cv.text(cv.W / 2, cv.y, sousTitre, {size:12, center:true}); cv.y -= 34; let tot = 0;
+  L.forEach((d, i) => { cv.need(18); tot += N(d.prix) || 0; cv.text(cv.M, cv.y, (i + 1) + ". " + (d.kind === "fact" ? (d.fourn || d.nom) + (d.objet ? " - " + d.objet : "") + "  (" + frDate(d.date) + ")" + (d.prix ? "  " + eur(N(d.prix)) : "") : (d.nom || d.fname) + "  (" + clsType(d) + (d.date ? " · " + frDate(d.date) : "") + ")"), {size:10.5}); cv.y -= 16; });
   if (tot){ cv.y -= 8; cv.text(cv.M, cv.y, "Total : " + eur(r2(tot)), {size:11, bold:true}); }
-  const cover = await PL.PDFDocument.load(cv.finish("Factures")); (await out.copyPages(cover, cover.getPageIndices())).forEach(p => out.addPage(p));
+  const cover = await PL.PDFDocument.load(cv.finish(titre)); (await out.copyPages(cover, cover.getPageIndices())).forEach(p => out.addPage(p));
   for (const d of L){ try { const r = await flGet(d.id), data = new Uint8Array(r.buf);
       if (dkIsPdf(data)){ const src = await PL.PDFDocument.load(data, {ignoreEncryption:true}); (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p)); }
       else { const k = dkImg(data); if (!k) throw 0; const im = k === "png" ? await out.embedPng(data) : await out.embedJpg(data), W = 595, H = 842, m = 36, sc = Math.min((W - 2 * m) / im.width, (H - 2 * m) / im.height, 1), w = im.width * sc, h = im.height * sc, pg = out.addPage([W, H]); pg.drawImage(im, {x:(W - w) / 2, y:(H - h) / 2, width:w, height:h}); }
     } catch(e){ skipped.push(d.fourn || d.nom); } }
   if (skipped.length) toast("Non lues (format) : " + skipped.join(", "));
-  return {bytes:await out.save(), name:"Factures - " + cleanName(bienName(bien)) + " - " + todayIso() + ".pdf"};
+  return {bytes:await out.save(), name:fname};
 }
 document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
@@ -5784,6 +5789,7 @@ document.addEventListener("change", ev => { const t = ev.target; if (t && t.data
 /* ============ Comparer : entrée / sortie, et original importé / retranscrit par l'appli ============ */
 const CMP_CSS = document.createElement("style"); CMP_CSS.textContent = `#cmp{position:fixed;inset:0;z-index:60;background:var(--bg,#f3f6f5);display:flex;flex-direction:column}
 #cmp .cbar{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 8px}#cmp .cbar .ct{flex:1;text-align:center;font-weight:700}
+#cmp .vbar{flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px}#cmp .vok{color:#1a7a4c;font-weight:600}
 #cmp .cctl{padding:0 14px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 #cmp .seg{display:flex;background:rgba(0,0,0,.07);border-radius:10px;padding:3px}#cmp .seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-size:13px;color:inherit}#cmp .seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 2px #0002}
 #cmp select{padding:7px 8px;font-size:13px;border-radius:10px;max-width:46vw}
@@ -5839,6 +5845,9 @@ function cmpRender(){
     body = `<div class="pane" style="grid-column:1/-1"><div class="ph">${nd} point(s) à regarder sur ${rows.length} · entrée ${A ? frDate(A.date) : "?"} → sortie ${B ? frDate(B.date) : "?"}</div><div class="rw" style="border:0;font-size:11px;color:#5b6f69"><span>Élément</span><span>Entrée</span><span>Sortie</span></div>${h || '<div class="empty" style="padding:14px 0">' + (A && B ? "Aucune différence." : "Aucun document à comparer pour ce bien (" + (c.kind === "inv" ? "inventaire" : "état des lieux") + "). Choisis un autre bien ou l\\'autre type en haut, ou crée / importe d\\'abord les documents.") + "</div>"}</div>`;
   } else { const L = cmpDocs(c.bien, c.kind).filter(d => d.fichier), d = L.find(x => x.id === c.doc) || L[0];
     ctl += `<select data-cm="doc">${opt(L, d && d.id) || '<option value="">Aucun import</option>'}</select>${wide ? `<label style="font-size:13px"><input type="checkbox" data-cm="sync" ${c.sync ? "checked" : ""}> Défilement lié</label>` : `<div class="seg"><button class="${c.tab === "a" ? "on" : ""}" data-cm="tab" data-v="a">Original</button><button class="${c.tab === "b" ? "on" : ""}" data-cm="tab" data-v="b">Retranscrit</button></div>`}`;
+    const sortieP = d && cmpDocs(c.bien, c.kind, "sortie").find(x => x.ref === d.id);
+    ctl += d ? (c.conf === "relire" ? `<div class="vbar"><span>Relire remplace les pièces actuelles par une nouvelle lecture du document.</span><button class="btn sm danger" data-cm="relire-ok">Relire</button><button class="btn sm ghost" data-cm="conf-no">Annuler</button></div>`
+      : `<div class="vbar">${d.valid ? `<span class="vok">✅ Validé le ${esc(frDate(d.valid))}${sortieP ? " · sortie prête" : ""}</span>` : ""}<button class="btn sm" data-cm="valid">${d.valid ? (sortieP ? "↔ Voir entrée / sortie" : "Créer la sortie") : "✅ Valider la retranscription"}</button><button class="btn sm ghost" data-cm="corr">✏️ Corriger</button><button class="btn sm ghost" data-cm="relire">↻ Relire le document</button></div>`) : "";
     const rows = d ? cmpRows(c.kind, d) : [], sans = rows.filter(r => !r.s && !r.hdr).length, bad = rows.filter(r => r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n)).length; let h = "", g = null;
     for (const r of rows){ if (r.p !== g){ g = r.p; h += `<div class="gr">${esc(g)}</div>`; } const flag = !r.hdr && (!r.s || r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n));
       h += `<div class="rt" ${flag ? 'style="background:#fff7e0;margin:0 -12px;padding:6px 12px"' : ""}><span>${flag ? "⚠ " : ""}${esc(r.n)}${r.c && !r.hdr ? '<div class="cm">' + esc(r.c) + "</div>" : ""}</span>${r.hdr ? '<span class="cm" style="grid-column:2/4;text-align:right">' + esc(r.c) + "</span>" : (r.q ? '<span class="cm">× ' + esc(r.q) + "</span>" : "<span></span>") + cmpChip(r.s)}</div>`; }
@@ -5878,6 +5887,16 @@ document.addEventListener("click", async ev => {
   const cb = ev.target.closest("[data-cm]"), ba = ev.target.closest("[data-act='cm-open']");
   if (ba){ cmpOpen(ba.dataset.v); return; } if (!cb) return; const a = cb.dataset.cm, v = cb.dataset.v, c = V.cmp; if (!c) return;
   if (a === "close"){ const el = document.getElementById("cmp"); if (el) el.remove(); V.cmp = null; return; }
+  if (a === "corr"){ const d = c.cur; if (!d) return; const k = c.kind; const el = document.getElementById("cmp"); if (el) el.remove(); V.cmp = null; V.bsel = d.bien; V.tab = "bld"; V.bsub = "loc"; V.doc = {kind:k, id:d.id, open:{}}; if (typeof render === "function") render(); return; }
+  if (a === "relire"){ c.conf = "relire"; cmpRender(); return; } if (a === "conf-no"){ c.conf = ""; cmpRender(); return; }
+  if (a === "relire-ok"){ c.conf = ""; const d = c.cur, r = d && d.fichier && await flGet(d.fichier); if (!r){ toast("Fichier d'origine introuvable"); cmpRender(); return; }
+    toast("Nouvelle lecture du document…"); let R = null; try { R = await pdfRead(r.buf); } catch(e){} if (!R || R.kind !== c.kind){ toast("Rien de plus n'a pu être lu : rien n'a changé."); cmpRender(); return; }
+    cmpDocs(c.bien, c.kind, "sortie").filter(x => x.ref === d.id && !(x.pieces || x.items || []).some(p => p.etat || (p.items || []).some(i => i.etat))).forEach(x => { x.del = true; });
+    prApply(d, R); d.valid = ""; d.upd = Date.now(); persist(); toast("Document relu : " + prNb(R)); cmpRender(); return; }
+  if (a === "valid"){ const d = c.cur; if (!d) return; let sp = cmpDocs(c.bien, c.kind, "sortie").find(x => x.ref === d.id);
+    if (!d.valid){ d.valid = todayIso(); d.upd = Date.now(); persist(); }
+    if (!sp){ const keep = {bsel:V.bsel, doc:V.doc}; V.bsel = c.bien; try { dxMake(c.kind, "sortie", todayIso(), d.loc || "", d); } catch(e){ toast("Création impossible : " + (e && e.message || e)); } V.doc = keep.doc; V.bsel = keep.bsel; render(); sp = cmpDocs(c.bien, c.kind, "sortie").find(x => x.ref === d.id); toast("Retranscription validée · sortie prête, en attente"); }
+    if (sp){ c.mode = "es"; c.eid = d.id; c.sid = sp.id; } cmpRender(); return; }
   if (a === "kind"){ c.kind = v; cmpDefaults(); } else if (a === "only") c.only = v === "1"; else if (a === "tab") c.tab = v; else if (a === "view") c.view = v;
   else if (a === "pdf"){ try { const bytes = cmpPdf(); await relectOpen("Comparatif entrée-sortie - " + cleanName(bienName(c.bien)) + ".pdf", bytes); } catch(e){ toast("PDF impossible : " + (e && e.message || e)); } return; }
   else if (a === "dl"){ const r = c.fid && await flGet(c.fid); if (r) saveFile(c.dname || r.name || "document", r.buf, r.type); return; } else return;
@@ -5891,7 +5910,7 @@ window.addEventListener("resize", () => { if (V.cmp) cmpRender(); });
    On garde la position de chaque mot : les tableaux sont reconnus par leurs en-têtes (Élément, Très bon, Bon, Moyen,
    Mauvais, Commentaire / Quantité, État…), chaque ligne est rattachée à sa colonne. Tout reste sur l'appareil. */
 const PR_FOOT = /^(page\s*\d+\s*\/\s*\d+|paraphes\s*:?)$/i;
-const PR_HEAD_WORDS = /^(très|bon|état|etat|moyen|mauvais|[eé]l[eé]ment|commentaire|quantit[eé]|etat à l['’]entrée|etat à la|sortie|type cl[eé]|nombre|date de remise|partie privative|n°|descriptif et état)$/i;
+const PR_HEAD_WORDS = /^(tr[eèé]s|bon|[eé]tat|moyen|ma[uvn]\w*|[eé]l[eé]ment|comment\w*|quantit[eé]|etat à l['’]entr\w*|etat à la|sortie|type cl[eé]|nombre|date de remise|partie privative|n°|descriptif et [eé]tat)$/i;
 const prNum = s => /^\d+([.,]\d+)?$/.test(String(s).trim());
 const prIso = s => { const m = /(\d{2})[\/.](\d{2})[\/.](\d{4})/.exec(s || ""); return m ? m[3] + "-" + m[2] + "-" + m[1] : ""; };
 const prClean = s => String(s || "").replace(/\s+/g, " ").trim();
@@ -5903,7 +5922,7 @@ function prRows(items, tol){ /* regroupe les mots par ligne (même hauteur), de 
 }
 const prTxt = its => prClean(its.slice().sort((a, b) => b.y - a.y || a.x - b.x).map(i => i.s).join(" "));
 const prCx = i => i.x + i.w / 2;
-function prHeads(items){ const hs = items.map(i => i.h).sort((a, b) => a - b), med = hs[Math.floor(hs.length / 2)] || 10; return items.filter(i => i.h >= med * 1.3 && !PR_FOOT.test(i.s)); }
+function prHeads(items, ocr){ if (ocr) return prHeadsOcr(items); const hs = items.map(i => i.h).sort((a, b) => a - b), med = hs[Math.floor(hs.length / 2)] || 10; return items.filter(i => i.h >= med * 1.3 && !PR_FOOT.test(i.s)); }
 /* regroupe des lignes de texte de la colonne « élément » : un nom sur 2-3 lignes reste un seul élément */
 function prElems(its, gap){ const L = prRows(its, 3), out = []; for (const r of L){ const t = prClean(r.it.map(i => i.s).join(" ")), last = out[out.length - 1];
     if (last && last.ymin - r.y < (gap || 18)){ last.nom += " " + t; last.ymin = r.y; last.ys.push(r.y); } else out.push({nom:t, ymax:r.y, ymin:r.y, ys:[r.y]}); }
@@ -5912,20 +5931,21 @@ const prNear = (list, y, max) => { let b = null, d = max || 30; for (const e of 
 
 function prHeader(its){ /* repère les colonnes d'un tableau à partir de ses mots d'en-tête */
   const f = re => its.find(i => re.test(i.s)), g = re => its.filter(i => re.test(i.s));
-  const el = f(/^[eé]l[eé]ment$/i), qt = f(/^quantit/i);
+  const el = f(/^[eé]l[eé]m\w*$/i), qt = f(/^quantit/i);
   if (el && qt){ const en = f(/l['’]entrée$/i), so = f(/sortie$/i), q = prCx(qt), e1 = en ? prCx(en) : q + 80, s1 = so ? prCx(so) : e1 + 70;
     return {kind:"inv", y:Math.min(...its.map(i => i.y)), qx:q, ex:e1, sx:s1, cut1:(q + e1) / 2, cut2:(e1 + s1) / 2}; }
-  if (el && f(/^commentaire$/i) && f(/^mauvais$/i)){ const tb = f(/^très$/i), bn = f(/^Bon$/), md = f(/^moyen$/i), mv = f(/^mauvais$/i);
-    const c = [prCx(tb), prCx(bn), prCx(md), prCx(mv)], sp = (c[3] - c[0]) / 3;
-    return {kind:"edl", y:Math.min(...its.map(i => i.y)), c, sp, left:c[0] - sp / 2, right:c[3] + sp / 2, cmt:f(/^commentaire$/i)}; }
+  if (el || f(/^comment\w*$/i)){ const tb = f(/^tr[eèé]s$/i), bn = its.filter(i => /^bon$/i.test(i.s) && (!tb || i.x > prCx(tb) + 10)).sort((a, b) => b.x - a.x)[0], md = f(/^moy\w*$/i), mv = f(/^ma[uvn]\w*$/i);
+    const kn = [[0, tb], [1, bn], [2, md], [3, mv]].filter(p => p[1]).map(p => [p[0], prCx(p[1])]);
+    if (kn.length >= 3 || (kn.length === 2 && f(/^comment\w*$/i))){ const sp = (kn[kn.length - 1][1] - kn[0][1]) / (kn[kn.length - 1][0] - kn[0][0]); if (sp > 15 && sp < 70){ const c = [0, 1, 2, 3].map(k => kn[0][1] + (k - kn[0][0]) * sp);
+      return {kind:"edl", y:Math.min(...its.map(i => i.y)), c, sp, left:c[0] - sp / 2, right:c[3] + sp / 2}; } } }
   const ty = f(/^type cl/i), nb = f(/^nombre$/i);
   if (ty && nb){ const dt = f(/^date de remise/i), cm = f(/^commentaire$/i); const nx = prCx(nb), dc = dt ? prCx(dt) : nx + 80, cc = cm ? prCx(cm) : dc + 150; return {kind:"cles", y:Math.min(...its.map(i => i.y)), c1:(prCx(ty) + nx) / 2, c2:(nx + dc) / 2, c3:(dc + cc) / 2}; }
   const pp = f(/^partie privative/i); if (pp) return {kind:"parties", y:Math.min(...its.map(i => i.y)), left:140, nx:(f(/^n°$/i) || {x:160}).x, dx:(f(/^descriptif/i) || {x:340}).x - 10};
   return null;
 }
 function prFindHeaders(items){ /* un en-tête = la ligne contenant « Élément » (ou « Type clé », « Partie privative ») + les mots d'en-tête voisins */
-  const out = [], anchors = items.filter(i => /^([eé]l[eé]ment|type cl[eé]|partie privative)$/i.test(i.s));
-  for (const a of anchors){ const near = items.filter(i => i.y <= a.y + 28 && i.y >= a.y - 28 && PR_HEAD_WORDS.test(i.s) && i.h < 12); const h = prHeader(near); if (h && !out.some(o => Math.abs(o.y0 - a.y) < 40 && o.kind === h.kind)){ h.y0 = a.y; h.top = Math.max(...near.map(i => i.y)); h.words = near; out.push(h); } }
+  const out = [], anchors = items.filter(i => /^([eé]l[eé]m\w*|type cl[eé]|partie privative)$/i.test(i.s) || (/^comment\w*$/i.test(i.s) && i.x > 300 && !items.some(e => /^[eé]l[eé]m/i.test(e.s) && Math.abs(e.y - i.y) < 30)));
+  for (const a of anchors){ const near = items.filter(i => i.y <= a.y + 28 && i.y >= a.y - 28 && PR_HEAD_WORDS.test(i.s) && i.h < 12 && i.s.length < 24); const h = prHeader(near); if (h && !out.some(o => Math.abs(o.y0 - a.y) < 40 && o.kind === h.kind)){ h.y0 = a.y; h.top = Math.max(...near.map(i => i.y)); h.words = near; out.push(h); } }
   return out.sort((a, b) => b.y0 - a.y0);
 }
 function prColon(items, label){ /* valeur située à droite de l'étiquette, sur la même ligne */
@@ -5949,16 +5969,17 @@ function prParty(its){ /* colonne « Bailleur » ou « Locataire » */
   return o; }
 
 /* pages : [{w, h, items:[{s, x, y, w, h}]}] -> structure du document, ou null si rien d'exploitable */
-function prParse(pages){
+function prParse(pages, opt){
+  const OCR = !!(opt && opt.ocr);
   const all = []; pages.forEach((p, n) => p.items.forEach(i => all.push(Object.assign({}, i, {pg:n}))));
   if (all.reduce((a, i) => a + i.s.length, 0) < 150) return null;
-  const first = pages[0].items, title = prHeads(first).sort((a, b) => b.y - a.y)[0];
-  const tt = title ? title.s : "", kind = /inventaire|meubles/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "inv" : /[ée]tat des lieux/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "edl" : null;
+  const first = pages[0].items, title = prHeads(first, OCR).sort((a, b) => b.y - a.y)[0];
+  const tt = (title ? title.s : "") + (OCR ? " " + prTxt(first.slice(0, 14)) : ""), kind = /inventaire|meubles/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "inv" : /[ée]tat des lieux/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "edl" : null;
   if (!kind) return null;
   const doc = {kind, type:/sortie/i.test(tt) ? "sortie" : "entree", date:"", info:{}, bailleur:null, locataire:null, clesL:[], parties:[], pieces:[], items:[]};
-  let cur = null, curInv = null, pend = null; const NOT_SEC = /^(autres commentaires|signature|infos utiles|clés|cles|parties privatives|les locaux|le bailleur|locataire|le\(s\)|[ée]tat des lieux|inventaire|liste)/i; /* dernière section de tableau d'état (pour les tableaux qui continuent à la page suivante) */
+  let cur = null, curInv = null, pend = null, lastEdl = null; const NOT_SEC = /^(autres commentaires|signature|infos utiles|clés|cles|parties privatives|les locaux|le bailleur|locataire|le\(s\)|[ée]tat des lieux|inventaire|liste)/i; /* dernière section de tableau d'état (pour les tableaux qui continuent à la page suivante) */
   pages.forEach((pg, n) => {
-    const items = pg.items.filter(i => !PR_FOOT.test(i.s) && i.y > 30), heads = prHeads(items).sort((a, b) => b.y - a.y), hdrs = prFindHeaders(items);
+    const items = pg.items.filter(i => !PR_FOOT.test(i.s) && i.y > 30), hdrs = prFindHeaders(items), heads = (OCR ? prHeadsOcr(items, hdrs) : prHeads(items, OCR)).sort((a, b) => b.y - a.y);
     /* ---- première page : en-tête, locaux, bailleur / locataire ---- */
     if (n === 0 || (!doc.bailleur && /bailleur/i.test(prTxt(items)))){
       const d = prColon(items, /^(entrée|sortie|date|établi)/i); if (!doc.date) doc.date = prIso(d) || prIso(prTxt(items));
@@ -5983,6 +6004,8 @@ function prParse(pages){
       doc.info.eauF = rl(/^eau froide/i); doc.info.eauC = rl(/^eau chaude relev/i); doc.info.gazR = rl(/^gaz relev/i);
       Object.keys(doc.info).forEach(k => { if (prEmpty(doc.info[k])) delete doc.info[k]; }); }
     /* ---- tableaux ---- */
+    if (OCR && !hdrs.length && lastEdl && n > 0 && items.length > 20 && !items.some(i => /signature|fait [àa]|fait le/i.test(i.s))) hdrs.push(Object.assign({}, lastEdl, {y0:pg.h - 40, top:pg.h - 30, words:[]}));
+    hdrs.forEach(h => { if (h.kind === "edl" && h.words && h.words.length) lastEdl = h; });
     hdrs.forEach((h, k) => {
       const lower = hdrs.slice(k + 1)[0], hy = h.y0, below = heads.filter(x => x.y < h.top - 2), stopY = Math.max(below.length ? below[0].y + 14 : -1, lower ? lower.top + 12 : -1, 32);
       const zone = items.filter(i => i.y < h.y - 4 && i.y > stopY - 0 && !h.words.includes(i) && !heads.includes(i));
@@ -5995,8 +6018,9 @@ function prParse(pages){
         const names = zone.filter(i => prCx(i) < h.left && !/^autres commentaires/i.test(i.s)), els = prElems(names, 18);
         const stopA = zone.find(i => /^autres commentaires/i.test(i.s)); const lim = stopA ? stopA.y : -1;
         const E = els.filter(e => e.ymin > lim - 2).map(e => ({id:null, nom:e.nom, etat:"", com:"", yc:e.yc}));
+        if (pg.ink) for (const e of E){ const v = h.c.map(cx => pg.ink(cx, e.yc + 2, h.sp * 0.55, 13)), mx = Math.max(...v), k = v.indexOf(mx), o = Math.max(0, ...v.filter((x, j) => j !== k)); if (mx >= 0.025 && mx >= 2.2 * Math.max(o, 0.006)) e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][k]; }
         for (const i of zone.filter(i => prCx(i) >= h.left && i.y > lim)){ const e = prNear(E, i.y, 26); if (!e) continue; const cx = prCx(i);
-          if (cx < h.right){ if (/^[xX✓✔✗✘☒■●×+*]$/.test(i.s)){ const idx = Math.round((cx - h.c[0]) / h.sp); e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][Math.max(0, Math.min(3, idx))]; } }
+          if (cx < h.right){ if (!pg.ink && /^[xX✓✔✗✘☒■●×+*kKvV]$/.test(i.s)){ const idx = Math.round((cx - h.c[0]) / h.sp); e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][Math.max(0, Math.min(3, idx))]; } }
           else e.com = prClean(e.com + " " + i.s); }
         E.forEach(e => { delete e.yc; sec.items.push(e); });
       } else if (h.kind === "inv"){
@@ -6026,13 +6050,52 @@ function prParse(pages){
   const used = p => p.items.some(i => i.etat || i.com); doc.skipped = [];
   if (doc.pieces.some(used)){ doc.skipped = doc.pieces.filter(p => !used(p)).map(p => p.nom); doc.pieces = doc.pieces.filter(used); }
   const n = doc.kind === "inv" ? doc.items.length : doc.pieces.reduce((a, p) => a + p.items.length, 0);
-  return n ? doc : null;
+  doc.ocr = OCR; return n ? doc : null;
 }
 async function pdfRead(buf){
   const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(buf.slice(0))}).promise, pages = [];
   for (let i = 1; i <= Math.min(pdf.numPages, 40); i++){ const pg = await pdf.getPage(i), tc = await pg.getTextContent();
     pages.push({w:pg.view[2], h:pg.view[3], items:tc.items.filter(t => t.str && t.str.trim()).map(t => ({s:t.str.trim(), x:t.transform[4], y:t.transform[5], w:t.width, h:t.height}))}); }
-  return prParse(pages);
+  const R = prParse(pages);
+  if (R || pages.reduce((a, p) => a + p.items.length, 0) > 80) return R;
+  return pdfReadScan(pdf);
+}
+/* ---- document scanné : on dessine chaque page, la lecture optique (sur l'appareil) donne les mots avec leur position,
+   et les croix manuscrites sont repérées par l'encre dans chaque case ---- */
+function prHeadsOcr(items, hdrs){
+  const body = items.filter(i => !PR_FOOT.test(i.s)); if (!body.length) return [];
+  const margin = Math.min(...body.map(i => i.x)), out = [], rows = prRows(body, 4);
+  for (const h of (hdrs || [])){ if (h.kind !== "edl" && h.kind !== "inv") continue;
+    const r = rows.filter(r => r.y > (h.top || h.y) + 3 && r.y < (h.top || h.y) + 55).sort((a, b) => a.y - b.y)[0]; if (!r) continue;
+    const f = r.it[0], t = prClean(r.it.filter(i => i.x < margin + 260).map(i => i.s).join(" "));
+    if (f.x <= margin + 30 && t.length > 2 && !PR_HEAD_WORDS.test(f.s) && !/\d{2}[\/.]\d{2}/.test(t)) out.push({s:t, x:f.x, y:r.y, h:15.3, w:60}); }
+  const ROOM = /^(salon|s[eé]jour|chambre|cuisine|salle|wc|toilette|entr[eé]e|couloir|d[eé]gagement|cellier|garage|balcon|terrasse|cave|bureau|dressing|buanderie|mezzanine|cour|jardin|[eé]quipements|studio)/i;
+  for (const r of rows){ const f = r.it[0], t = prClean(r.it.filter(i => i.x < margin + 300).map(i => i.s).join(" ")); if (f.x <= margin + 35 && r.it.length <= 9 && ROOM.test(f.s) && !out.some(o => Math.abs(o.y - r.y) < 8)) out.push({s:t, x:f.x, y:r.y, h:15.3, w:60}); }
+  for (const i of body) if (/^(le )?bailleur$|^locataire|^le\(s\) preneur|^preneur|^infos utiles$/i.test(i.s) && !out.some(o => Math.abs(o.y - i.y) < 5 && Math.abs(o.x - i.x) < 5)) out.push({s:i.s, x:i.x, y:i.y, h:15.3, w:i.w});
+  return out;
+}
+async function pdfReadScan(pdf){
+  const T = await loadTess(), n = Math.min(pdf.numPages, 14), pages = [], SC = 2;
+  toast("Lecture du scan… (premier chargement : un peu long)");
+  const w = await T.createWorker("fra", 1, {workerPath:TESS_WK, corePath:TESS_CORE, langPath:TESS_LANG});
+  try {
+    for (let i = 1; i <= n; i++){ toast("Lecture du scan : page " + i + " sur " + n);
+      const pg = await pdf.getPage(i), vp = pg.getViewport({scale:SC}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
+      await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+      const r = await w.recognize(cv), d = r.data; let words = d.words;
+      if (!words && d.blocks) words = d.blocks.flatMap(b => b.paragraphs.flatMap(p => p.lines.flatMap(l => l.words)));
+      const H = vp.height / SC, raw = []; for (const x of (words || [])){ if (!x.text || !x.text.trim() || x.confidence <= 35) continue; const x0 = x.bbox.x0 / SC, ww = (x.bbox.x1 - x.bbox.x0) / SC, y = H - x.bbox.y1 / SC + 2;
+        const parts = x.text.split(/[|\[\]=_~]+/).map(p => p.trim()); const tot = Math.max(1, x.text.length); let off = 0;
+        for (const p of parts){ if (p.length) raw.push({s:p, x:x0 + ww * x.text.indexOf(p, off) / tot, w:Math.max(4, ww * p.length / tot), y, h:10.2}); off += p.length + 1; } }
+      /* mots voisins d'une même ligne -> un seul texte (« Type clé », « Date de remise », noms d'éléments…) */
+      const merged = []; for (const row of prRows(raw, 4)){ let cur = null; for (const it of row.it){ if (cur && it.x - (cur.x + cur.w) < 4.5){ cur.s += " " + it.s; cur.w = it.x + it.w - cur.x; } else { cur = Object.assign({}, it); merged.push(cur); } } }
+      let img = null; const ctx = cv.getContext("2d");
+      const ink = (cx, cy, ww, hh) => { const x0 = Math.max(0, Math.round((cx - ww / 2) * SC)), y0 = Math.max(0, Math.round((H - (cy + hh / 2)) * SC)), W2 = Math.round(ww * SC), H2 = Math.round(hh * SC);
+        if (W2 < 2 || H2 < 2) return 0; const dt = ctx.getImageData(x0, y0, Math.min(W2, cv.width - x0), Math.min(H2, cv.height - y0)).data; let k = 0; for (let j = 0; j < dt.length; j += 4) if (dt[j] < 110 && dt[j + 1] < 110 && dt[j + 2] < 120) k++; return k / (dt.length / 4); };
+      pages.push({w:vp.width / SC, h:H, items:merged, ink});
+    }
+  } finally { try { await w.terminate(); } catch(e){} }
+  OCR_USED = true; if (window.__prdbg) window.__prpages = pages; return prParse(pages, {ocr:true});
 }
 
 /* ---------- reprise dans l'appli : champs, import, PDF, fiche ---------- */
@@ -6071,8 +6134,8 @@ const CLS_CSS = document.createElement("style"); CLS_CSS.textContent = `#cls{pos
 #cls .cbar{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 8px}#cls .cbar .ct{flex:1;text-align:center;font-weight:700}
 #cls .cctl{padding:0 14px 8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}#cls .cctl select,#cls .cctl input{padding:8px;font-size:14px;border-radius:10px;width:100%;box-sizing:border-box}
 #cls .cl{flex:1;min-height:0;overflow:auto;padding:0 12px calc(14px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
-#cls .ci{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;background:#fff;border-radius:14px;padding:10px;margin-bottom:8px;align-items:center}
-#cls .ci img.thumb{width:56px;height:56px;object-fit:cover;border-radius:8px}#cls .ci b{display:block;overflow-wrap:anywhere}#cls .ci .s{font-size:12px;color:#5b6f69}#cls .ci select{margin-top:6px;padding:6px;font-size:13px;border-radius:8px;max-width:100%}`;
+#cls .ci{display:grid;grid-template-columns:26px 64px minmax(0,1fr);gap:10px;background:#fff;border-radius:14px;padding:10px;margin-bottom:8px;align-items:center}
+#cls .ci input[type=checkbox]{width:22px;height:22px}#cls .ci img.thumb{width:64px;height:64px;background:#fff;object-fit:cover;border-radius:8px}#cls .ci b{display:block;overflow-wrap:anywhere}#cls .ci .s{font-size:12px;color:#5b6f69}#cls .ci select{margin-top:6px;padding:6px;font-size:13px;border-radius:8px;max-width:100%}`;
 document.head.appendChild(CLS_CSS);
 const clsType = d => d.kind === "autre" ? (annexLabel(d.sub) || "Autre document") : (FKIND[d.kind] || "Document");
 const clsKindOf = d => d.kind === "autre" ? "autre" : d.kind;
@@ -6083,22 +6146,44 @@ function clsList(){ const c = V.cls, q = (c.q || "").toLowerCase().trim();
   return L.sort(S_[c.sort] || S_.new); }
 function clsRender(){
   const c = V.cls; if (!c) return; let el = document.getElementById("cls"); if (!el){ el = document.createElement("div"); el.id = "cls"; document.body.appendChild(el); }
-  const L = clsList(), biens = S.biens.filter(b => !b.del), kinds = [["", "Tous les types"], ["fact", "Factures"], ["bail", "Baux"], ["edl", "États des lieux"], ["inv", "Inventaires"], ["autre", "Diagnostics et autres"]], sorts = [["new", "Plus récents"], ["old", "Plus anciens"], ["nom", "Nom (A-Z)"], ["type", "Type"], ["bien", "Bien"]];
+  const L = clsList(), nsel = Object.keys(c.sel || {}).filter(k => c.sel[k]).length, biens = S.biens.filter(b => !b.del), kinds = [["", "Tous les types"], ["fact", "Factures"], ["bail", "Baux"], ["edl", "États des lieux"], ["inv", "Inventaires"], ["autre", "Diagnostics et autres"]], sorts = [["new", "Plus récents"], ["old", "Plus anciens"], ["nom", "Nom (A-Z)"], ["type", "Type"], ["bien", "Bien"]];
   const o = (arr, cur) => arr.map(x => `<option value="${esc(x[0])}" ${x[0] === cur ? "selected" : ""}>${esc(x[1])}</option>`).join("");
-  el.innerHTML = `<div class="cbar" ${DEMO ? 'style="padding-top:calc(64px + env(safe-area-inset-top,0px))"' : ""}><button class="btn sm ghost" data-cl="close">✕ Fermer</button><span class="ct">Classeur · ${L.length} document(s)</span><span style="width:70px"></span></div>
+  el.innerHTML = `<div class="cbar" ${DEMO ? 'style="padding-top:calc(64px + env(safe-area-inset-top,0px))"' : ""}><button class="btn sm ghost" data-cl="close">✕ Fermer</button><span class="ct">Classeur · ${L.length} document(s)</span><button class="btn sm ghost" data-cl="all">${L.length && L.every(d => (c.sel || {})[d.id]) ? "Tout décocher" : "Tout cocher"}</button></div>
     <div class="cctl"><select data-cl="bien"><option value="">Tous les biens</option>${biens.map(b => `<option value="${b.id}" ${b.id === c.bien ? "selected" : ""}>${esc(b.nom)}</option>`).join("")}</select>
     <select data-cl="kind">${o(kinds, c.kind)}</select><select data-cl="sort">${o(sorts, c.sort)}</select><input data-cl="q" type="search" placeholder="Rechercher" value="${esc(c.q || "")}"></div>
-    <div class="cl">${L.map(d => `<div class="ci">${thumb(d.id, d.fname || d.nom, d.type)}<div><b>${esc(d.nom || d.fname || "Document")}</b><div class="s">${esc(bienName(d.bien))} · ${esc(clsType(d))} · ${d.date ? esc(frDate(d.date)) : "sans date"}${d.size ? " · " + Math.max(1, Math.round(d.size / 1024)) + " Ko" : ""}</div>
-      <select data-cl="move" data-id="${d.id}" aria-label="Ranger dans un autre bien"><option value="">Ranger dans…</option>${biens.filter(b => b.id !== d.bien).map(b => `<option value="${b.id}">${esc(b.nom)}</option>`).join("")}</select></div></div>`).join("") || '<div class="empty" style="padding:24px 8px">Aucun document pour ces filtres. Les scans et imports de chaque bien (Biens › Documents) apparaissent ici.</div>'}</div>`;
+    <div class="cl">${L.map(d => `<div class="ci"><input type="checkbox" data-cl="sel" data-id="${d.id}" ${(c.sel || {})[d.id] ? "checked" : ""} aria-label="Sélectionner">${thumb(d.id, d.fname || d.nom, d.type).replace('<img class="thumb"', '<img class="thumb" data-pth="' + d.id + '"')}<div>${c.edit === d.id ? `<input id="cl-ren" value="${esc(d.nom || d.fname || "")}" style="width:100%;box-sizing:border-box;padding:8px;font-size:14px;border-radius:8px" aria-label="Nouveau nom"><div style="display:flex;gap:6px;margin-top:6px"><button class="btn sm" data-cl="ren-ok" data-id="${d.id}">Enregistrer</button><button class="btn sm ghost" data-cl="ren-no">Annuler</button></div>` : `<b>${esc(d.nom || d.fname || "Document")}</b>`}<div class="s">${esc(bienName(d.bien))} · ${esc(clsType(d))} · ${d.date ? esc(frDate(d.date)) : "sans date"}${d.size ? " · " + Math.max(1, Math.round(d.size / 1024)) + " Ko" : ""}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm ghost" style="margin-top:6px" data-cl="ren" data-id="${d.id}">✏️ Renommer</button><select data-cl="move" data-id="${d.id}" aria-label="Ranger dans un autre bien"><option value="">Ranger dans…</option>${biens.filter(b => b.id !== d.bien).map(b => `<option value="${b.id}">${esc(b.nom)}</option>`).join("")}</select></div></div></div>`).join("") || '<div class="empty" style="padding:24px 8px">Aucun document pour ces filtres. Les scans et imports de chaque bien (Biens › Documents) apparaissent ici.</div>'}</div>${nsel ? `<div style="padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;display:flex;gap:8px;box-shadow:0 -2px 8px #0002"><button class="btn" style="flex:1" data-cl="send">📤 Envoyer ${nsel} document${nsel > 1 ? "s" : ""}</button><button class="btn ghost" data-cl="save">💾 Un seul PDF</button></div>` : ""}`;
+  clsThumbs();
 }
+const CLS_TH = {};
+async function clsThumbs(){ /* aperçu réel de la 1re page des PDF (calculé sur l'appareil, gardé en mémoire) */
+  for (const im of document.querySelectorAll("#cls img[data-pth]")){ const fid = im.dataset.pth; if (CLS_TH[fid] === "x") continue;
+    if (CLS_TH[fid]){ im.src = CLS_TH[fid]; continue; }
+    if (!isPdfName(im.dataset.name)) continue;
+    try { const r = await flGet(fid); if (!r || !r.buf) { CLS_TH[fid] = "x"; continue; } const L = await loadPdfJs(), doc = await L.getDocument({data:new Uint8Array(r.buf.slice(0))}).promise, pg = await doc.getPage(1), v0 = pg.getViewport({scale:1}), vp = pg.getViewport({scale:200 / v0.width}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
+      await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; CLS_TH[fid] = cv.toDataURL("image/jpeg", 0.7); im.src = CLS_TH[fid]; im.style.objectFit = "cover"; im.style.objectPosition = "top"; } catch(e){ CLS_TH[fid] = "x"; } }
+}
+async function clsMergeSel(){ const c = V.cls, L = docList("docs").filter(d => !d.del && (c.sel || {})[d.id]); if (!L.length){ toast("Coche au moins un document"); return null; }
+  const biens = [...new Set(L.map(d => bienName(d.bien)))];
+  return {r:await docsMerge(L, "Documents", biens.join(", "), "Documents - " + cleanName(biens.length === 1 ? biens[0] : "plusieurs biens") + " - " + todayIso() + ".pdf"), bien:L[0].bien}; }
 function classeurCard(){ const n = docList("docs").filter(d => !d.del).length;
   return `<div class="card"><h2>Classeur de tous les documents</h2><div class="small muted">Tous les scans et imports de tous tes biens au même endroit : filtre par bien ou par type, tri par date, recherche, et déplacement d'un document vers un autre bien.</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="cl-open">📚 Ouvrir le classeur (${n})</button></div></div>`; }
 document.addEventListener("click", ev => {
   const o = ev.target.closest("[data-act='cl-open']"); if (o){ V.cls = {bien:"", kind:"", sort:"new", q:""}; clsRender(); return; }
-  const b = ev.target.closest("[data-cl='close']"); if (b){ const el = document.getElementById("cls"); if (el) el.remove(); V.cls = null; }
+  const b = ev.target.closest("[data-cl='close']"); if (b){ const el = document.getElementById("cls"); if (el) el.remove(); V.cls = null; return; }
+  const g = ev.target.closest("[data-cl='all'],[data-cl='send'],[data-cl='save']"); if (g && V.cls){ const c = V.cls; c.sel = c.sel || {};
+    if (g.dataset.cl === "all"){ const L = clsList(), all = L.every(d => c.sel[d.id]); L.forEach(d => { if (all) delete c.sel[d.id]; else c.sel[d.id] = 1; }); clsRender(); return; }
+    (async () => { try { const m = await clsMergeSel(); if (!m) return; if (g.dataset.cl === "save"){ await saveFile(m.r.name, m.r.bytes, "application/pdf"); return; }
+      sendMark(m.bien, "Documents", todayIso()); SEND.signed = false; sendIntercept(m.r.name, m.r.bytes, "application/pdf"); } catch(e){ toast("Assemblage impossible : " + (e && e.message || e)); } })(); return; }
+  const r = ev.target.closest("[data-cl='ren'],[data-cl='ren-ok'],[data-cl='ren-no']"); if (!r || !V.cls) return; const a = r.dataset.cl;
+  if (a === "ren"){ V.cls.edit = r.dataset.id; clsRender(); const i = document.getElementById("cl-ren"); if (i){ i.focus(); i.select(); } return; }
+  if (a === "ren-no"){ V.cls.edit = null; clsRender(); return; }
+  const d = docList("docs").find(x => x.id === r.dataset.id), v = ((document.getElementById("cl-ren") || {}).value || "").trim();
+  if (d && v){ d.nom = v; d.upd = Date.now(); persist(); toast("Document renommé"); } V.cls.edit = null; clsRender();
 });
 document.addEventListener("change", ev => { const t = ev.target, a = t && t.dataset && t.dataset.cl; if (!a || !V.cls) return;
+  if (a === "sel"){ V.cls.sel = V.cls.sel || {}; if (t.checked) V.cls.sel[t.dataset.id] = 1; else delete V.cls.sel[t.dataset.id]; const y = (document.querySelector("#cls .cl") || {}).scrollTop; clsRender(); const l = document.querySelector("#cls .cl"); if (l && y) l.scrollTop = y; return; }
   if (a === "move"){ if (!t.value) return; const d = docList("docs").find(x => x.id === t.dataset.id); if (!d) return; d.bien = t.value; d.upd = Date.now();
     ["edl", "inv"].forEach(k => docList(k).forEach(e => { if (e.fichier === d.id){ e.bien = t.value; e.upd = Date.now(); } })); persist(); toast("Rangé dans « " + bienName(t.value) + " »"); clsRender(); return; }
   if (a === "bien") V.cls.bien = t.value; else if (a === "kind") V.cls.kind = t.value; else if (a === "sort") V.cls.sort = t.value; else return; clsRender(); });
