@@ -1467,8 +1467,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.40";
+const APP_VERSION = "1.7.41";
 const CHANGELOG = [
+  {v:"1.7.41", date:"2026-11-11", titre:"Envoi par mail avec le fichier joint", items:["Fenêtre « Envoyer au locataire » : un seul bouton « Outlook ou Mail avec le fichier », comme dans l'appli Amicale.","Sur téléphone : explication, adresse du locataire copiée, puis menu de partage avec le PDF déjà joint (colle l'adresse dans « À »).","Sur ordinateur : brouillon Outlook (.eml) téléchargé, avec adresse, message et PDF prêts à envoyer.","Message type : « Bonjour Camille, Voici « … » en fichier joint » + ton nom."]},
   {v:"1.7.40", date:"2026-11-10", titre:"Frais partagés modifiables", items:["Frais partagés entre comptes : tu peux ajouter, renommer ou supprimer un frais (bouton ✎ ou « + Ajouter un frais partagé »).","Chaque frais peut être réparti entre 2, 3 comptes ou plus, avec un pourcentage par compte (le total doit faire 100 %). Le dernier total et les dernières parts sont mémorisés.","À la saisie, les parts restent modifiables pour cette fois ; l’appli crée une ligne par compte.","Rapprochement bancaire : exemple chiffré dans la visite guidée."]},
   {v:"1.7.39", date:"2026-11-10", titre:"Visite guidée : corrections", items:["Visite guidée : la diapo « Les réglages » entoure bien la roue dentée, les diapos « Les opérations » et « Tout pointer » sont visibles en paysage et sur iPhone, et le permis de louer passe après « Retenir le candidat » au lieu de couper la création d'un candidat. Le dossier de pièces est placé après la visite. Les captures qui avaient pris le style Fun par erreur (documents, envoi, signature papier…) sont refaites en style normal, la diapo « Style Fun » montre l'accueil, et la mention des « 12 secondes » pour Annuler est retirée."]},
   {v:"1.7.38", date:"2026-11-10", titre:"Visite guidée et guide refaits", items:["Visite guidée refaite avec l'affichage actuel : les 89 captures sont régénérées, 142 étapes, nouvelle diapo « Les points forts ». Nouvelles étapes : le formulaire de candidature (lien, page remplie par le candidat, e-mail préparé, collage dans l'appli, dossier de pièces), vues compactes (état des lieux, inventaire), fenêtre « Envoyer au locataire » en détail (Mail, Outlook, SMS, PDF joint, rangement dans la fiche), PDF rangés visibles dans la carte du bien. Le guide à lire gagne une section « Envoyer un document au locataire »."]},
@@ -1639,7 +1640,7 @@ const HELP = {
     "Les papiers personnels d'un locataire (identité, contrat…) se rangent dans sa fiche, pas ici.",
     "Inventaire ou état des lieux d\'entrée : tu peux choisir un fichier (PDF, Excel, CSV) : l\'appli le recopie vierge dans la liste. « Garder comme modèle » ★ en fait ta liste standard, proposée par défaut pour chaque nouveau document.",
     "Avant de signer, « PDF de relecture » sort le document sans signature pour le relire avec le locataire.",
-    "Envoyer au locataire : le bouton « Outlook » ouvre l\'appli Outlook avec l\'e-mail du locataire, l\'objet et le texte préremplis (sinon Outlook sur le web). Le PDF se joint à la main : enregistre-le d\'abord avec « Enregistrer sur l\'appareil ».",
+    "Envoyer au locataire : le bouton « Outlook ou Mail avec le fichier » prépare le message avec le PDF joint. Sur téléphone, touche Continuer (l\'adresse est copiée), choisis Mail ou Outlook, colle l\'adresse dans « À » puis envoie. Sur ordinateur, ouvre le brouillon .eml téléchargé : tout est prérempli.",
     "Inventaire du mobilier et état des lieux : la « Vue compacte » affiche une ligne par article (nom, quantité, état) avec toutes les catégories dépliées, pratique pendant la visite. Le bouton ＋ ouvre l\'observation ; « Vue détaillée » revient à l\'affichage large.",
     "À la création d'un état des lieux ou d'un inventaire, tu peux reprendre la liste d'un autre document pour le préparer à l'avance.",
     "Le solde montre ce qui a été reçu par rapport à ce qui est dû depuis le début du bail. « Relancer » prépare le message.",
@@ -5363,6 +5364,12 @@ async function docTextOf(f){
 
 /* ============ Envoyer au locataire : le PDF part par partage, e-mail ou SMS, avec les coordonnées déjà connues ============ */
 let SEND = null, PEND = null;
+const amMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+function amB64(u8){ let s = ""; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); }
+async function amEml(em, subject, text, name, blob, mime){   /* brouillon .eml (X-Unsent) : Outlook l'ouvre avec adresse, message et pièce jointe */
+  const u8 = new Uint8Array(await new Response(blob).arrayBuffer()), W = x => x.replace(/.{1,76}/g, "$&\r\n").replace(/\r\n$/, ""), bd = "=_Mail" + Date.now().toString(36), u = t => btoa(unescape(encodeURIComponent(t))), sn = name.replace(/[^A-Za-z0-9._-]/g, "_");
+  const m = ["To: " + em, "Subject: =?UTF-8?B?" + u(subject) + "?=", "X-Unsent: 1", "MIME-Version: 1.0", 'Content-Type: multipart/mixed; boundary="' + bd + '"', "", "--" + bd, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64", "", W(u(text)), "--" + bd, "Content-Type: " + mime + '; name="' + sn + '"', "Content-Transfer-Encoding: base64", 'Content-Disposition: attachment; filename="' + sn + '"', "", W(amB64(u8)), "--" + bd + "--", ""].join("\r\n");
+  return new Blob([m], {type:"message/rfc822"}); }
 /* Un bouton marqué data-send mémorise le contexte juste avant l'action qui fabrique le PDF (le clic suivant l'efface). */
 document.addEventListener("click", ev => {
   const b = ev.target.closest("[data-send]");
@@ -5380,16 +5387,15 @@ function sendIntercept(name, data, mime){
   if (!SEND) return false;
   const c = SEND; SEND = null; PEND = {name, data, mime, c};
   const t = sendTenant(c.bien), sj = c.titre + " – " + bienName(c.bien) + " – " + frDate(c.date);
-  const bj = (t && t.nom ? "Bonjour " + t.nom.split(" ")[0] + ",\n\n" : "Bonjour,\n\n") + "Veuillez trouver ci-joint : " + c.titre.toLowerCase() + " (" + bienName(c.bien) + ", " + frDate(c.date) + ").\n\nCordialement";
+  const bj = "Bonjour" + (t && t.nom ? " " + t.nom.split(" ")[0] : "") + ",\n\nVoici « " + c.titre + " » en fichier joint.\n\n" + ((S.cfg && S.cfg.bailleur) || "");
   PEND.sj = sj; PEND.bj = bj; PEND.t = t;
   openSheet(`<h2>Envoyer au locataire</h2><div class="info"><b>${esc(c.titre)}</b> · ${esc(bienName(c.bien))}<br>${t ? esc(t.nom) + (t.email ? " · " + esc(t.email) : " · <i>pas d'e-mail</i>") + (t.tel ? " · " + esc(t.tel) : "") : "Aucun locataire enregistré pour ce bien."}</div>
     ${c.signed ? `<div class="info">✓ Ton exemplaire signé est déjà rangé dans <b>Biens › Documents du bien</b>.</div>` : ""}
     ${t ? `<label class="ck"><input type="checkbox" id="snd-fiche" checked> Ranger aussi une copie dans la fiche de ${esc(t.nom)} (Documents)</label>` : ""}
     <div class="small muted" style="margin:6px 0 2px"><b>Envoyer par :</b></div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="mail">✉️ Mail${t && t.email ? " à " + esc(t.email) : ""}</button><button class="btn" style="flex:1" data-act="snd" data-v="olk">📨 Outlook${t && t.email ? " à " + esc(t.email) : ""}</button></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="fm">${amMobile() ? "📎 Outlook ou Mail avec le fichier" : "💼 Outlook : brouillon prêt avec le fichier"}${t && t.email ? " (" + esc(t.email) + ")" : ""}</button></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="sms">💬 SMS${t && t.tel ? " au " + esc(t.tel) : ""}</button></div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="att">📎 Autres (PDF joint : Mail, Messages, WhatsApp…)</button></div>
-    <div class="small muted">⚠️ Mail et SMS ouvrent le message avec le destinataire et le texte déjà remplis, mais <b>le téléphone ne permet pas de joindre le PDF à partir d'une appli web</b> : joins-le toi-même (trombone ▸ Fichiers, après « Enregistrer sur l'appareil »). Pour un envoi avec le PDF déjà joint, utilise « Autres » (l'e-mail ou le numéro du locataire est copié).</div>
+    <div class="small muted">Le message (« Bonjour…, Voici « titre » en fichier joint ») est prêt. Sur téléphone, l'adresse est copiée et le fichier est joint par le menu de partage ; sur ordinateur, un brouillon Outlook (.eml) est téléchargé avec tout pré-rempli. Le SMS n'embarque pas le fichier.</div>
     <div id="snd-status" class="info" style="display:none"></div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="snd" data-v="save">Enregistrer sur l'appareil (Fichiers…)</button>${t ? `<button class="btn ghost" style="flex:1" data-act="snd" data-v="only">Seulement ranger dans la fiche</button>` : ""}<button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
   return true;
@@ -5405,16 +5411,25 @@ document.addEventListener("click", async ev => {
   if (fi && fi.checked && t) st("Copie rangée dans la fiche de " + esc(t.nom) + ".");
   if (v === "only"){ if (!(fi && fi.checked)) toast("Coche d'abord « Ranger aussi une copie dans la fiche »"); return; }
   if (v === "save"){ SEND = null; await saveFile(p.name, p.data, p.mime); st("Enregistrement proposé sur l'appareil." + (fi && fi.checked && t ? " Copie rangée dans la fiche de " + esc(t.nom) + "." : "") + " Tu peux maintenant choisir Mail, SMS ou Autres ci-dessus."); return; }
-  if (v === "olk"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); const q = "to=" + encodeURIComponent(t.email) + "&subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); location.href = "ms-outlook://compose?" + q; setTimeout(() => { if (!document.hidden) window.open("https://outlook.live.com/mail/0/deeplink/compose?" + q, "_blank"); }, 1800); return; }
-  if (v === "mail"){ if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche"); location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj); return; }
-  if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
-  if (v === "att"){
-    { const cp = t && (t.email || t.tel); if (cp){ try { await navigator.clipboard.writeText(cp); toast((t.email ? "E-mail copié : " : "Numéro copié : ") + cp); } catch(e){} } }
+  if (v === "fm"){
+    if (!t || !t.email) return toast("Pas d'e-mail pour ce locataire : ajoute-le dans sa fiche");
+    if (!amMobile()){ try { const b = await amEml(t.email, p.sj, p.bj, p.name, new Blob([p.data], {type:p.mime}), p.mime), u = URL.createObjectURL(b), l = document.createElement("a");
+        l.href = u; l.download = "Mail pour " + String(t.nom || "destinataire").replace(/[^\wÀ-ÿ -]/g, "") + ".eml"; document.body.appendChild(l); l.click(); setTimeout(() => { l.remove(); URL.revokeObjectURL(u); }, 4000);
+        toast("Ouvre le fichier « Mail pour… » qui vient d'être téléchargé : Outlook s'ouvre avec l'adresse, le message et le fichier déjà prêts. Il reste à cliquer sur Envoyer."); } catch(e){ toast("Brouillon impossible : " + (e && e.message || e)); } return; }
+    const pre = t.nom ? String(t.nom).split(" ")[0] : "le locataire";
+    openSheet(`<h2>Envoyer le fichier par mail</h2><div class="info"><b>1.</b> Touche « Continuer » : l'adresse de ${esc(pre)} est copiée automatiquement (${esc(t.email)}).<br><b>2.</b> Choisis ton mode d'envoi : Mail, Outlook…<br><b>3.</b> Le message s'ouvre avec le fichier déjà joint. Touche la case « À » (destinataire), garde le doigt appuyé et choisis « Coller ».<br><b>4.</b> Envoie.</div><div class="btns"><button class="btn" style="flex:1" data-act="snd" data-v="fm-go">Continuer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+    return; }
+  if (v === "fm-go"){
+    if (!t || !t.email) return;
+    try { await navigator.clipboard.writeText(t.email); } catch(e){}
+    toast("Choisis Outlook ou Mail. Le fichier et le message sont prêts. Adresse copiée : colle-la dans « À : »");
     try { const file = new File([p.data], p.name, {type:p.mime});
-      if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:p.sj, text:p.bj}); st("Partage ouvert. Tu peux encore envoyer autrement, ou fermer."); return; } }
+      if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:p.sj, text:p.bj}); return; } }
     catch(e){ if (e && e.name === "AbortError") return; }
-    SEND = null; saveFile(p.name, p.data, p.mime, "Joins-le à ton e-mail" + (t && t.email ? " pour " + t.email : "") + ".");
-  }
+    SEND = null; await saveFile(p.name, p.data, p.mime);
+    location.href = "mailto:" + encodeURIComponent(t.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent(p.sj) + "&body=" + encodeURIComponent(p.bj);
+    toast("Fichier téléchargé : ajoute-le en pièce jointe du mail (trombone)"); return; }
+  if (v === "sms"){ if (!t || !t.tel) return toast("Pas de téléphone pour ce locataire : ajoute-le dans sa fiche"); location.href = "sms:" + t.tel.replace(/\s/g, "") + "?&body=" + encodeURIComponent(p.sj + " : " + p.bj.split("\n\n")[1]); return; }
 });
 /* ---------- Modèles vierges ---------- */
 async function blankModel(k){
