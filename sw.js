@@ -1,5 +1,5 @@
-const C = 'glf-af2b037c';
-const SHELL = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png',
+const C = 'glf-7400cf8a';
+const SHELL = ['./', './index.html', './manifest.json', './pdf-lib.min.js', './icon-180.png', './icon-192.png', './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
 self.addEventListener('install', e => e.waitUntil(
   caches.open(C).then(c => Promise.allSettled(SHELL.map(u => c.add(u)))).then(() => self.skipWaiting())));
