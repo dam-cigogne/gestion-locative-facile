@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.62";
+const APP_VERSION = "1.7.63";
 const CHANGELOG = [
+  {v:"1.7.63", date:"2026-11-11", titre:"Dossier du bail : fin de bail ou nouveau bail", items:["Dossier du bail : deux onglets « 🚪 Fin de bail (sortie) » et « 🔑 Nouveau bail (entrée) ». En sortie, seuls le bail, l'état des lieux de sortie et l'inventaire de sortie sont cochés. En entrée, bail, diagnostics et annexes obligatoires, état des lieux et inventaire d'entrée.","Chaque pièce porte une étiquette Obligatoire / Conseillé / Facultatif / À ne pas joindre avec la raison ; les documents personnels du locataire et sa candidature ne sont jamais cochés."]},
   {v:"1.7.62", date:"2026-11-11", titre:"« À faire faire » sur chaque pièce", items:["Pièces à joindre : le bouton « 📌 À faire faire » sur une ligne sans document (plomb, électricité, gaz…) la marque comme à faire pour la prochaine location : elle remonte dans l'alerte en haut et dans le récapitulatif imprimé, même si le logement était « non concerné ». Retire-la d'un tap quand c'est fait."]},
   {v:"1.7.61", date:"2026-11-11", titre:"Plusieurs dossiers complets de diagnostics", items:["Pièces à joindre › Autres diagnostics / dossier complet : tu peux maintenant importer plusieurs dossiers complets (bouton « ＋ Importer un autre dossier »). Chacun a sa ligne avec ✂ Découper, Voir, la date et ×, et tous sont joints au bail."]},
   {v:"1.7.60", date:"2026-11-11", titre:"Supprimer les documents d'un bien d'un coup", items:["Biens › Documents › Documents du bien : bouton « 🗑 Tout supprimer » (avec confirmation) qui retire tous les documents du bien, y compris les parties découpées ; les états des lieux, inventaires et baux ne sont pas touchés.","Pièces à joindre : un bouton × sur chaque ligne supprime le document de cette pièce (avec confirmation)."]},
@@ -5718,12 +5719,37 @@ async function dkList(tid){
   return all.map(f => { const rel = f.name.slice(root.length), dir = rel.split("/")[0], nom = rel.split("/").slice(1).join("/"); return {dir, nom, data:f.data, ok:dkIsPdf(f.data) || !!dkImg(f.data)}; })
     .filter(f => f.dir !== "00 Fiche").sort((a, b) => (DK_ORDER[a.dir] || 9) - (DK_ORDER[b.dir] || 9) || a.nom.localeCompare(b.nom));
 }
-async function sheetDossier(bien){
+/* classement des pièces selon le moment : entrée (nouveau bail) ou sortie (fin de bail) */
+function dkInfo(f, mode){
+  const sortie = /sortie/i.test(f.nom), d = f.dir.replace(/^\d+ /, ""), n = f.nom;
+  if (/^01/.test(f.dir)) return {on:true, lvl:"obl", tag:"Obligatoire", why:mode === "sortie" ? "le contrat de référence pour solder le dossier" : "le contrat lui-même"};
+  if (/^02/.test(f.dir) || /^03/.test(f.dir)){
+    const inv = /^03/.test(f.dir);
+    if (mode === "sortie") return sortie ? {on:true, lvl:"obl", tag:"Obligatoire", why:inv ? "inventaire de sortie, comparé à celui d'entrée (meublé)" : "état des lieux de sortie, base de la retenue éventuelle sur le dépôt"} : {on:false, lvl:"con", tag:"Conseillé", why:"pour comparer entrée / sortie (le locataire l'a déjà reçu)"};
+    return sortie ? {on:false, lvl:"non", tag:"Pas maintenant", why:"concerne la sortie, pas l'entrée"} : {on:true, lvl:"obl", tag:"Obligatoire", why:inv ? "inventaire annexé au bail meublé" : "état des lieux d'entrée annexé au bail"};
+  }
+  if (/^06/.test(f.dir)){
+    if (mode === "sortie") return {on:false, lvl:"fac", tag:"Facultatif", why:"déjà remis à l'entrée ; inutile pour solder la sortie"};
+    if (/diagnostic|dpe|erp|risque|plomb|amiante|électricit|gaz|boutin|bruit|notice/i.test(n)) return {on:true, lvl:"obl", tag:"Obligatoire", why:"annexe obligatoire du bail"};
+    if (/copropri|règlement/i.test(n)) return {on:true, lvl:"obl", tag:"Obligatoire si copropriété", why:"extraits du règlement à remettre au locataire"};
+    return {on:true, lvl:"con", tag:"Conseillé", why:"pièce jointe au bail"};
+  }
+  if (/^05/.test(f.dir)) return {on:false, lvl:"non", tag:"À ne pas joindre", why:"documents personnels du locataire (données privées)"};
+  return {on:false, lvl:"non", tag:"À ne pas joindre", why:"dossier de candidature : données privées"};
+}
+const DK_COL = {obl:["#B3261E", "rgba(179,38,30,.13)"], con:["#C77D00", "rgba(242,184,75,.25)"], fac:["#5C6B66", "rgba(138,150,144,.18)"], non:["#5C6B66", "rgba(138,150,144,.18)"]};
+async function sheetDossier(bien, mode){
   const t = tenantFor(bien, todayIso()) || (soldeLoc(bien) || {}).t; if (!t) return toast("Aucun locataire pour ce logement : crée d'abord sa fiche");
-  toast("Recherche des documents…"); const L = await dkList(t.id); V.dk = {bien, tid:t.id, L};
-  const on = f => /^(01|06|02|03)/.test(f.dir) && f.ok;
-  openSheet(`<h2>Dossier du bail</h2><div class="small muted">Coche ce qui doit partir : l'appli assemble tout dans <b>un seul PDF</b> (bail, annexes comme les diagnostics et l'ERP, état des lieux, inventaire), puis propose de l'envoyer à ${esc(t.nom)}. Les documents sont pris dans les <b>Documents</b> du logement et dans ses états des lieux / inventaires.</div>
-    ${L.length ? L.map((f, i) => `<label style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);${f.ok ? "" : "opacity:.55"}"><input type="checkbox" style="width:22px;height:22px;flex:none;margin:0" data-dk="${i}" ${on(f) ? "checked" : ""} ${f.ok ? "" : "disabled"}><span style="min-width:0"><b style="font-size:14px">${esc(f.nom.replace(/\.[a-z0-9]+$/i, ""))}</b><br><span class="small muted">${esc(f.dir.replace(/^\\d+ /, ""))}${f.ok ? "" : " · format non assemblable (Word, Excel…) : à joindre à part"}</span></span></label>`).join("") : '<div class="empty">Aucun document trouvé pour ce locataire.</div>'}
+  if (!V.dk || V.dk.bien !== bien || V.dk.tid !== t.id || !mode) toast("Recherche des documents…");
+  const L = (V.dk && V.dk.bien === bien && V.dk.tid === t.id && mode) ? V.dk.L : await dkList(t.id);
+  if (!mode) mode = L.some(f => /^0[23]/.test(f.dir) && /sortie/i.test(f.nom)) ? "sortie" : "entree";
+  V.dk = {bien, tid:t.id, L, mode};
+  const tab = (m, lab) => `<button class="mini" data-act="dk-mode" data-m="${m}" style="${mode === m ? "background:var(--accent,#0E6B5C);color:#fff;font-weight:700" : ""}">${lab}</button>`;
+  const adv = mode === "sortie" ? "<b>Fin de bail</b> : le strict nécessaire = le bail, l'état des lieux de sortie et l'inventaire de sortie (meublé). L'état des lieux d'entrée est conseillé pour comparer. Les diagnostics et annexes ont déjà été remis à l'entrée : inutile de les renvoyer. Pense aussi au décompte du dépôt de garantie (1 mois si l'état des lieux est conforme, 2 mois sinon)." : "<b>Nouveau bail</b> : à remettre au locataire = le bail, les diagnostics et annexes obligatoires (DPE, ERP, loi Boutin, plomb / électricité / gaz / amiante selon le logement, notice d'information, extraits du règlement de copropriété), l'état des lieux d'entrée et l'inventaire si meublé. Jamais les documents personnels des autres locataires.";
+  openSheet(`<h2>Dossier du bail</h2><div class="small muted">Coche ce qui doit partir : l'appli assemble tout dans <b>un seul PDF</b>, puis propose de l'envoyer à ${esc(t.nom)}. Les documents sont pris dans les <b>Documents</b> du logement et dans ses états des lieux / inventaires.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">${tab("sortie", "🚪 Fin de bail (sortie)")}${tab("entree", "🔑 Nouveau bail (entrée)")}</div>
+    <div class="small" style="padding:9px 12px;border-radius:10px;background:rgba(14,107,92,.1);margin-bottom:6px">${adv}</div>
+    ${L.length ? L.map((f, i) => { const k = dkInfo(f, mode), c = DK_COL[k.lvl]; return `<label style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);${f.ok ? "" : "opacity:.55"}"><input type="checkbox" style="width:22px;height:22px;flex:none;margin:0" data-dk="${i}" ${k.on && f.ok ? "checked" : ""} ${f.ok ? "" : "disabled"}><span style="min-width:0"><b style="font-size:14px">${esc(f.nom.replace(/\.[a-z0-9]+$/i, ""))}</b><br><span class="small muted">${esc(f.dir.replace(/^\d+ /, ""))}${f.ok ? "" : " · format non assemblable (Word, Excel…) : à joindre à part"}</span><br><span class="small"><b style="color:${c[0]};background:${c[1]};padding:1px 7px;border-radius:8px">${esc(k.tag)}</b> ${esc(k.why)}</span></span></label>`; }).join("") : '<div class="empty">Aucun document trouvé pour ce locataire.</div>'}
     <div id="dk-info" class="info" style="display:none"></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="dk-go">Assembler et envoyer</button><button class="btn ghost" data-act="dk-rel">👁 Relire le PDF</button><button class="btn ghost" data-act="dk-save">Assembler (enregistrer)</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
 }
@@ -5752,6 +5778,7 @@ document.addEventListener("click", async ev => {
   if (a === "bl-open"){ sheetBailleurPlus(); return; }
   if (a === "bl-save"){ blSaveFields(); persist(); closeSheet(); toast("Bailleur enregistré"); render(); return; }
   if (a === "bl-pdf"){ if ($("#bl-nom")){ blSaveFields(); persist(); } await saveFile("fiche-bailleur-" + todayIso() + ".pdf", bailleurPdf(), "application/pdf"); return; }
+  if (a === "dk-mode"){ await sheetDossier(V.dk.bien, b.dataset.m); return; }
   if (a === "dk-open"){ await sheetDossier(b.dataset.id || V.bsel); return; }
   if (a === "dk-rel"){ try { const r = await dkMerge(); if (r) await relectOpen(r.name, r.bytes); } catch(e){ const i = $("#dk-info"); if (i){ i.style.display = "block"; i.textContent = "Relecture impossible : " + (e && e.message || e); } } return; }
   if (a === "dk-save" || a === "dk-go"){
