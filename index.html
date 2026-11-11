@@ -533,7 +533,7 @@ function demoData(rich){
   d.locataires = [{id:uid(),bien:"T2",nom:"Locataire Exemple",tel:"0600000000",email:"",debut:(y-1)+"-09-01",fin:"",loyer:650,depot:650,note:"Donnée d'exemple",upd:0},
     ];
   if (!rich) return d;
-  d.locataires[0].nom = "Julien Exemple"; d.locataires.push({id:uid(),bien:"STUDIO",nom:"Camille Essai",tel:"0600000001",email:"",debut:(y-1)+"-03-01",fin:"",loyer:500,depot:500,note:"Donnée d'exemple",upd:0});
+  d.locataires[0].nom = "Julien Exemple"; d.locataires[0].gl = {type:"visale", visa:"V0000000000", valid:(y+1)+"-08-31", assureur:"", contact:"", url:"https://www.visale.fr", note:"Exemple fictif : garantie du locataire, loyer et charges"}; d.locataires.push({id:uid(),bien:"STUDIO",nom:"Camille Essai",tel:"0600000001",email:"",debut:(y-1)+"-03-01",fin:"",loyer:500,depot:500,note:"Donnée d'exemple",upd:0});
   d.biens[0].adresse = "1 rue de l'Exemple, 00000 Ville-Test"; d.biens[1].adresse = "2 avenue d'Essai, 00000 Ville-Test";
   d.biens[0].desc = {type:"Studio", surface:"22", etage:"2e étage", pieces:"1", copro:"Oui", dpe:"D", chauffage:"Électrique individuel", eauch:"Ballon électrique", annexes:"Aucune"};
   d.biens[1].desc = {type:"Appartement T2", surface:"38", etage:"1er étage", pieces:"2", copro:"Oui", dpe:"C", chauffage:"Électrique individuel", eauch:"Ballon électrique", annexes:"Cave"};
@@ -562,7 +562,7 @@ function demoData(rich){
   d.cfg = Object.assign(d.cfg || {adr:{}}, {bailleur:"Jean Exemple", bailleurAdr:"12 rue de l'Exemple, 00000 Ville-Test", bl:{tel:"06 00 00 00 00", mail:"jean@exemple.fr", statut:BL_STATUTS[1], siret:"123 456 789 00012", regime:BL_REGIMES[2]}});
   const DEMO_FACT = [["STUDIO","Plomberie Exemple","Remplacement chauffe-eau",412.5,-30,"#0E6B5C"],["STUDIO","Bricolage Exemple","Peinture et fournitures",86.9,-75,"#B45309"],["STUDIO","Assurance Exemple","Prime PNO",134,-110,"#1D4ED8"],["T2","Électricité Exemple","Remplacement tableau",268,-45,"#7C3AED"],["T2","Mairie Exemple","Taxe foncière",612,-60,"#0F766E"]];
   DEMO_FACT.forEach((f, i) => d.docs.push({id:"demo-fact-" + i, bien:f[0], kind:"fact", nom:f[1], fourn:f[1], objet:f[2], prix:f[3], fname:"facture-" + i + ".png", date:dd(f[4]), type:"image/png", size:2000, upd:0}));
-  ["STUDIO", "T2"].forEach(b => d.docs.push({id:"demo-diag-" + b, bien:b, kind:"autre", sub:"diag", nom:"Diagnostics (exemple)", fname:"diagnostics.png", date:dd(-200), type:"image/png", size:2000, upd:0}));
+  [["dpe", -400, "DPE (exemple)"], ["erp", -170, "État des risques (exemple)"], ["elec", -900, "Électricité (exemple)"], ["gaz", -200, "Gaz (exemple)"], ["plomb", -2300, "Plomb (exemple)"]].forEach(x => ["STUDIO", "T2"].filter(b => !(b === "T2" && x[0] === "plomb")).forEach(b => d.docs.push({id:"demo-diag-" + x[0] + "-" + b, bien:b, kind:"autre", sub:x[0], nom:x[2], fname:"diagnostic-" + x[0] + ".png", date:dd(x[1] - (b === "STUDIO" && x[0] === "erp" ? 80 : 0)), type:"image/png", size:2000, upd:0})));
   d.docs.push({id:uid(), kind:"chk", bien:"STUDIO", mv:"dep", done:{con:dd(-20), dat:dd(-15)}, upd:0});
   d.docs.push({id:uid(), kind:"chk", bien:"T3", mv:"arr", done:{dos:dd(-3), diag:dd(-3), bail:dd(-2)}, relu:dd(-1), upd:0});
   d.edl.push({id:uid(), bien:"STUDIO", type:"sortie", date:dd(7), loc:"Camille Essai", elec:"", eau:"", gaz:"", cles:"", fumee:"", rem:"Préparé d'avance (exemple)", ref:"", upd:0, pieces:EDL_PIECES.slice(0, 4).map(p => mkPiece(p[0], p[1]))});
@@ -725,6 +725,7 @@ function viewHome(){
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
   ${matelasHome()}${bourseCard(true)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
+  ${typeof avAlertHome === "function" ? avAlertHome() : ""}
   ${feHome()}
   <div class="card"><h2>Bénéfice ${y}</h2>
     ${kv("Recettes encaissées", eur(st.recP))}${kv("Dépenses payées", "− " + eur(st.depP))}
@@ -871,21 +872,21 @@ function tenantCard(id){
   const t = tenantFor(id, todayIso()), ended = t && t.fin && t.fin < todayIso();
   return `<div class="card" style="padding:12px 16px;gap:4px"><div class="top" style="justify-content:flex-start;gap:12px"><span class="small muted">Locataire actuel</span>${t ? `<button class="mini" data-act="ledit" data-id="${t.id}">Fiche</button>` : `<button class="mini" data-act="lnew">Ajouter</button>`}</div>
     ${t ? `<div class="t" style="font-weight:600;font-size:16px">${esc(t.nom)}${ended ? ' <span class="chip warn">bail terminé</span>' : ""}</div>
-      <div class="small muted">Bail depuis le ${t.debut ? frDate(t.debut) : "?"}${t.fin ? " jusqu'au " + frDate(t.fin) : ""} · loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""}</div>${soldeLine(id)}
+      <div class="small muted">Bail depuis le ${t.debut ? frDate(t.debut) : "?"}${t.fin ? " jusqu'au " + frDate(t.fin) : ""} · loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""}</div>${soldeLine(id)}${typeof glLine === "function" ? glLine(t) : ""}
       <div class="btns" style="gap:6px">${t.tel ? `<a class="mini" href="tel:${esc(t.tel)}">Appeler</a><a class="mini" href="sms:${esc(t.tel)}">SMS</a>` : ""}${t.email ? `<a class="mini" href="mailto:${esc(t.email)}">E-mail</a>` : ""}</div>`
     : '<div class="small muted">Aucun locataire enregistré pour ce bien.</div>'}
     ${t ? `<div class="btns"><button class="btn" style="flex:1" data-act="mv-open" data-v="dep">🚪 Départ du locataire</button><button class="btn ghost" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>` : `<div class="btns"><button class="btn" style="flex:1" data-act="mv-open" data-v="arr">🔑 Arrivée d'un locataire</button></div>`}</div>`;
 }
 function viewBiens(){
-  const subs = [["vue","Vue"],["loyers","Loyers"],["dep","Dépenses"],["travaux","Travaux"],["loc","Locataires"],["mvt","Arrivée/Départ"],["docs","Documents"],["tarifs","Tarifs"]], ids = bienIds();
+  const subs = [["vue","Vue"],["loyers","Loyers"],["dep","Dépenses"],["travaux","Travaux"],["loc","Locataires"],["visale","Visale"],["mvt","Arrivée/Départ"],["docs","Documents"],["tarifs","Tarifs"]], ids = bienIds();
   if (!subs.some(x => x[0] === V.bsub)) V.bsub = "vue";
   const sub = V.bsub; if (!V.bsel || !ids.includes(V.bsel)) V.bsel = ids[0] || "";
   const seg = `<div class="seg">${subs.map(([k,l]) => `<button class="${sub===k?"on":""}" data-act="bsub" data-v="${k}">${l}</button>`).join("")}</div>`;
   const nav = sub === "vue" || sub === "loyers" || sub === "dep" ? yearNav() : "";
-  const sel = ["vue","loyers","dep","loc","mvt","docs"].includes(sub) ? bienSeg("bsel", V.bsel, false) + tenantCard(V.bsel) : "";
+  const sel = ["vue","loyers","dep","loc","visale","mvt","docs"].includes(sub) ? bienSeg("bsel", V.bsel, false) + tenantCard(V.bsel) : "";
   let body = "";
-  if (sub === "vue") body = viewBienVue(); else if (sub === "loyers") body = viewBienLoyers(); else if (sub === "dep") body = viewBienDep(); else if (sub === "travaux") body = viewTravaux(); else if (sub === "tarifs") body = viewTarifs(); else if (sub === "docs") body = viewDocs(); else if (sub === "mvt") body = viewMvt(); else body = viewLoc();
-  return topbar("Biens", nav) + seg + sel + body;
+  if (sub === "vue") body = viewBienVue(); else if (sub === "loyers") body = viewBienLoyers(); else if (sub === "dep") body = viewBienDep(); else if (sub === "travaux") body = viewTravaux(); else if (sub === "tarifs") body = viewTarifs(); else if (sub === "docs") body = viewDocs(); else if (sub === "mvt") body = viewMvt(); else if (sub === "visale") body = viewVisale(); else body = viewLoc();
+  return topbar("Biens", nav) + seg + sel + (typeof avAlert === "function" ? avAlert(V.bsel) : "") + body;
 }
 /* Charges par catégorie : tableau (Total / Payé / Reste). Sans info de paiement (onglet Compta), seulement le total. */
 function catBars(rows, max){
@@ -1113,6 +1114,7 @@ function sheetLoc(id){
     <div class="grid2"><label class="f">Début du bail<input id="t-debut" type="date" value="${esc(t.debut)}"></label><label class="f">Fin du bail<input id="t-fin" type="date" value="${esc(t.fin)}"></label></div>
     <div class="grid2"><label class="f">Loyer charges comprises (€)<input id="t-loyer" inputmode="decimal" value="${fmtNum(t.loyer)}"></label><label class="f">Dont charges (€)<input id="t-chg" inputmode="decimal" value="${fmtNum(t.charges || "")}"></label></div>
     <label class="f">Dépôt de garantie (€)<input id="t-depot" inputmode="decimal" value="${fmtNum(t.depot)}"></label>
+    ${typeof glFields === "function" ? glFields(t) : ""}
     <label class="f">Note<input id="t-note" value="${esc(t.note)}"></label>
     ${id ? `<div class="card" style="padding:12px;gap:6px;background:var(--bg)"><b style="font-size:14px">Le locataire part ?</b><div class="small muted">« Clôturer » enregistre la date de fin, coche les étapes du départ, calcule le dépôt à rendre et, si tu veux, efface son dossier. Rien n'est supprimé sans ton accord.</div><button class="btn ghost sm" data-act="tcl-open" data-id="${id}">Clôturer ce locataire</button></div>` : ""}
     <div class="btns"><button class="btn" data-act="l-save" data-id="${id||""}" style="flex:1">Enregistrer</button>${id ? `<button class="btn danger" data-act="l-del" data-id="${id}">Supprimer</button>` : ""}<button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
@@ -1444,6 +1446,7 @@ document.addEventListener("click", ev => {
     case "lnew": sheetLoc(""); break; case "ledit": sheetLoc(id); break;
     case "l-save": { const nom = $("#t-nom").value.trim(); if (!nom) return toast("Donne le nom");
       const o = {bien:$("#t-bien").value, nom, tel:$("#t-tel").value.trim(), email:$("#t-mail").value.trim(), debut:$("#t-debut").value, fin:$("#t-fin").value, loyer:parseNum($("#t-loyer").value) || 0, charges:parseNum($("#t-chg").value) || 0, depot:parseNum($("#t-depot").value) || 0, note:$("#t-note").value.trim(), upd:Date.now()};
+      if (typeof glRead === "function") o.gl = glRead(id ? (S.locataires.find(x => x.id === id) || {}).gl : null);
       if (id) Object.assign(S.locataires.find(x => x.id === id), o); else S.locataires.push(Object.assign({id:uid()}, o)); persist(); closeSheet(); render(); break; }
     case "l-del": { const t = S.locataires.find(x => x.id === id); t.del = true; t.upd = Date.now(); persist(); closeSheet(); render(); break; }
     case "sheetclose": closeSheet(); break;
@@ -1493,8 +1496,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.50";
+const APP_VERSION = "1.7.51";
 const CHANGELOG = [
+  {v:"1.7.51", date:"2026-11-11", titre:"Visale, garanties et validité des pièces", items:["Un bandeau rouge (documents périmés ou à refaire) ou orange (bientôt périmés) s'affiche en haut de chaque bien et sur l'accueil.","Biens › Documents : « Vue d'ensemble des biens » (diagnostics de chaque bien d'un coup d'œil) ; pièces séparées entre celles du bien (DPE, ERP, plomb, électricité, gaz, amiante, copro, PNO, taxe foncière…) et celles de la location ; date d'édition, validité et état (à jour, bientôt, périmé, à refaire) ; ⚙ règle la durée par bien ou marque « non concerné ».","Fiche locataire : choix de la garantie (Visale, assurance loyers impayés, autre) avec numéro de visa, validité, contact, lien direct, note et import du contrat.","Biens : nouvel onglet « Visale » qui réunit les garanties des locataires du bien, avec alerte d'expiration et lien vers visale.fr."]},
   {v:"1.7.50", date:"2026-11-11", titre:"Mandat facture électronique, documents soignés, onglet Mise à jour", items:["Facture électronique : lien « Page officielle » corrigé (l'ancien donnait une erreur 404) et possibilité d'importer le mandat / l'attestation de la plateforme (PDF ou photo) pour l'ouvrir ou le partager à tout moment.","Réglages : nouvel onglet « Mise à jour » avec le bouton de mise à jour et la liste complète de toutes les versions.","La note (et le fournisseur / n° de facture) s'affiche sous chaque opération dans les listes.","Tous les PDF (états des lieux, inventaires, quittances, comparatifs…) : bandeau vert en en-tête, tableaux à en-têtes colorés et lignes alternées, états en couleur (vert, orange, rouge), cartes bailleur / locataire / logement."]},
   {v:"1.7.49", date:"2026-11-11", titre:"Classeur, scans lus, validation de l'état des lieux", items:["Classeur : bouton « ✏️ Renommer », aperçu des PDF, sélection de plusieurs documents puis envoi ou PDF unique.","Document scanné : lecture des pièces, des clés, du bailleur et du locataire, et des croix manuscrites dans les cases d'état.","Comparer › Original / Retranscrit : « ✅ Valider la retranscription » crée la sortie prête (en attente) pour comparer ensuite l'entrée et la sortie réelles ; « ✏️ Corriger » ouvre le document, « ↻ Relire » refait la lecture."]},
   {v:"1.7.48", date:"2026-11-11", titre:"Lecture complète des PDF d'état des lieux et d'inventaire", items:["Un état des lieux ou un inventaire en PDF (non scanné) est maintenant lu en entier : pièces et éléments avec leurs commentaires, états, quantités, bailleur, locataire, adresse, compteurs, ancien occupant et tableau des clés.","Les pièces du modèle jamais remplies (chambres, WC… pour un studio) ne sont pas reprises.","Le PDF fabriqué par l'appli reproduit ces informations, et « Comparer » compare aussi les clés. Les PDF scannés gardent l'ancienne lecture optique (à relire).","Nouveau « Classeur » (Biens › Documents) : tous les scans et imports de tous les biens, filtrés par bien ou par type, triés par date, nom, type ou bien, avec recherche et déplacement vers un autre bien.","Factures, pièces des locataires et photos : la « Sauvegarde complète avec fichiers (.zip) » les emporte et les remet en place à la restauration sur un autre appareil (textes d'aide corrigés : seul le .json ne les contient pas)."]},
@@ -1711,6 +1715,9 @@ const HELP = {
     "Départ : « Clôturer ce locataire » (fiche du locataire) coche seul les étapes retenues, dépôt restitué et locataire clos.",
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
+    "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
+    "Pièces à joindre : la date du document sert à voir s'il est à jour ; ⚙ règle la durée de validité et « à refaire à chaque location ».",
+    "Visale / garantie loyers impayés : sur la fiche du locataire, choisis le type de garantie, note le numéro de visa et la validité, importe le contrat ; Biens › Visale réunit le tout avec un lien direct vers visale.fr.",
     "Import d'un état des lieux ou d'un inventaire en PDF : l'appli lit le document en entier (pièces, états, clés, bailleur, locataire) et le refabrique dans son propre format.",
     "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; « ✏️ Renommer » change son nom, « Ranger dans… » le déplace vers un autre bien.",
     "Original / Retranscrit : quand la lecture est bonne, « Valider la retranscription » prépare la sortie en attente (même si le locataire ne part pas) ; « Corriger » ouvre le document, « Relire » refait la lecture.",
@@ -4017,8 +4024,9 @@ function viewDocs(){
   <div class="card"><h2>Modèles vierges à imprimer</h2><div class="small muted">Documents types sans aucune donnée, à imprimer et remplir à la main. Pour un document rempli avec un locataire, va dans l'onglet Locataires.</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="blank" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="blank" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="blank" data-v="rappel">Rappel avant état de sortie</button></div></div>
-  <div class="card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. Ce sont les documents que Horiz propose.</div>
-    <div class="rows">${ANNEXES.map(a => `<div class="row"><div class="main"><div class="t">${esc(a[1])}</div></div>${annexHas(id, a[0]) ? '<span class="chip ok">Au dossier</span>' : `<button class="mini" data-act="im-open" data-v="autre" data-s="${a[0]}">Importer</button>`}</div>`).join("")}</div></div>
+  ${annexOverview()}
+  <div class="card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. La date d'édition de chaque pièce sert à voir d'un coup d'œil si elle est à jour, bientôt périmée ou à refaire ; ⚙ règle la durée de validité.</div>
+    ${annexRows(id)}</div>
   <div class="card"><h2>Documents du bien</h2><div class="small muted">DPE, assurance PNO, taxe foncière, copropriété, diagnostics… gardés avec le dossier du bien, sur ce téléphone.</div>
     <div class="btns"><button class="btn sm ghost" data-act="im-open" data-v="autre">Importer un document</button></div>
     <div class="rows">${fileDocs(id, "autre").map(fileRow).join("") || '<div class="empty">Aucun document.</div>'}</div></div>`;
@@ -4278,7 +4286,7 @@ function bailPdf(o, sig){
   Hh("8. Annexes remises au locataire");
   const bx = ok => ok ? "[ X ]" : "[    ]", bn = V.bsel, has = k => docList(k).some(x => x.bien === bn && !x.del && x.type === "entree");
   P((VIDE ? "" : bx(has("inv")) + " Inventaire et état du mobilier        ") + bx(has("edl")) + " État des lieux d'entrée");
-  P(bx(annexHas(bn, "diag")) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
+  P(bx(["diag", "dpe", "erp", "plomb", "elec", "gaz", "amiante"].some(k => annexHas(bn, k))) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
   P(bx(annexHas(bn, "notice")) + " Notice d'information relative aux droits et obligations des locataires et des bailleurs");
   P(bx(annexHas(bn, "copro")) + " Extraits du règlement de copropriété (destination, jouissance et usage des parties privatives et communes)");
   ["charges", "repar", "caution", "assur"].filter(k => annexHas(bn, k)).forEach(k => P(bx(true) + " " + annexLabel(k)));
@@ -4386,7 +4394,7 @@ async function flGet(fid){ const db = PH.db || await phOpen(); if (!db) return n
   return new Promise(res => { try { const q = db.transaction("p").objectStore("p").get("f:" + fid); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch(e){ res(null); } }); }
 async function flDel(fid){ const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").delete("f:" + fid); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
-const ANNEXES = [["diag", "Dossier de diagnostics (DPE, risques, plomb, électricité, gaz…)"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
+const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques (ERP)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
 const annexLabel = k => (ANNEXES.find(a => a[0] === k) || [0, ""])[1];
 const annexHas = (bien, k) => fileDocs(bien, "autre").some(d => d.sub === k);
 const FKIND = {fact:"Facture", bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autre document"};
@@ -6201,6 +6209,129 @@ document.addEventListener("change", ev => { const t = ev.target, a = t && t.data
     ["edl", "inv"].forEach(k => docList(k).forEach(e => { if (e.fichier === d.id){ e.bien = t.value; e.upd = Date.now(); } })); persist(); toast("Rangé dans « " + bienName(t.value) + " »"); clsRender(); return; }
   if (a === "bien") V.cls.bien = t.value; else if (a === "kind") V.cls.kind = t.value; else if (a === "sort") V.cls.sort = t.value; else return; clsRender(); });
 document.addEventListener("input", ev => { const t = ev.target; if (!t || !t.dataset || t.dataset.cl !== "q" || !V.cls) return; V.cls.q = t.value; const pos = t.selectionStart; clsRender(); const n = document.querySelector("#cls [data-cl=q]"); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} } });
+
+/* ============ Garantie loyers impayés (Visale, assurance privée) : fiche locataire + onglet Biens › Visale ============ */
+const GL_TYPES = {none:"Aucune garantie", visale:"Visale (Action Logement)", gli:"Assurance loyers impayés (privée)", autre:"Autre garantie (caution…)"}, VISALE_URL = "https://www.visale.fr";
+const glLab = t => t && t.gl && t.gl.type && t.gl.type !== "none" ? (t.gl.type === "gli" && t.gl.assureur ? "GLI " + t.gl.assureur : GL_TYPES[t.gl.type].split(" (")[0]) : "";
+const glEnd = g => { if (!g || !g.valid) return ""; const d = todayIso(), s = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10); return g.valid < d ? "exp" : g.valid <= s ? "soon" : "ok"; };
+function glFields(t){
+  const g = t.gl || {type:"none"}, vi = g.type === "visale", on = g.type && g.type !== "none"; V.glf = null;
+  const f = (id, lab, v, extra) => `<label class="f">${lab}<input id="${id}" value="${esc(v || "")}" ${extra || ""}></label>`;
+  return `<div class="card" style="padding:12px;gap:6px;background:var(--bg)" id="gl-box"><b style="font-size:14px">🛡 Garantie loyers impayés</b>
+    <label class="f">Type de garantie<select id="t-gl-type">${Object.entries(GL_TYPES).map(([k, l]) => `<option value="${k}" ${(g.type || "none") === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+    <div id="gl-f" ${on ? "" : "hidden"}>
+      <div class="grid2"><label class="f" id="gl-visa-l">${vi ? "Numéro de visa Visale" : "N° de contrat / de visa"}<input id="t-gl-visa" value="${esc(g.visa || "")}" autocapitalize="characters"></label><label class="f">Valable jusqu'au<input id="t-gl-valid" type="date" value="${esc(g.valid || "")}"></label></div>
+      <div id="gl-ass" ${g.type === "gli" || g.type === "autre" ? "" : "hidden"}>${f("t-gl-ass", "Assureur / organisme", g.assureur)}</div>
+      ${f("t-gl-contact", "Contact (téléphone ou e-mail)", g.contact)}
+      ${f("t-gl-url", "Lien direct (espace bailleur, déclaration d'impayé…)", g.url || (vi ? VISALE_URL : ""), 'type="url" inputmode="url" autocapitalize="off" placeholder="https://"')}
+      ${f("t-gl-note", "Note (plafond garanti, franchise, délai de déclaration…)", g.note)}
+      <div class="small" id="gl-file-l">${g.file ? "📎 " + esc(g.file.name) : "Aucun contrat importé."}</div>
+      <label class="f">Importer le contrat / le visa (PDF ou photo)<input id="t-gl-file" type="file" accept=".pdf,image/*"></label>
+      ${g.file ? `<div class="btns"><button class="btn sm ghost" data-act="gl-view" data-id="${esc(t.id || "")}">Ouvrir le contrat</button><button class="btn sm ghost" data-act="gl-rmfile">Retirer le fichier</button></div>` : ""}
+    </div></div>`;
+}
+function glRead(prev){
+  const type = $("#t-gl-type") ? $("#t-gl-type").value : "none"; if (type === "none" && !(prev && prev.file)) return {type:"none"};
+  const g = Object.assign({}, prev, {type, visa:$("#t-gl-visa").value.trim(), valid:$("#t-gl-valid").value, assureur:$("#t-gl-ass").value.trim(), contact:$("#t-gl-contact").value.trim(), url:agUrl($("#t-gl-url").value) || "", note:$("#t-gl-note").value.trim()});
+  if (V.glf === "rm"){ if (g.file) flDel(g.file.fid).catch(() => {}); delete g.file; }
+  else if (V.glf){ if (g.file) flDel(g.file.fid).catch(() => {}); g.file = V.glf; }
+  V.glf = null; return g;
+}
+function glLine(t){ const g = t && t.gl; if (!g || !g.type || g.type === "none") return ""; const e = glEnd(g);
+  return `<div class="small" style="margin-top:2px">🛡 ${esc(glLab(t))}${g.visa ? " · " + esc(g.visa) : ""}${e === "exp" ? ' <span class="chip bad">expirée</span>' : e === "soon" ? ' <span class="chip warn">expire bientôt</span>' : ""}</div>`; }
+function viewVisale(){
+  const id = V.bsel, T = live(S.locataires).filter(t => t.bien === id).sort((a, b) => (b.debut || "").localeCompare(a.debut || ""));
+  const card = t => { const g = t.gl || {}, has = g.type && g.type !== "none", e = glEnd(g), row = (l, v) => v ? `<div class="row"><div class="main"><div class="s">${l}</div><div class="t">${esc(v)}</div></div></div>` : "";
+    return `<div class="card"><div class="top"><h2>${esc(t.nom)}</h2><button class="btn sm ghost" data-act="ledit" data-id="${t.id}">${has ? "Modifier" : "Renseigner"}</button></div>
+      <div class="small muted">Bail ${t.debut ? frDateL(t.debut) : "?"} → ${t.fin ? frDateL(t.fin) : "en cours"}</div>
+      ${has ? `<div><span class="chip ok">${esc(GL_TYPES[g.type])}</span>${e === "exp" ? ' <span class="chip bad">expirée</span>' : e === "soon" ? ' <span class="chip warn">expire bientôt</span>' : ""}</div><div class="rows">${row(g.type === "visale" ? "Numéro de visa" : "N° de contrat / de visa", g.visa)}${row("Valable jusqu'au", g.valid ? frDate(g.valid) : "")}${row("Assureur / organisme", g.assureur)}${row("Contact", g.contact)}${row("Note", g.note)}</div>
+        <div class="btns">${g.url || g.type === "visale" ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(g.url || VISALE_URL)}">Ouvrir ${g.type === "visale" ? "Visale" : "le lien"}</a>` : ""}${g.file ? `<button class="btn sm ghost" data-act="gl-view" data-id="${t.id}">Contrat : ${esc(g.file.name)}</button>` : ""}${g.contact && /^[+\d][\d .]{7,}$/.test(g.contact) ? `<a class="btn sm ghost" href="tel:${esc(g.contact.replace(/ /g, ""))}">Appeler</a>` : ""}</div>`
+        : `<div class="small muted">Aucune garantie renseignée pour ce locataire (Visale, assurance loyers impayés…).</div>`}</div>`; };
+  return `<div class="card"><h2>Visale et garanties</h2><div class="small muted">Pour chaque locataire du bien : le type de garantie, le numéro de visa, la date de validité, le contrat importé et un lien direct. Ouvre la fiche du locataire pour modifier.</div></div>
+    ${T.length ? T.map(card).join("") : '<div class="card"><div class="empty">Aucun locataire pour ce bien (onglet Locataires).</div></div>'}
+    <div class="card"><h2>À savoir (à confirmer sur visale.fr)</h2><div class="small muted">• Le locataire obtient son visa sur visale.fr ; tu peux en vérifier l'authenticité avec son numéro de visa.<br>• En cas d'impayé, la déclaration se fait depuis ton espace bailleur sur visale.fr, dans les délais prévus par le contrat : ne tarde pas.<br>• Garde ensemble le visa, le bail, les quittances et les relances : ce sont les pièces demandées.<br>Je ne suis pas conseiller juridique : les conditions exactes sont sur visale.fr.</div>
+      <div class="btns"><a class="btn sm" target="_blank" rel="noopener" href="${VISALE_URL}">Ouvrir visale.fr</a></div></div>`;
+}
+document.addEventListener("change", async ev => { const t = ev.target; if (!t || !t.id) return;
+  if (t.id === "t-gl-type"){ const v = t.value, f = $("#gl-f"); if (f) f.hidden = v === "none"; const a = $("#gl-ass"); if (a) a.hidden = !(v === "gli" || v === "autre");
+    const l = $("#gl-visa-l"); if (l && l.firstChild) l.firstChild.textContent = v === "visale" ? "Numéro de visa Visale" : "N° de contrat / de visa"; const u = $("#t-gl-url"); if (u && !u.value && v === "visale") u.value = VISALE_URL; }
+  if (t.id === "t-gl-file" && t.files && t.files[0]){ const f = t.files[0]; try { const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); await flPut(fid, {name:f.name, type, buf, size:buf.byteLength}); V.glf = {fid, name:f.name, type, date:todayIso()}; const l = $("#gl-file-l"); if (l) l.textContent = "📎 " + f.name + " (à enregistrer avec « Enregistrer »)"; } catch(e){ toast("Import impossible : " + (e && e.message || e)); } } });
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='gl-view'],[data-act='gl-rmfile']"); if (!b) return;
+  if (b.dataset.act === "gl-rmfile"){ V.glf = "rm"; const l = $("#gl-file-l"); if (l) l.textContent = "Fichier retiré à l'enregistrement."; return; }
+  const t = S.locataires.find(x => x.id === b.dataset.id), g = (V.glf && V.glf !== "rm" ? {file:V.glf} : t && t.gl); if (g && g.file) viewFile(g.file.fid, g.file.name); });
+
+/* ============ Pièces à joindre : par bien / par location, date d'édition, validité, vue d'ensemble ============ */
+/* m : durée en mois (0 = sans limite, null = pas de suivi) · loc : à refaire à chaque nouvelle location */
+const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:0}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
+const AV_BIEN = ["dpe", "erp", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
+const avCfg = (k, bien) => { const A = (S.cfg || {}).annexV || {}; return Object.assign({}, ANNEX_VAL[k] || {m:null}, A[k] || {}, A[bien + "|" + k] || {}); };
+const avAdd = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
+const avLab = k => annexLabel(k);
+function avStat(bien, k){
+  const c = avCfg(k, bien); if (c.na) return {st:"na", c};
+  const L = fileDocs(bien, "autre").filter(d => d.sub === k).sort((a, b) => (b.date || "").localeCompare(a.date || "")), d = L[0];
+  if (!d) return {st:"manque", c};
+  const t = tenantFor(bien, todayIso()), today = todayIso();
+  if (c.loc && t && t.debut && d.date && d.date < t.debut) return {st:"refaire", d, c, why:"antérieur au bail de " + t.nom};
+  if (c.m === null || c.m === undefined) return {st:"ok", d, c, txt:"Au dossier"};
+  if (c.m === 0) return {st:"ok", d, c, txt:"Sans limite de durée"};
+  const exp = avAdd(d.date || today, c.m), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  return {st:exp < today ? "perime" : exp <= soon ? "bientot" : "ok", d, c, exp};
+}
+const AV_CHIP = {ok:'<span class="chip ok">À jour</span>', bientot:'<span class="chip warn">Expire bientôt</span>', perime:'<span class="chip bad">Périmé</span>', refaire:'<span class="chip bad">À refaire</span>'};
+const avDur = m => m % 12 === 0 && m >= 12 ? (m / 12) + " an" + (m >= 24 ? "s" : "") : m + " mois";
+function avRow(id, k){
+  const s = avStat(id, k), a = k;
+  if (s.st === "na") return `<div class="row" style="opacity:.55"><div class="main"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
+  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+}
+function avSummary(id, keys){
+  const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
+  return `<div class="small" style="margin:4px 0 6px">${ok} à jour${soon ? ` · <b style="color:var(--warn,#c77d00)">${soon} bientôt</b>` : ""}${late ? ` · <b style="color:var(--bad,#b3261e)">${late} à refaire</b>` : ""}${miss ? ` · ${miss} manquante(s)` : ""}</div>`;
+}
+function visaleRow(id){
+  const t = tenantFor(id, todayIso()); if (!t) return "";
+  const g = t.gl || {}, has = g.type && g.type !== "none", e = typeof glEnd === "function" ? glEnd(g) : "";
+  return `<div class="row"><div class="main"><div class="t">Garantie loyers impayés (${esc(t.nom)})</div><div class="s">${has ? esc(GL_TYPES[g.type]) + (g.visa ? " · " + esc(g.visa) : "") + (g.valid ? " · valable jusqu'au " + frDate(g.valid) : "") : "Aucune renseignée"}</div></div>${has ? (e === "exp" ? AV_CHIP.perime : e === "soon" ? AV_CHIP.bientot : '<span class="chip ok">Renseignée</span>') : ""}<button class="mini" data-act="ledit" data-id="${t.id}">${has ? "Fiche" : "Renseigner"}</button></div>`;
+}
+function annexRows(id){
+  const name = typeof bienName === "function" ? bienName(id) : id;
+  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div>${avSummary(id, AV_BIEN)}<div class="rows">${AV_BIEN.map(k => avRow(id, k)).join("")}</div>
+    <div class="small" style="margin-top:12px"><b>👤 Documents de la location</b> : à refaire à chaque nouveau locataire.</div>${avSummary(id, AV_LOC)}<div class="rows">${AV_LOC.map(k => avRow(id, k)).join("")}${visaleRow(id)}</div>`;
+}
+const AV_SYM = {ok:["✓", "#1A7A4C"], bientot:["⏳", "#B26A00"], perime:["✗", "#B3261E"], refaire:["✗", "#B3261E"], manque:["–", "#8A9690"], na:["·", "#B5BDB9"]};
+function annexOverview(){
+  const ids = typeof bienIds === "function" ? bienIds() : []; if (!ids.length) return "";
+  const th = "padding:5px 6px;text-align:center;font-size:12px", td = "padding:5px 6px;text-align:center;font-weight:700;font-size:15px";
+  return `<div class="card"><h2>Vue d'ensemble des biens</h2><div class="small muted">Les documents propres à chaque bien d'un coup d'œil : ✓ à jour · ⏳ expire bientôt · ✗ périmé · – manquant · · non concerné. Touche un bien pour ouvrir son dossier.</div>
+    <div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%"><thead><tr><th style="${th};text-align:left">Document</th>${ids.map(i => `<th style="${th}"><button class="mini" data-act="bsel" data-v="${esc(i)}">${esc(bienName(i))}</button></th>`).join("")}</tr></thead>
+    <tbody>${AV_BIEN.map(k => `<tr style="border-top:1px solid var(--line,#e3e8e6)"><td style="${th};text-align:left">${esc(avLab(k))}</td>${ids.map(i => { const s = avStat(i, k), y = AV_SYM[s.st]; return `<td style="${td};color:${y[1]}" title="${esc(s.exp ? "valable jusqu'au " + frDate(s.exp) : s.st)}">${y[0]}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act^='av-']"); if (!b) return; const a = b.dataset.act, k = b.dataset.k, bien = b.dataset.b || V.bsel;
+  if (a === "av-cfg"){ const c = avCfg(k, bien); openSheet(`<h2>${esc(avLab(k))}</h2><div class="small muted">Réglage pour le bien « ${esc(bienName(bien))} ». Durée de validité à partir de la date d'édition : vide = pas de suivi, 0 = sans limite.</div>
+      <label class="f">Durée (en mois)<input id="av-m" inputmode="numeric" value="${c.m === null || c.m === undefined ? "" : c.m}" placeholder="ex. 6, 12, 72, 120"></label>
+      <label class="f" style="flex-direction:row;gap:8px;align-items:center"><input id="av-loc" type="checkbox" ${c.loc ? "checked" : ""}> À refaire à chaque nouvelle location</label>
+      <label class="f" style="flex-direction:row;gap:8px;align-items:center"><input id="av-na" type="checkbox" ${c.na ? "checked" : ""}> Non concerné pour ce bien (ex. plomb si construit après 1949)</label>
+      <div class="btns"><button class="btn" style="flex:1" data-act="av-save" data-k="${k}" data-b="${esc(bien)}">Enregistrer</button><button class="btn ghost" data-act="av-reset" data-k="${k}" data-b="${esc(bien)}">Valeur par défaut</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`); }
+  else if (a === "av-save" || a === "av-reset"){ S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.annexV = S.cfg.annexV || {}; const key = bien + "|" + k;
+    if (a === "av-reset") delete S.cfg.annexV[key]; else { const v = $("#av-m").value.trim(); S.cfg.annexV[key] = {m:v === "" ? null : Math.max(0, parseInt(v, 10) || 0), loc:$("#av-loc").checked, na:$("#av-na").checked}; }
+    persist(); closeSheet(); render(); } });
+
+/* alertes : documents périmés / à refaire (rouge), bientôt périmés (orange) */
+function avProblems(id){
+  const out = {late:[], soon:[]};
+  [...AV_BIEN, ...AV_LOC].forEach(k => { const s = avStat(id, k); if (s.st === "perime" || s.st === "refaire") out.late.push(avLab(k) + (s.st === "refaire" ? " (à refaire)" : " (périmé)")); else if (s.st === "bientot") out.soon.push(avLab(k)); });
+  const t = tenantFor(id, todayIso()), e = t && t.gl && typeof glEnd === "function" ? glEnd(t.gl) : ""; if (e === "exp") out.late.push("Garantie " + (typeof glLab === "function" ? glLab(t) : "") + " (expirée)"); else if (e === "soon") out.soon.push("Garantie " + (typeof glLab === "function" ? glLab(t) : ""));
+  return out;
+}
+function avAlert(id, home){
+  const p = avProblems(id); if (!p.late.length && !p.soon.length) return "";
+  const red = p.late.length > 0, col = red ? "#B3261E" : "#B26A00", bg = red ? "#FDECEA" : "#FFF4DE";
+  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : "⏳ Documents bientôt périmés"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
+    ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}</div>`;
+}
+const avAlertHome = () => (typeof bienIds === "function" ? bienIds() : []).map(i => avAlert(i, true)).join("");
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
