@@ -527,7 +527,7 @@ function demoData(rich){
     const pt = m < tm || (m === tm);
     d.journal.push(mk(b.id,m,"Recette","Loyer","Loyer "+MOIS[m].toLowerCase(),b.loyer,pt && !(b.id==="T2" && m===tm)));
     d.journal.push(mk(b.id,m,"Dépense","Crédit (mensualité)","Crédit",b.credit,pt));
-    d.journal.push(mk(b.id,m,"Dépense","Assurance PNO","Assurance PNO",20,pt));
+    { const aj = mk(b.id,m,"Dépense","Assurance PNO","Assurance PNO",20,pt); if (m === tm) aj.note = "Contrat annuel, échéance le 1er"; d.journal.push(aj); }
   }
   d.factures = [{id:uid(),fourn:"Magasin exemple",num:"F-001",date:y+"-02-10",cat:"TRAVAUX",desc:"Peinture (exemple)",prix:180,jdmm:"",scan:"x",upd:0}];
   d.locataires = [{id:uid(),bien:"T2",nom:"Locataire Exemple",tel:"0600000000",email:"",debut:(y-1)+"-09-01",fin:"",loyer:650,depot:650,note:"Donnée d'exemple",upd:0},
@@ -707,7 +707,7 @@ function jRow(j, showBien){
   const st = statut(j), sign = isIn(j) ? 1 : -1;
   return `<div class="row${HC(j) ? " hc" : ""}"><button class="chk ${j.pointe==="x"?"on":""}" data-act="jtoggle" data-id="${j.id}" aria-label="Pointer">${ICON.check}</button>
     <button class="rowbtn" data-act="jedit" data-id="${j.id}"><div class="t">${esc(j.lib || j.cat || j.type)}</div>
-    <div class="s">${frDate(j.date)}${showBien ? " " + bienPill(j.bien) : ""} · <span class="cdot" style="background:${catColor(j.cat)};margin-right:4px"></span>${esc(j.cat || TYPE_LAB[j.type] || j.type)}${j.compte==="Perso" ? " · perso" : ""} ${HC(j) ? '<span class="chip hcc">hors compta</span> ' : ""}${st !== "Pointé" ? chipJ(j, st) : ""}</div></button>
+    <div class="s">${frDate(j.date)}${showBien ? " " + bienPill(j.bien) : ""} · <span class="cdot" style="background:${catColor(j.cat)};margin-right:4px"></span>${esc(j.cat || TYPE_LAB[j.type] || j.type)}${j.compte==="Perso" ? " · perso" : ""} ${HC(j) ? '<span class="chip hcc">hors compta</span> ' : ""}${st !== "Pointé" ? chipJ(j, st) : ""}</div>${j.note || j.fourn ? `<div class="s" style="white-space:normal;margin-top:2px;font-style:italic">📝 ${esc([j.fourn, j.note].filter(Boolean).join(" · "))}</div>` : ""}</button>
     <div class="amt num ${sign>0?"pos":""}">${sign>0?"+":"−"} ${eur(j.montant)}</div></div>`;
 }
 
@@ -1273,7 +1273,8 @@ function viewSet(){
     ["data", "Données", sync + dirCard() + archCard() + secCard() + wipe],
     ["look", "Aspect", themeCard() + confortCard()],
     ["regl", "Règles", guideCard() + factureCard() + rulesCard() + sourcesCard() + legalCard() + ficheCard()],
-    ["aide", "Aide", demoCard() + histCard()]];
+    ["aide", "Aide", demoCard()],
+    ["maj", "Mise à jour", majCard()]];
   const cur = SECS.find(x => x[0] === V.sset) ? V.sset : "biens";
   return head + `<div class="seg rail">${SECS.map(([k, l]) => `<button class="${cur === k ? "on" : ""}" data-act="sset" data-v="${k}">${l}</button>`).join("")}</div>` + SECS.find(x => x[0] === cur)[2] + ver;
 }
@@ -1492,8 +1493,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.49";
+const APP_VERSION = "1.7.50";
 const CHANGELOG = [
+  {v:"1.7.50", date:"2026-11-11", titre:"Mandat facture électronique, documents soignés, onglet Mise à jour", items:["Facture électronique : lien « Page officielle » corrigé (l'ancien donnait une erreur 404) et possibilité d'importer le mandat / l'attestation de la plateforme (PDF ou photo) pour l'ouvrir ou le partager à tout moment.","Réglages : nouvel onglet « Mise à jour » avec le bouton de mise à jour et la liste complète de toutes les versions.","La note (et le fournisseur / n° de facture) s'affiche sous chaque opération dans les listes.","Tous les PDF (états des lieux, inventaires, quittances, comparatifs…) : bandeau vert en en-tête, tableaux à en-têtes colorés et lignes alternées, états en couleur (vert, orange, rouge), cartes bailleur / locataire / logement."]},
   {v:"1.7.49", date:"2026-11-11", titre:"Classeur, scans lus, validation de l'état des lieux", items:["Classeur : bouton « ✏️ Renommer », aperçu des PDF, sélection de plusieurs documents puis envoi ou PDF unique.","Document scanné : lecture des pièces, des clés, du bailleur et du locataire, et des croix manuscrites dans les cases d'état.","Comparer › Original / Retranscrit : « ✅ Valider la retranscription » crée la sortie prête (en attente) pour comparer ensuite l'entrée et la sortie réelles ; « ✏️ Corriger » ouvre le document, « ↻ Relire » refait la lecture."]},
   {v:"1.7.48", date:"2026-11-11", titre:"Lecture complète des PDF d'état des lieux et d'inventaire", items:["Un état des lieux ou un inventaire en PDF (non scanné) est maintenant lu en entier : pièces et éléments avec leurs commentaires, états, quantités, bailleur, locataire, adresse, compteurs, ancien occupant et tableau des clés.","Les pièces du modèle jamais remplies (chambres, WC… pour un studio) ne sont pas reprises.","Le PDF fabriqué par l'appli reproduit ces informations, et « Comparer » compare aussi les clés. Les PDF scannés gardent l'ancienne lecture optique (à relire).","Nouveau « Classeur » (Biens › Documents) : tous les scans et imports de tous les biens, filtrés par bien ou par type, triés par date, nom, type ou bien, avec recherche et déplacement vers un autre bien.","Factures, pièces des locataires et photos : la « Sauvegarde complète avec fichiers (.zip) » les emporte et les remet en place à la restauration sur un autre appareil (textes d'aide corrigés : seul le .json ne les contient pas)."]},
   {v:"1.7.47", date:"2026-11-11", titre:"Comparer : choix libre et vrai document", items:["« Comparer » est toujours accessible : tu choisis le bien, puis les deux documents à comparer (entrée, sortie, importés ou préparés d'avance), même si le locataire n'est pas parti.","À droite de « Original / Retranscrit », on voit maintenant le vrai document fabriqué par l'appli (en-tête, relevés, clés, pièces), avec un bouton « Liste » pour revenir à la vue ligne par ligne.","« Entrée / Sortie » compare aussi les relevés de compteurs, les clés, le détecteur de fumée et les remarques."]},
@@ -1783,6 +1785,12 @@ function histCard(){
     <ul style="margin:4px 0 0;padding-left:16px;font-size:13px;color:var(--muted)">${e.items.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></div>`).join("")}</div>
     ${!all && CHANGELOG.length > 5 ? `<div class="btns"><button class="btn ghost sm" data-act="hist-all">Voir les ${CHANGELOG.length - 5} autres mises à jour</button></div>` : ""}${all && CHANGELOG.length > 5 ? `<div class="btns"><button class="btn ghost sm" data-act="hist-less">Réduire</button></div>` : ""}</div>`;
 }
+function majCard(){
+  return `<div class="card"><h2>Mise à jour</h2><div class="small muted">Version installée : <b>${esc(APP_VERSION)}</b>. Touche le bouton pour charger la dernière version publiée (tes données ne sont pas touchées).</div>
+    <div class="btns"><button class="btn" data-act="app-update">↻ Mettre à jour maintenant</button></div></div>
+    <div class="card"><h2>Toutes les versions (${CHANGELOG.length})</h2><div class="rows">${CHANGELOG.map((e, i) => `<div class="row" style="align-items:flex-start"><div class="main"><div class="t">${esc(e.titre)}${i === 0 ? ' <span class="chip ok">installée</span>' : ""}</div><div class="s">Version ${esc(e.v)} · ${frDate(e.date)}</div>
+    <ul style="margin:4px 0 0;padding-left:16px;font-size:13px;color:var(--muted)">${e.items.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></div>`).join("")}</div></div>`;
+}
 const FICHE_TXT = "Gestion Locative Facile : l'appli de gestion locative sur téléphone.\n• Loyers, relances et quittances\n• Compta LMNP facilitée (PDF et Excel)\n• Bail, état des lieux et inventaire signés à l'écran\n• Annonce, candidatures et dossier du locataire\n• Bilans par mois ou par année\n• Sans serveur : tes données restent sur ton téléphone";
 const AFFICHES = [["apercu.png", "Carte d'aperçu du lien"]];
 const ficheUrl = () => new URL("fiche.html", location.href).toString();
@@ -1934,7 +1942,7 @@ PdfDoc.prototype.para = function(str, size, gap){ const max = this.W - 2 * this.
   const flush = () => { if (line){ this.need(size + 6); this.text(this.M, this.y, line, {size}); this.y -= gap || size + 5; line = ""; } };
   for (const w of String(str).split(" ")){ const t = line ? line + " " + w : w; if (pdfW(t, size) > max){ flush(); line = w; } else line = t; }
   flush(); };
-PdfDoc.prototype.h = function(s, size){ this.need(34); this.y -= 8; this.text(this.M, this.y, s, {size:size || 13, bold:true, color:"#0E6B5C"}); this.y -= 16; };
+PdfDoc.prototype.h = function(s, size){ this.need(34); this.y -= 8; this.rect(this.M, this.y - 4, 4, (size || 13) + 3, "#F2B84B"); this.text(this.M + 11, this.y, s, {size:size || 13, bold:true, color:"#0E6B5C"}); this.y -= 18; };
 PdfDoc.prototype.finish = function(sub){
   const n = this.pages.length, parts = ["%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"], off = [];
   const add = body => { off.push(parts.join("").length); parts.push((off.length) + " 0 obj\n" + body + "\nendobj\n"); };
@@ -3867,7 +3875,7 @@ PdfDoc.prototype.finish = function(sub){
   add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
   this.pages.forEach((ops, i) => {
     const head = [], foot = [];
-    if (!this.clean){ this.cur = head; this.text(this.M, this.H - 40, "Gestion Locative Facile", {size:11, bold:true, color:"#0E6B5C"}); this.text(this.W - this.M, this.H - 40, sub || this.title, {size:9.5, right:true, color:"#5C6B66"}); this.line(this.M, this.H - 48, this.W - this.M, this.H - 48);
+    if (!this.clean){ this.cur = head; this.rect(0, this.H - 52, this.W, 52, "#0E6B5C"); this.rect(0, this.H - 55, this.W, 3, "#F2B84B"); this.text(this.M, this.H - 32, "Gestion Locative Facile", {size:13, bold:true, color:"#FFFFFF"}); this.text(this.W - this.M, this.H - 32, sub || this.title, {size:10, right:true, color:"#D6EEE8"});
     this.cur = foot; this.line(this.M, 44, this.W - this.M, 44); this.text(this.M, 30, "Généré le " + frDate(todayIso()), {size:8.5, color:"#5C6B66"}); this.text(this.W - this.M, 30, "Page " + (i + 1) + " / " + n, {size:8.5, right:true, color:"#5C6B66"}); } else if (n > 1){ this.cur = foot; this.text(this.W - this.M, 24, "Page " + (i + 1) + " / " + n, {size:8, right:true, color:"#8A9690"}); }
     const stream = head.concat(ops, foot).join("\n"), used = (this.pageImg || {})[i] || [];
     add("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + this.W + " " + this.H + "] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>" + (used.length ? " /XObject << " + used.map(k => "/Im" + k + " " + idImg(k) + " 0 R").join(" ") + " >>" : "") + " >> /Contents " + idCont(i) + " 0 R >>");
@@ -3883,13 +3891,14 @@ PdfDoc.prototype.finish = function(sub){
 function wrapTxt(s, size, maxW, bold){ const out = []; for (const para of String(s ?? "").split("\n")){ let line = ""; for (const w of para.split(" ")){ const t = line ? line + " " + w : w; if (pdfW(t, size, bold) > maxW && line){ out.push(line); line = w; } else line = t; } out.push(line); } return out; }
 function dTable(d, cols, rows, o){
   o = o || {}; const size = o.size || 9.5, lh = size + 3.5, pd = 4, tw = cols.reduce((a, c) => a + c.w, 0);
-  const head = () => { d.need(34); d.rect(d.M, d.y - 4, tw, 16, "#E6F0ED"); let x = d.M; cols.forEach(c => { d.text(c.right ? x + c.w - pd : x + pd, d.y, c.h, {size:size - 0.5, bold:true, right:c.right, color:"#0E6B5C"}); x += c.w; }); d.y -= 18; };
+  const head = () => { d.need(34); d.rect(d.M, d.y - 5, tw, 17, "#0E6B5C"); let x = d.M; cols.forEach(c => { d.text(c.right ? x + c.w - pd : x + pd, d.y, c.h, {size:size - 0.5, bold:true, right:c.right, color:"#FFFFFF"}); x += c.w; }); d.y -= 18; };
   head();
-  for (const r of rows){ const cells = r.cells || r, L = cells.map((s, i) => wrapTxt(s, size, cols[i].w - 2 * pd, false)), n = Math.max(1, ...L.map(l => l.length)), h = n * lh + 4;
+  let zi = 0; const stC = {"Neuf":"#1A7A4C", "Bon":"#1A7A4C", "Moyen":"#B26A00", "Mauvais":"#B3261E"};
+  for (const r of rows){ zi++; const cells = r.cells || r, L = cells.map((s, i) => wrapTxt(s, size, cols[i].w - 2 * pd, false)), n = Math.max(1, ...L.map(l => l.length)), h = n * lh + 4;
     if (d.y - h < 60){ d.newPage(); head(); }
-    if (typeof r.fill === "string") d.rect(d.M, d.y - (n - 1) * lh - 5, tw, h, r.fill);
-    let x = d.M; L.forEach((ls, i) => { ls.forEach((ln, k) => d.text(cols[i].right ? x + cols[i].w - pd : x + pd, d.y - k * lh, ln, {size, right:cols[i].right, color:r.color || "#1B2430"})); x += cols[i].w; });
-    d.y -= (n - 1) * lh + 5; d.line(d.M, d.y, d.M + tw, d.y); d.y -= lh - 2; }
+    if (typeof r.fill === "string") d.rect(d.M, d.y - (n - 1) * lh - 5, tw, h, r.fill); else if (zi % 2 === 0) d.rect(d.M, d.y - (n - 1) * lh - 5, tw, h, "#F4F8F6");
+    let x = d.M; L.forEach((ls, i) => { ls.forEach((ln, k) => d.text(cols[i].right ? x + cols[i].w - pd : x + pd, d.y - k * lh, ln, {size, right:cols[i].right, bold:!!stC[ln.split(" ")[0]] && ln.length < 9, color:r.color || stC[ln] || "#1B2430"})); x += cols[i].w; });
+    d.y -= (n - 1) * lh + 5; d.line(d.M, d.y, d.M + tw, d.y, "#E6ECE9"); d.y -= lh - 2; }
   d.y -= 6;
 }
 async function pdfPhotos(d, ids, label){
@@ -4161,11 +4170,15 @@ document.addEventListener("change", async ev => {
 const bailleurInfo = () => ({nom:(S.cfg && S.cfg.bailleur) || "", adr:(S.cfg && S.cfg.bailleurAdr) || ""});
 const MENT_EDL = "État des lieux établi contradictoirement et signé des deux parties, remis à chacune. Le locataire dispose de 10 jours à compter de sa réalisation pour demander au bailleur de compléter l'état des lieux d'entrée, et, pour les éléments de chauffage, durant le premier mois de la période de chauffe (article 3-2 de la loi n° 89-462 du 6 juillet 1989). Si l'état des lieux de sortie ne peut être établi contradictoirement, il l'est par commissaire de justice, à frais partagés.";
 let RELECT = false;
-function titleBlock(d, titre, sous){ if (RELECT){ d.text(d.W / 2, d.y, "PROJET À RELIRE : NON SIGNÉ, SANS VALEUR CONTRACTUELLE", {size:9.5, bold:true, center:true, color:"#B3261E"}); d.y -= 28; } d.text(d.W / 2, d.y, titre, {size:19, bold:true, center:true, color:"#0E6B5C"}); d.y -= 22; if (sous){ d.text(d.W / 2, d.y, sous, {size:10, center:true, color:"#5C6B66"}); d.y -= 22; } }
+function titleBlock(d, titre, sous){ if (!d.clean && d.y > d.H - 80) d.y -= 14; if (RELECT){ d.rect(d.M, d.y - 8, d.W - 2 * d.M, 24, "#FDECEA"); d.text(d.W / 2, d.y, "PROJET À RELIRE : NON SIGNÉ, SANS VALEUR CONTRACTUELLE", {size:9.5, bold:true, center:true, color:"#B3261E"}); d.y -= 36; } d.text(d.W / 2, d.y, titre, {size:20, bold:true, center:true, color:"#0E6B5C"}); d.y -= 12; d.rect(d.W / 2 - 28, d.y, 56, 3, "#F2B84B"); d.y -= 18; if (sous){ d.text(d.W / 2, d.y, sous, {size:10, center:true, color:"#5C6B66"}); d.y -= 24; } }
 function partiesBlock(d, e){
   const bi = bailleurInfo(), M = d.M;
-  const bloc = (t, l) => { d.need(50); d.text(M, d.y, t, {size:9.5, bold:true, color:"#5C6B66"}); d.y -= 14; l.filter(Boolean).forEach(x => { d.text(M, d.y, x, {size:10.5}); d.y -= 14; }); d.y -= 6; };
-  bloc("BAILLEUR", e.bailleur ? prPartyLines(e.bailleur) : [bi.nom || "(à renseigner : Réglages ou quittance)", bi.adr]); bloc("LOCATAIRE", e.locataire ? prPartyLines(e.locataire) : [e.loc || "(non précisé)"]); bloc("LOGEMENT", [bienName(e.bien), bienAdr(e.bien)]);
+  const tw = d.W - 2 * M, colW = (tw - 12) / 2;
+  const lines = (l, w) => l.filter(Boolean).flatMap(x => wrapTxt(x, 10, w - 20, false));
+  const card = (x, y, w, t, L, h) => { d.rect(x, y - h + 14, w, h, "#F4F8F6"); d.rect(x, y - h + 14, 3, h, "#0E6B5C"); d.text(x + 12, y, t, {size:8.5, bold:true, color:"#0E6B5C"}); L.forEach((ln, k) => d.text(x + 12, y - 15 - k * 13, ln, {size:10, bold:k === 0})); };
+  const bL = lines(e.bailleur ? prPartyLines(e.bailleur) : [bi.nom || "(à renseigner : Réglages ou quittance)", bi.adr], colW), lL = lines(e.locataire ? prPartyLines(e.locataire) : [e.loc || "(non précisé)"], colW);
+  const h1 = Math.max(bL.length, lL.length) * 13 + 24; d.need(h1 + 20); card(M, d.y, colW, "BAILLEUR", bL, h1); card(M + colW + 12, d.y, colW, "LOCATAIRE", lL, h1); d.y -= h1 + 8;
+  const gL = lines([bienName(e.bien), bienAdr(e.bien)], tw), h2 = gL.length * 13 + 24; d.need(h2 + 14); card(M, d.y, tw, "LOGEMENT", gL, h2); d.y -= h2 + 12;
 }
 async function edlPdf(e){
   const sortie = e.type === "sortie", d = new PdfDoc(sortie ? "État des lieux de sortie" : "État des lieux d'entrée"), M = d.M, tw = d.W - 2 * M, ref = sortie && e.ref ? docGet("edl", e.ref) : null, diffs = [];
@@ -6313,7 +6326,7 @@ const RG_SRC = [
   ["Bail : contrat type en vigueur (décret n° 2026-596 du 6 juillet 2026)", "Légifrance", "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000054393114", 1],
   ["Permis de louer à Istres (autorisation préalable, centre ancien)", "Métropole Aix-Marseille-Provence", "https://ampmetropole.fr/wp-content/uploads/2022/12/Permis-de-louer-Istres_web.pdf", 1],
   ["Permis de louer : règles générales (articles L.635-1 et suivants du code de la construction et de l'habitation)", "ANIL · ADIL 13", "https://www.anil.org/adil-13/notre-expertise/lhi-amelioration-habitat/guide-du-logement-decent-caf-adil13/permis-de-louer/", 1],
-  ["Facture électronique : calendrier et obligations (décret n° 2024-266 du 25 mars 2024 ; articles 289 bis et 1737 du CGI)", "economie.gouv.fr · impots.gouv.fr (fiche loueurs en meublé)", "https://www.economie.gouv.fr/facturation-electronique-entreprises", 1],
+  ["Facture électronique : calendrier et obligations (décret n° 2024-266 du 25 mars 2024 ; articles 289 bis et 1737 du CGI)", "economie.gouv.fr · impots.gouv.fr (fiche loueurs en meublé)", "https://www.impots.gouv.fr/facturation-electronique-et-plateformes-partenaires", 1],
   ["Permis de louer : formulaire de dépôt en ligne de la Métropole (communes concernées, pièces demandées)", "Métropole Aix-Marseille-Provence", "https://formulaire.ampmetropole.fr/formulaire-permis-de-louer/", 1],
   ["Permis de louer : liste de communes (pour comprendre, à confirmer en mairie)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/permis-de-louer/", 0],
   ["Facture électronique et LMNP (explications, à confirmer sur la fiche de l'administration)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/facturation-electronique-lmnp-obligations/", 0]
@@ -6440,7 +6453,8 @@ function factureCard(){
     <div class="small" style="margin-top:6px">• Depuis le 1er septembre 2026, un loueur en meublé qui a un <b>numéro SIREN</b> (ce qui est le cas en LMNP déclaré au guichet unique) doit pouvoir <b>recevoir</b> les factures électroniques de ses fournisseurs professionnels, <b>même s'il est exonéré de TVA</b>.<br>• Il faut pour cela choisir une <b>plateforme agréée</b> (certaines offrent la réception gratuite) et déclarer son adresse de réception.<br>• Les <b>loyers</b> d'un locataire particulier ne sont pas concernés : tu continues avec les quittances.<br>• L'<b>émission</b> obligatoire concerne seulement les loueurs soumis à la TVA, à partir du 1er septembre 2027.<br>• Sans plateforme : mise en demeure de 3 mois, puis amende de 500 €, puis 1 000 €.</div>
     <div class="small muted" style="margin-top:6px">À faire : 1. vérifier ton SIREN · 2. choisir une plateforme agréée · 3. déclarer l'adresse de réception · 4. prévenir tes fournisseurs (syndic, artisans, ménage…) et ton comptable · 5. garder les factures et accusés.</div>
     ${dxF("fe-pa", "Plateforme choisie (nom)", f.pa || "", "")}${dxF("fe-url", "Lien du site de la plateforme", f.url || "", 'type="url" inputmode="url" autocapitalize="off" placeholder="https://"')}${dxF("fe-date", "Inscrit le", f.date || "", 'type="date"')}
-    <div class="btns"><button class="btn sm" data-act="fe-save">Enregistrer</button>${agUrl(f.url) ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(agUrl(f.url))}">Ouvrir ma plateforme</a>` : ""}<a class="btn sm ghost" target="_blank" rel="noopener" href="https://www.economie.gouv.fr/facturation-electronique-entreprises">Page officielle</a></div>
+    <div class="btns"><button class="btn sm" data-act="fe-save">Enregistrer</button>${agUrl(f.url) ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(agUrl(f.url))}">Ouvrir ma plateforme</a>` : ""}<a class="btn sm ghost" target="_blank" rel="noopener" href="https://www.impots.gouv.fr/facturation-electronique-et-plateformes-partenaires">Page officielle</a></div>
+    <div style="margin-top:10px;border-top:1px solid var(--line,#e3e8e6);padding-top:8px"><b class="small">Mandat / attestation (à emporter)</b>${f.mandat ? `<div class="small" style="margin:4px 0">📎 ${esc(f.mandat.name)} · ajouté le ${frDate(f.mandat.date)}</div><div class="btns"><button class="btn sm" data-act="fe-mandat-voir">Ouvrir / partager</button><button class="btn sm ghost" data-act="fe-mandat-del">Retirer</button></div>` : `<div class="small muted" style="margin:4px 0">Importe le mandat ou l'attestation de ta plateforme (PDF ou photo) pour l'avoir sous la main.</div>`}<label class="f">${f.mandat ? "Remplacer le fichier" : "Importer le mandat / l'attestation"}<input id="fe-mandat" type="file" accept=".pdf,image/*" data-fe="mandat"></label></div>
     <div class="small muted">${f.pa ? "✅ Plateforme notée : " + esc(f.pa) + (f.date ? " (" + frDate(f.date) + ")" : "") : "⚠️ Aucune plateforme notée pour le moment."} Je ne suis pas conseiller fiscal : confirme avec ton comptable ou ton service des impôts.</div></div>`;
 }
 function feHome(){
@@ -6475,9 +6489,15 @@ document.addEventListener("click", async ev => {
     case "rg-done": closeSheet(); render(); break;
     case "fe-go": V.tab = "set"; V.sset = "regl"; render(); window.scrollTo(0, 0); break;
     case "fe-skip": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.factElec = Object.assign({}, S.cfg.factElec, {skip:true}); persist(); render(); toast("Rappel masqué (Réglages › Règles pour le revoir)"); break;
+    case "fe-mandat-voir": { const m = ((S.cfg || {}).factElec || {}).mandat; if (m) viewFile(m.fid, m.name); break; }
+    case "fe-mandat-del": { const fe = (S.cfg || {}).factElec; if (fe && fe.mandat){ try { await flDel(fe.mandat.fid); } catch(e){} delete fe.mandat; persist(); render(); toast("Mandat retiré"); } break; }
     case "fe-save": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.factElec = Object.assign({}, S.cfg.factElec, {pa:$("#fe-pa").value.trim(), url:agUrl($("#fe-url").value), date:$("#fe-date").value, skip:false}); persist(); toast("Enregistré"); render(); break;
   }
 });
+
+document.addEventListener("change", async ev => { const t = ev.target; if (!t || !t.dataset || t.dataset.fe !== "mandat" || !t.files || !t.files[0]) return;
+  const f = t.files[0]; try { const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); await flPut(fid, {name:f.name, type, buf, size:buf.byteLength});
+    S.cfg = S.cfg || {bailleur:"", adr:{}}; const fe = S.cfg.factElec = Object.assign({}, S.cfg.factElec); if (fe.mandat) { try { await flDel(fe.mandat.fid); } catch(e){} } fe.mandat = {fid, name:f.name, type, date:todayIso()}; persist(); render(); toast("Mandat enregistré"); } catch(e){ toast("Import impossible : " + (e && e.message || e)); } });
 
 /* ============ Version publique : Guide du bailleur, courrier d'option LMNP, avertissements ============ */
 const GUIDE_DATE = "octobre 2026";
