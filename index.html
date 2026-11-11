@@ -538,9 +538,9 @@ function demoData(rich){
   d.biens[0].desc = {type:"Studio", surface:"22", etage:"2e étage", pieces:"1", copro:"Oui", dpe:"D", chauffage:"Électrique individuel", eauch:"Ballon électrique", annexes:"Aucune"};
   d.biens[1].desc = {type:"Appartement T2", surface:"38", etage:"1er étage", pieces:"2", copro:"Oui", dpe:"C", chauffage:"Électrique individuel", eauch:"Ballon électrique", annexes:"Cave"};
   const dE = (y-1)+"-09-01", it = (nom,etat,com) => ({id:uid(),nom,etat,com:com||"",ph:[]});
-  const eT2 = uid(); d.edl.push({id:eT2,bien:"T2",type:"entree",date:dE,loc:"Julien Exemple",elec:"12450",eau:"310",gaz:"",cles:"3",fumee:"Présent et testé",rem:"État des lieux d'exemple.",ref:"",fichier:"demo-edl-import",upd:0,
+  const eT2 = uid(); d.edl.push({id:eT2,bien:"T2",type:"entree",date:dE,loc:"Julien Exemple",elec:"12450",eau:"310",gaz:"",cles:"3",fumee:"Présent et testé",rem:"État des lieux d'exemple.",ref:"",fichier:"demo-edl-import",upd:0,bailleur:{nom:"EXEMPLE",prenom:"Jean",adr:"1 rue des Lilas, 13100 Aix-en-Provence",tel:"06 00 00 00 00",mail:"jean@exemple.fr"},locataire:{nom:"EXEMPLE",prenom:"Julien",adr:"2 rue du Test, 13000 Marseille",tel:"06 11 11 11 11",mail:"julien@exemple.fr"},info:{adresse:"12 rue Fictive, 13100 Aix-en-Provence",nbPieces:"2",surface:"38 m2",edfN:"01234567890123",ancien:"Mme Dupont"},clesL:[{type:"Porte d'entrée",nb:"2",date:dE,com:""},{type:"Boîte aux lettres",nb:"1",date:dE,com:"Clé rouge"}],
     pieces:[{id:uid(),nom:"Entrée",items:[it("Sol","Bon"),it("Murs","Bon"),it("Porte d'entrée","Neuf")]},{id:uid(),nom:"Séjour",items:[it("Sol","Moyen","Rayures légères"),it("Murs","Bon"),it("Fenêtres","Bon")]},{id:uid(),nom:"Cuisine",items:[it("Plan de travail","Bon"),it("Évier","Bon"),it("Plaques de cuisson","Neuf")]}]});
-  d.edl.push({id:uid(),bien:"T2",type:"sortie",date:(y)+"-03-01",loc:"Julien Exemple",elec:"12710",eau:"338",gaz:"",cles:"3",fumee:"Présent et testé",rem:"Sortie d'exemple pour tester « Comparer ».",ref:eT2,upd:0,
+  d.edl.push({id:uid(),bien:"T2",type:"sortie",date:(y)+"-03-01",loc:"Julien Exemple",elec:"12710",eau:"338",gaz:"",cles:"3",fumee:"Présent et testé",rem:"Sortie d'exemple pour tester « Comparer ».",ref:eT2,upd:0,bailleur:{nom:"EXEMPLE",prenom:"Jean",adr:"1 rue des Lilas, 13100 Aix-en-Provence"},locataire:{nom:"EXEMPLE",prenom:"Julien"},clesL:[{type:"Porte d'entrée",nb:"2",date:(y)+"-03-01",com:""},{type:"Boîte aux lettres",nb:"0",date:(y)+"-03-01",com:"Clé non rendue"}],
     pieces:[{id:uid(),nom:"Entrée",items:[it("Sol","Bon"),it("Murs","Moyen","Traces de frottements"),it("Porte d'entrée","Neuf")]},{id:uid(),nom:"Séjour",items:[it("Sol","Mauvais","Parquet taché"),it("Murs","Bon"),it("Fenêtres","Bon")]},{id:uid(),nom:"Cuisine",items:[it("Plan de travail","Bon"),it("Évier","Bon"),it("Hotte","Bon")]}]});
   const iv = (grp,nom,qte,etat) => ({id:uid(),grp,nom,qte,etat,com:""});
   d.inv.push({id:uid(),bien:"T2",type:"entree",date:dE,loc:"Julien Exemple",rem:"",ref:"",upd:0,
@@ -1492,8 +1492,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.47";
+const APP_VERSION = "1.7.48";
 const CHANGELOG = [
+  {v:"1.7.48", date:"2026-11-11", titre:"Lecture complète des PDF d'état des lieux et d'inventaire", items:["Un état des lieux ou un inventaire en PDF (non scanné) est maintenant lu en entier : pièces et éléments avec leurs commentaires, états, quantités, bailleur, locataire, adresse, compteurs, ancien occupant et tableau des clés.","Les pièces du modèle jamais remplies (chambres, WC… pour un studio) ne sont pas reprises.","Le PDF fabriqué par l'appli reproduit ces informations, et « Comparer » compare aussi les clés. Les PDF scannés gardent l'ancienne lecture optique (à relire).","Nouveau « Classeur » (Biens › Documents) : tous les scans et imports de tous les biens, filtrés par bien ou par type, triés par date, nom, type ou bien, avec recherche et déplacement vers un autre bien.","Factures, pièces des locataires et photos : la « Sauvegarde complète avec fichiers (.zip) » les emporte et les remet en place à la restauration sur un autre appareil (textes d'aide corrigés : seul le .json ne les contient pas)."]},
   {v:"1.7.47", date:"2026-11-11", titre:"Comparer : choix libre et vrai document", items:["« Comparer » est toujours accessible : tu choisis le bien, puis les deux documents à comparer (entrée, sortie, importés ou préparés d'avance), même si le locataire n'est pas parti.","À droite de « Original / Retranscrit », on voit maintenant le vrai document fabriqué par l'appli (en-tête, relevés, clés, pièces), avec un bouton « Liste » pour revenir à la vue ligne par ligne.","« Entrée / Sortie » compare aussi les relevés de compteurs, les clés, le détecteur de fumée et les remarques."]},
   {v:"1.7.46", date:"2026-11-11", titre:"Comparer : entrée / sortie et original / retranscrit", items:["Biens › Documents : nouvelle carte « Comparer ». « Entrée / Sortie » aligne chaque ligne de l'état des lieux (ou de l'inventaire) d'entrée et de sortie, surligne ce qui est pire, manquant ou ajouté, avec le filtre « Différences ».","« Original / Retranscrit » : sur iPad, ton document importé (PDF, photo, Excel) à gauche et ce que l'appli en a lu à droite, avec défilement lié ; sur iPhone, deux onglets. Les lignes sans état ou au nom douteux sont marquées ⚠.","Bouton « PDF » : comparatif entrée / sortie à relire, envoyer ou joindre au dossier.","Noms d'éléments de l'état des lieux et de l'inventaire : plus coupés sur iPhone, ils passent sur toute la largeur."]},
   {v:"1.7.45", date:"2026-11-11", titre:"Factures du bien : scan, vignettes, envoi groupé", items:["Biens › Documents : nouvelle carte « Factures du bien ». Scanne une facture avec l'appareil photo ou choisis plusieurs photos / PDF d'un coup.","Les factures sont rangées avec un aperçu en vignette, le fournisseur, la date et le montant (modifiables).","Coche plusieurs factures puis « Envoyer » : elles partent en un seul PDF avec une page de garde (liste et total). Possible aussi de l'enregistrer. Elles sont aussi dans l'export ZIP du bien (dossier 05 Factures).","Mode démo rempli avec les nouveautés : factures avec vignettes, fiche bailleur fictive, départ en cours, bail en pré-lecture et documents préparés d'avance."]},
@@ -1707,6 +1708,8 @@ const HELP = {
     "Départ : « Clôturer ce locataire » (fiche du locataire) coche seul les étapes retenues, dépôt restitué et locataire clos.",
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
+    "Import d'un état des lieux ou d'un inventaire en PDF : l'appli lit le document en entier (pièces, états, clés, bailleur, locataire) et le refabrique dans son propre format.",
+    "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; le menu « Ranger dans… » d'un document le déplace vers un autre bien.",
     "Comparer (Biens › Documents) : « Entrée / Sortie » montre les différences ligne par ligne ; « Original / Retranscrit » vérifie qu'un document importé a été bien lu ; bouton PDF pour garder le comparatif.",
     "Factures du bien : « Scanner / ajouter » (photo ou plusieurs fichiers), vignettes à cocher, puis « Envoyer » pour envoyer plusieurs factures en un seul PDF.",
     "Modèles vierges à imprimer : bail, état des lieux, inventaire (meublé) et lettres types, sans aucune donnée, à remplir à la main.",
@@ -3998,6 +4001,7 @@ function viewDocs(){
   const id = V.bsel, vide = bkind(id) === "vide";
   return `<div class="card"><h2>Dossier du bail</h2><div class="small muted">Regroupe en <b>un seul PDF</b> le bail, les pièces à joindre (diagnostics, ERP…), l'état des lieux et l'inventaire, puis l'envoie au locataire.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Préparer et envoyer le dossier du bail</button></div></div>
   ${compareCard(id)}
+  ${classeurCard()}
   ${facturesCard(id)}
   <div class="card"><h2>Modèles vierges à imprimer</h2><div class="small muted">Documents types sans aucune donnée, à imprimer et remplir à la main. Pour un document rempli avec un locataire, va dans l'onglet Locataires.</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
@@ -4034,7 +4038,7 @@ function viewEdl(e){
       `<div class="grid2 dxi" style="margin-top:8px"><input id="ni-${p.id}" placeholder="Ajouter un élément"><button class="btn sm ghost" data-act="edl-additem" data-p="${p.id}">Ajouter</button></div>
        <div class="btns"><button class="btn sm danger" data-act="edl-delroom" data-p="${p.id}">Supprimer la pièce</button></div>`;
     return `<div class="card" style="padding:12px 16px"><button class="rowbtn" data-act="dx-room" data-p="${p.id}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600">${esc(p.nom)}</div><div class="s">${done}/${p.items.length} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>${items}</div>`; }).join("");
-  return topbar("État des lieux") + dxTop(e, "État des lieux") + fileLink(e) + `<div class="btns" style="margin:6px 0 0"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button></div>`+`
+  return topbar("État des lieux") + dxTop(e, "État des lieux") + fileLink(e) + prInfoCard(e) + `<div class="btns" style="margin:6px 0 0"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button></div>`+`
     <div class="small muted" style="margin-top:6px">Relevés des compteurs${ref ? " (entrée : élec. " + esc(ref.elec || "—") + " · eau " + esc(ref.eau || "—") + " · gaz " + esc(ref.gaz || "—") + ")" : ""}</div>
     <div class="grid2 dxi"><label class="f">Électricité<input data-dxh="elec" inputmode="decimal" value="${esc(e.elec || "")}"></label><label class="f">Eau<input data-dxh="eau" inputmode="decimal" value="${esc(e.eau || "")}"></label></div>
     <div class="grid2 dxi"><label class="f">Gaz<input data-dxh="gaz" inputmode="decimal" value="${esc(e.gaz || "")}"></label><label class="f">Clés remises<input data-dxh="cles" inputmode="numeric" value="${esc(e.cles || "")}"></label></div>
@@ -4043,7 +4047,7 @@ function viewEdl(e){
   <div class="card"><h2>Ajouter une pièce</h2><div class="btns"><button class="btn sm ghost" data-act="bulk-open">Coller une liste de pièces et éléments</button></div><div class="grid2 dxi"><input id="np-nom" placeholder="Ex. Balcon, cave"><button class="btn sm ghost" data-act="edl-addroom">Ajouter</button></div></div>
   <div class="card"><label class="f">Remarques générales<textarea data-dxh="rem">${esc(e.rem || "")}</textarea></label>
     ${sigBanner(e)}<div class="btns"><button class="btn" style="flex:1" data-act="dx-pdf" data-send="dx">${e.sig ? "PDF signé : enregistrer ou envoyer" : "Créer le PDF"}</button><button class="btn ghost" data-act="dx-model">${e.modele ? "★ Retirer des modèles" : "☆ Garder comme modèle"}</button><button class="btn danger" data-act="dx-del">Supprimer</button></div>
-    <div class="small muted">Les photos restent sur ce téléphone (pas dans la sauvegarde ni dans Excel). Elles sont jointes au PDF.</div></div>`;
+    <div class="small muted">Les photos restent sur ce téléphone : elles sont dans la sauvegarde complète (.zip), pas dans le .json ni dans Excel. Elles sont jointes au PDF.</div></div>`;
 }
 function viewInv(e){
   const sortie = e.type === "sortie", groups = [...new Set(e.items.map(i => i.grp || "Autres"))];
@@ -4063,7 +4067,7 @@ function viewInv(e){
       <div class="dxi" style="display:grid;grid-template-columns:70px 1fr;gap:8px"><input data-dx="qte" data-i="${it.id}" inputmode="numeric" value="${esc(it.qte || "")}" aria-label="Quantité">${etatSel(it.etat, `data-dx="etat" data-i="${it.id}"`)}</div>
       <div class="dxi" style="margin-top:6px"><input data-dx="com" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div></div>`).join("");
     return `<div class="card" style="padding:12px 16px"><button class="rowbtn" data-act="dx-room" data-p="${esc("g:" + g)}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600">${esc(g)}</div><div class="s">${done}/${its.length} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>${rows}</div>`; }).join("");
-  return topbar("Inventaire") + dxTop(e, "Inventaire du mobilier") + fileLink(e) + `<div class="small muted">Liste minimale d'un meublé (décret n° 2015-981) : complète-la avec le mobilier réellement présent.</div></div>
+  return topbar("Inventaire") + dxTop(e, "Inventaire du mobilier") + fileLink(e) + prInfoCard(e) + `<div class="small muted">Liste minimale d'un meublé (décret n° 2015-981) : complète-la avec le mobilier réellement présent.</div></div>
   ${body}
   <div class="card"><h2>Ajouter un article</h2><div class="dxi"><input id="ni-nom" placeholder="Ex. Télévision, bureau"></div>
     <label class="f">Rangé dans<select id="ni-grp">${[...new Set(["Chambre", "Séjour", "Cuisine", "Entretien", "Autres"].concat(groups))].map(g => `<option>${esc(g)}</option>`).join("")}</select></label>
@@ -4111,7 +4115,7 @@ function dxMake(kind, type, date, loc, ref, tpl){
     else if (tpl) doc.items = tpl.items.map(i => ({id:uid(), grp:i.grp, nom:i.nom, qte:i.qte || "1", etat:"", com:""}));
     else INV_DEF.forEach(([g, L]) => L.forEach(n => doc.items.push({id:uid(), grp:g, nom:n, qte:"1", etat:"", com:""})));
   }
-  docList(kind).push(doc); persist(); closeSheet(); V.doc = {kind, id:doc.id, open:{}}; if (kind === "edl" && doc.pieces[0]) V.doc.open[doc.pieces[0].id] = 1; if (kind === "inv" && doc.items[0]) V.doc.open["g:" + (doc.items[0].grp || "Autres")] = 1; render();
+  prCopy(doc, ref); docList(kind).push(doc); persist(); closeSheet(); V.doc = {kind, id:doc.id, open:{}}; if (kind === "edl" && doc.pieces[0]) V.doc.open[doc.pieces[0].id] = 1; if (kind === "inv" && doc.items[0]) V.doc.open["g:" + (doc.items[0].grp || "Autres")] = 1; render();
 }
 const dxItem = (e, p, i) => V.doc.kind === "edl" ? ((e.pieces.find(x => x.id === p) || {items:[]}).items.find(x => x.id === i)) : e.items.find(x => x.id === i);
 function sheetDelDoc(){ openSheet(`<h2>Supprimer ce document ?</h2><p style="margin:0">Il sera retiré de la liste. Les PDF déjà envoyés ne sont pas touchés.</p><div class="btns"><button class="btn danger" data-act="dx-del-ok">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); }
@@ -4159,11 +4163,11 @@ function titleBlock(d, titre, sous){ if (RELECT){ d.text(d.W / 2, d.y, "PROJET �
 function partiesBlock(d, e){
   const bi = bailleurInfo(), M = d.M;
   const bloc = (t, l) => { d.need(50); d.text(M, d.y, t, {size:9.5, bold:true, color:"#5C6B66"}); d.y -= 14; l.filter(Boolean).forEach(x => { d.text(M, d.y, x, {size:10.5}); d.y -= 14; }); d.y -= 6; };
-  bloc("BAILLEUR", [bi.nom || "(à renseigner : Réglages ou quittance)", bi.adr]); bloc("LOCATAIRE", [e.loc || "(non précisé)"]); bloc("LOGEMENT", [bienName(e.bien), bienAdr(e.bien)]);
+  bloc("BAILLEUR", e.bailleur ? prPartyLines(e.bailleur) : [bi.nom || "(à renseigner : Réglages ou quittance)", bi.adr]); bloc("LOCATAIRE", e.locataire ? prPartyLines(e.locataire) : [e.loc || "(non précisé)"]); bloc("LOGEMENT", [bienName(e.bien), bienAdr(e.bien)]);
 }
 async function edlPdf(e){
   const sortie = e.type === "sortie", d = new PdfDoc(sortie ? "État des lieux de sortie" : "État des lieux d'entrée"), M = d.M, tw = d.W - 2 * M, ref = sortie && e.ref ? docGet("edl", e.ref) : null, diffs = [];
-  titleBlock(d, sortie ? "ÉTAT DES LIEUX DE SORTIE" : "ÉTAT DES LIEUX D'ENTRÉE", "Établi contradictoirement le " + frDate(e.date)); partiesBlock(d, e);
+  titleBlock(d, sortie ? "ÉTAT DES LIEUX DE SORTIE" : "ÉTAT DES LIEUX D'ENTRÉE", "Établi contradictoirement le " + frDate(e.date)); partiesBlock(d, e); prInfoTables(d, e);
   const rel = [["Électricité (index)", e.elec, ref && ref.elec], ["Eau (index)", e.eau, ref && ref.eau], ["Gaz (index)", e.gaz, ref && ref.gaz], ["Clés remises (nombre)", e.cles, ref && ref.cles], ["Détecteur de fumée", e.fumee, ref && ref.fumee]];
   if (ref) dTable(d, [{h:"Compteurs et équipements", w:190}, {h:"À l'entrée", w:150}, {h:"À la sortie", w:tw - 340}], rel.map(r => [r[0], r[2] || "—", r[1] || "—"]));
   else dTable(d, [{h:"Compteurs et équipements", w:230}, {h:"Relevé", w:tw - 230}], rel.map(r => [r[0], r[1] || "—"]));
@@ -4185,7 +4189,7 @@ async function edlPdf(e){
 }
 function invPdf(e){
   const sortie = e.type === "sortie", d = new PdfDoc("Inventaire du mobilier"), tw = d.W - 2 * d.M;
-  titleBlock(d, sortie ? "INVENTAIRE DU MOBILIER · SORTIE" : "INVENTAIRE DU MOBILIER · ENTRÉE", "Annexe au contrat de location meublée · établi le " + frDate(e.date)); partiesBlock(d, e);
+  titleBlock(d, sortie ? "INVENTAIRE DU MOBILIER · SORTIE" : "INVENTAIRE DU MOBILIER · ENTRÉE", "Annexe au contrat de location meublée · établi le " + frDate(e.date)); partiesBlock(d, e); prInfoTables(d, e);
   for (const g of [...new Set(e.items.map(i => i.grp || "Autres"))]){
     d.need(60); d.h(g, 12); const L = e.items.filter(i => (i.grp || "Autres") === g);
     if (sortie) dTable(d, [{h:"Désignation", w:170}, {h:"Qté entrée", w:55}, {h:"État entrée", w:65}, {h:"Qté sortie", w:55}, {h:"État sortie", w:65}, {h:"Observations", w:tw - 410}],
@@ -4386,15 +4390,15 @@ function fileLink(e){
 }
 function sheetImport(kind){
   const id = V.bsel, t = tenantFor(id, todayIso()), rooms = kind === "edl" ? '<div class="small muted">Pièces de l\'état des lieux (pour pouvoir faire celui de sortie)</div>' + EDL_PIECES.map((p, i) => `<label style="display:flex;gap:8px;align-items:center;padding:4px 0"><input type="checkbox" id="im-pc-${i}" checked> ${esc(p[0])}</label>`).join("") : "";
-  const help = {bail:"Le bail signé est conservé tel quel (PDF ou photo). Il n'est pas lu par l'appli.", edl:"Excel ou CSV (colonnes pièce, élément, état, observation) : les pièces et éléments sont repris tels quels. PDF, Word ou photo : le document est conservé et l'appli crée un état d'entrée avec les pièces cochées, à compléter. Dans les deux cas tu peux ensuite créer celui de sortie.",
-    inv:"Excel ou CSV : la liste est lue et reprise dans l'appli (désignation, quantité, état, observation). PDF, Word ou photo : le document est conservé et une liste type est créée à compléter.", autre:"Le document est simplement conservé dans le dossier du bien."}[kind];
+  const help = {bail:"Le bail signé est conservé tel quel (PDF ou photo). Il n'est pas lu par l'appli.", edl:"PDF (non scanné) : l'appli lit tout le document (pièces, états, clés, bailleur, locataire). Excel ou CSV (colonnes pièce, élément, état, observation) : les pièces et éléments sont repris tels quels. PDF, Word ou photo : le document est conservé et l'appli crée un état d'entrée avec les pièces cochées, à compléter. Dans les deux cas tu peux ensuite créer celui de sortie.",
+    inv:"PDF (non scanné) : lu en entier (articles, quantités, états, bailleur, locataire). Excel ou CSV : la liste est lue et reprise dans l'appli (désignation, quantité, état, observation). PDF, Word ou photo : le document est conservé et une liste type est créée à compléter.", autre:"Le document est simplement conservé dans le dossier du bien."}[kind];
   openSheet(`<h2>Importer · ${esc(FKIND[kind])}</h2><div class="info">${help}</div>
     <label class="f">Fichier<input id="im-file" type="file" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.txt,image/*"></label>
     ${dxF("im-date", "Date du document", todayIso(), 'type="date"')}${dxF("im-nom", "Nom (facultatif)", "", 'placeholder="Ex. Bail signé 2025"')}
     ${kind === "autre" ? dxS("im-sub", "Type de pièce", [["", "Autre document"], ...ANNEXES.map(a => [a[0], a[1]])], V.imSub || "") : ""}${kind === "edl" || kind === "inv" ? dxF("im-loc", "Locataire", t ? t.nom : "") : ""}${rooms}
     <div class="btns"><button class="btn" style="flex:1" data-act="im-save" data-v="${kind}">Importer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
-function normEtat(s){ const t = String(s || "").toLowerCase(); if (!t.trim()) return ""; if (/neuf/.test(t)) return "Neuf"; if (/mauvais|\bhs\b|cass|d[ée]grad|abim/.test(t)) return "Mauvais"; if (/moyen|us[ée]|usag|passable|v[ée]tust/.test(t)) return "Moyen"; if (/bon|correct|satisf|\bok\b|propre/.test(t)) return "Bon"; return ""; }
+function normEtat(s){ const t = String(s || "").toLowerCase(); if (!t.trim()) return ""; if (/neuf/.test(t)) return "Neuf"; if (/mauvais|\bhs\b|cass|d[ée]grad|abim/.test(t)) return "Mauvais"; if (/moyen|us[ée]|usag|usur|passable|v[ée]tust/.test(t)) return "Moyen"; if (/bon|correct|satisf|\bok\b|propre/.test(t)) return "Bon"; return ""; }
 function invFromSheet(buf, name){
   try {
     let wb; if (/\.csv$/i.test(name || "")){ const txt = new TextDecoder("utf-8").decode(new Uint8Array(buf)).replace(/^\uFEFF/, ""), first = txt.split("\n")[0] || "", fs = [";", "\t", ","].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0]; wb = XLSX.read(txt, {type:"string", FS:fs}); } else wb = XLSX.read(buf, {type:"array"});
@@ -4421,18 +4425,19 @@ document.addEventListener("click", async ev => {
       const f = $("#im-file") && $("#im-file").files[0]; if (!f) return toast("Choisis un fichier");
       if (f.size > 25e6) return toast("Fichier trop gros (25 Mo maximum)");
       try {
-        const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name), date = dxV("im-date") || todayIso(), loc = dxV("im-loc");
+        const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); let date = dxV("im-date") || todayIso(), loc = dxV("im-loc"), R = null;
         await flPut(fid, {name:f.name, type, buf});
+        if (/\.pdf$/i.test(f.name) && (v === "edl" || v === "inv")){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== v) R = null; if (R && R.date && (!dxV("im-date") || dxV("im-date") === todayIso())) date = R.date; }
         docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now()});
         let msg = "Document importé", bulkId = "";
         if (v === "edl"){ let pieces = null;
           if (/\.(xlsx|xls|csv)$/i.test(f.name)){ const it = invFromSheet(buf, f.name); if (it && it.length){ const map = {}; pieces = []; it.forEach(x => { const p = map[x.grp] || (map[x.grp] = {id:uid(), nom:x.grp, items:[]}); if (!map[x.grp].added){ map[x.grp].added = 1; pieces.push(p); } p.items.push({id:uid(), nom:x.nom, etat:x.etat, com:x.com, ph:[]}); }); pieces.forEach(p => delete p.added); } }
-          const eid = uid(); if (!pieces && /\.(pdf|txt)$/i.test(f.name)) bulkId = eid;
+          const eid = uid(); if (!pieces && !R && /\.(pdf|txt)$/i.test(f.name)) bulkId = eid;
           docList("edl").push({id:eid, bien:V.bsel, type:"entree", date, loc, elec:"", eau:"", gaz:"", cles:"", fumee:"", rem:"", ref:"", fichier:fid, upd:Date.now(),
-            pieces:pieces || EDL_PIECES.filter((p, i) => !$("#im-pc-" + i) || $("#im-pc-" + i).checked).map(p => mkPiece(p[0], p[1]))}); msg = pieces ? "État lu : " + pieces.length + " pièce(s) reprise(s), prêt pour la sortie" : "Importé : état d'entrée créé, prêt pour la sortie"; }
+            pieces:pieces || EDL_PIECES.filter((p, i) => !$("#im-pc-" + i) || $("#im-pc-" + i).checked).map(p => mkPiece(p[0], p[1]))}); if (R){ const ent = docList("edl").find(x => x.id === eid); prApply(ent, R); } msg = R ? "Document lu : " + prNb(R) + ", prêt pour la sortie" : pieces ? "État lu : " + pieces.length + " pièce(s) reprise(s), prêt pour la sortie" : "Importé : état d'entrée créé, prêt pour la sortie"; }
         if (v === "inv"){ let items = /\.(xlsx|xls|csv)$/i.test(f.name) ? invFromSheet(buf, f.name) : null; const lu = items && items.length;
           if (!lu){ items = []; INV_DEF.forEach(([g, L]) => L.forEach(n => items.push({id:uid(), grp:g, nom:n, qte:"1", etat:"", com:""}))); }
-          const nid = uid(); docList("inv").push({id:nid, bien:V.bsel, type:"entree", date, loc, rem:"", ref:"", fichier:fid, items, upd:Date.now()}); msg = lu ? "Inventaire lu : " + items.length + " article(s) repris" : "Document gardé"; if (!lu) bulkId = nid; }
+          const nid = uid(); docList("inv").push({id:nid, bien:V.bsel, type:"entree", date, loc, rem:"", ref:"", fichier:fid, items, upd:Date.now()}); if (R){ prApply(docList("inv").find(x => x.id === nid), R); } msg = R ? "Document lu : " + prNb(R) + ", prêt pour la sortie" : lu ? "Inventaire lu : " + items.length + " article(s) repris" : "Document gardé"; if (!lu && !R) bulkId = nid; }
         persist(); closeSheet(); toast(msg); render(); if (bulkId) bulkFromFile(v, bulkId, f, buf);
       } catch(err){ toast("Import impossible : " + err.message); }
       break; }
@@ -4792,14 +4797,16 @@ async function dxCreateFromFile(kind, f){
     const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name);
     await flPut(fid, {name:f.name, type, buf});
     docList("docs").push({id:fid, bien, kind, nom:"Entrée · " + f.name, sub:"", fname:f.name, date:edate, type, size:f.size, upd:Date.now()});
-    let items = null, pieces = null;
+    let items = null, pieces = null, R = null;
+    if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
     if (/\.(xlsx|xls|csv)$/i.test(f.name)){ const it = invFromSheet(buf, f.name);
       if (it && it.length){ if (kind === "inv") items = it; else { const map = {}; pieces = []; it.forEach(x => { let p = map[x.grp]; if (!p){ map[x.grp] = p = {id:uid(), nom:x.grp, items:[]}; pieces.push(p); } p.items.push({id:uid(), nom:x.nom, etat:x.etat, com:x.com, ph:[]}); }); } } }
     const eid = uid(), base = {id:eid, bien, type:"entree", date:edate, loc, rem:"", ref:"", fichier:fid, upd:Date.now()};
     const entree = kind === "inv" ? Object.assign(base, {items:items || INV_DEF.flatMap(([g, L]) => L.map(n => ({id:uid(), grp:g, nom:n, qte:"1", etat:"", com:""})))})
       : Object.assign(base, {elec:"", eau:"", gaz:"", cles:"", fumee:"", pieces:pieces || EDL_PIECES.map(p => mkPiece(p[0], p[1]))});
+    if (R) prApply(entree, R);
     docList(kind).push(entree); persist();
-    if (items || pieces){ closeSheet(); dxMake(kind, "sortie", date, loc, entree, null); toast("Entrée lue : version de sortie créée"); return; }
+    if (items || pieces || R){ closeSheet(); dxMake(kind, "sortie", date, loc, entree, null); toast(R ? "Document lu : " + prNb(R) + ". Version de sortie créée" : "Entrée lue : version de sortie créée"); return; }
     V.after = {kind, date, loc};
     let lines = [], note = "";
     try { if (/\.(pdf)$/i.test(f.name)) lines = await pdfLines(buf); else if (/\.txt$/i.test(f.name)) lines = new TextDecoder("utf-8").decode(new Uint8Array(buf)).split(/\r?\n/); } catch(e){ note = "Lecture du PDF impossible (" + e.message + ")."; }
@@ -4848,6 +4855,8 @@ async function dxFromFileBlank(kind, f){
         else { const map = {}, pieces = []; it.forEach(x => { let p = map[x.grp]; if (!p){ map[x.grp] = p = {nom:x.grp, items:[]}; pieces.push(p); } p.items.push({nom:x.nom}); }); tpl = {pieces}; }
         dxMake(kind, "entree", date, loc, null, tpl); toast(it.length + " ligne(s) recopiée(s), vierges"); return; }
       toast("Aucune ligne reconnue dans ce tableau : colle la liste à la main"); return; }
+    let R = null; if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
+    if (R){ const tpl = kind === "inv" ? {items:R.items} : {pieces:R.pieces}; dxMake(kind, "entree", R.date || date, loc || prFull(R.locataire), null, tpl); const d0 = docCur(); if (d0){ prCopy(d0, R); persist(); render(); } toast("Document lu : " + prNb(R) + " (états laissés vides)"); return; }
     let lines = [], note = "";
     try { if (/\.pdf$/i.test(f.name)) lines = await pdfLines(buf); else lines = new TextDecoder("utf-8").decode(new Uint8Array(buf)).split(/\r?\n/); } catch(e){ note = "Lecture impossible (" + e.message + "). Colle la liste à la main."; }
     dxMake(kind, "entree", date, loc, null, null); V.after = null; const id = V.doc && V.doc.id;
@@ -4950,7 +4959,7 @@ function viewAnnonce(bien){
     ${(a.photos || []).length ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${a.photos.map((pid, i) => `<div><img data-ph="${pid}" alt="Photo ${i + 1}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--line)">
       <div style="display:flex;gap:4px;margin-top:4px">${i ? `<button class="mini" data-act="an-ph-first" data-pid="${pid}" style="flex:1">1re</button>` : '<span class="chip ok" style="flex:1;text-align:center">Couverture</span>'}<button class="mini" data-act="an-ph-del" data-pid="${pid}">✕</button></div></div>`).join("")}</div>` : '<div class="empty">Aucune photo. Ajoute-en pour un PDF complet.</div>'}
     <label class="f" style="margin-top:8px">Ajouter des photos<input id="an-ph" type="file" accept="image/*" multiple></label>
-    <div class="small muted">La première photo sert de couverture. Les photos restent sur cet appareil (elles ne sont pas dans la sauvegarde JSON).</div></div>
+    <div class="small muted">La première photo sert de couverture. Les photos restent sur cet appareil ; elles sont dans la sauvegarde complète (.zip), pas dans le .json.</div></div>
     <div class="card"><h2>Où l'annonce est publiée</h2><div class="rows">${sites}</div>
     <div class="btns"><button class="btn sm ghost" data-act="an-state" data-v="${a.statut === "louee" ? "brouillon" : "louee"}">${a.statut === "louee" ? "Remettre en recherche" : "Logement loué : fermer l'annonce"}</button></div>
     <div class="small muted">Quand tu retiens un candidat, l'annonce passe automatiquement en « Louée ». Pense à la retirer des sites.</div></div>`;
@@ -5018,7 +5027,7 @@ function sheetCand(id){
     <label class="f">Notes<textarea id="cd-note" style="min-height:80px">${esc(c.note)}</textarea></label>
     <div class="small muted" style="margin-top:8px">Pièces reçues (liste limitative du décret n° 2015-1437 : ne demande rien d'autre)</div>${pcs}
     ${id && dosLink(c) ? `<div class="small muted" style="margin-top:8px">2e formulaire : le candidat y dépose chaque pièce (identité, domicile, contrat, bulletins, avis d'imposition, garant)</div><div class="btns"><button class="btn sm" data-act="cd-dl-copy" data-id="${id}">Copier le lien du dossier</button><button class="btn sm ghost" data-act="cd-dl-share" data-id="${id}">Partager</button></div>` : ""}
-    ${id ? `<div class="small muted" style="margin-top:8px">Pièces jointes (restent sur cet appareil, non incluses dans la sauvegarde)</div><div class="rows">${files}</div>
+    ${id ? `<div class="small muted" style="margin-top:8px">Pièces jointes (restent sur cet appareil ; dans la sauvegarde complète .zip, pas dans le .json)</div><div class="rows">${files}</div>
       <label class="f">Joindre une photo ou un PDF<input id="cd-file" type="file" accept="image/*,.pdf" multiple></label>` : '<div class="small muted">Enregistre la fiche pour pouvoir joindre des pièces.</div>'}
     <div class="btns"><button class="btn" style="flex:1" data-act="cd-save" data-id="${id || ""}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
     ${id ? `<div class="btns"><button class="btn sm" data-act="cd-mail" data-id="${id}">Écrire au candidat</button>${c.visite ? `<button class="btn sm ghost" data-act="cd-agenda" data-id="${id}">Visite vers un agenda</button>` : ""}${c.statut !== "ret" ? `<button class="btn sm" style="background:var(--ok,#1f8a5b)" data-act="cd-keep" data-id="${id}">Retenir ce candidat</button>` : ""}<button class="btn sm danger" data-act="cd-del" data-id="${id}">Supprimer</button></div>` : ""}`);
@@ -5277,7 +5286,7 @@ function tenantDocs(tid){
   const L = docList("docs").filter(x => x.kind === "loc" && x.loc === tid && !x.del).sort((a, b) => (a.ptype || "").localeCompare(b.ptype || "") || (a.nom || "").localeCompare(b.nom || ""));
   const rows = L.map(d => `<div class="row">${thumb(d.id, d.fname || d.nom, d.type)}<div class="main"><div class="t" style="font-size:13.5px">${esc(d.nom)}</div><div class="s">${esc(d.ptype || "Document")} · ${frDate(d.date)} · ${sizeStr(d.size || 0)}</div></div><button class="mini" data-act="td-open" data-id="${d.id}">Ouvrir</button><button class="mini" data-act="td-del" data-id="${d.id}" data-tid="${tid}" aria-label="Retirer">×</button></div>`).join("");
   return `<details open class="card" style="padding:12px;gap:6px;background:var(--bg)"><summary style="font-weight:700;font-size:15px;cursor:pointer">Documents du locataire · ${L.length}</summary>
-    <div class="small muted">Choisis les fichiers dans Fichiers (iCloud Drive, Sur mon iPhone…) : l'appli en garde une copie, ouvrable d'un clic. Les documents restent sur cet appareil, non inclus dans la sauvegarde.</div>
+    <div class="small muted">Choisis les fichiers dans Fichiers (iCloud Drive, Sur mon iPhone…) : l'appli en garde une copie, ouvrable d'un clic. Les documents restent sur cet appareil : pour les retrouver sur un autre appareil, utilise la sauvegarde complète (.zip), pas le .json.</div>
     <div class="rows">${rows || '<div class="small muted">Aucun document.</div>'}</div>
     <label class="f">Type de pièce<select id="td-type">${TD_TYPES.map(x => `<option>${esc(x)}</option>`).join("")}</select></label>
     <label class="f">Ajouter des documents<input id="td-file" data-tid="${tid}" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"></label></details>`;
@@ -5291,7 +5300,7 @@ function tenantDossier(tid){
     ${row("Demande du", c.dateDem ? frDate(c.dateDem) : "")}${row("Situation", c.contrat)}${row("Revenus nets / mois", c.rev ? eur(c.rev) : "")}${row("Occupants", c.occ)}${row("Emménagement souhaité", c.entree ? frDate(c.entree) : "")}${row("Garant", g && c.garant ? g : "")}${row("Revenus du garant", c.grev ? eur(c.grev) : "")}${row("Visite", c.visite ? fmtVisite(c.visite) : "")}
     ${c.note ? `<div class="small muted" style="white-space:pre-wrap">${esc(c.note)}</div>` : ""}
     <div class="small muted" style="margin-top:4px">Pièces reçues</div>${pcs || '<div class="small muted">Aucune pièce cochée</div>'}
-    <div class="small muted" style="margin-top:4px">Documents (restent sur cet appareil, non inclus dans la sauvegarde)</div><div class="rows">${fl || '<div class="small muted">Aucun document</div>'}</div>
+    <div class="small muted" style="margin-top:4px">Documents (restent sur cet appareil ; dans la sauvegarde complète .zip, pas dans le .json)</div><div class="rows">${fl || '<div class="small muted">Aucun document</div>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="cd-open" data-id="${c.id}">Ouvrir la fiche candidat</button></div></details>` + tenantDocs(tid);
 }
 
@@ -5713,7 +5722,7 @@ function facturesCard(id){
     ${thumb(d.id, d.fname || d.nom, d.type).replace('class="thumb"', 'class="thumb" style="width:100%;height:110px;border-radius:8px;object-position:top"')}
     <label style="display:flex;gap:6px;align-items:center;min-width:0"><input type="checkbox" data-fsel="${d.id}" ${S0[d.id] ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span style="min-width:0;font-size:12px;line-height:1.2;overflow-wrap:anywhere"><b>${esc(d.fourn || d.nom)}</b><br>${frDate(d.date)}${d.prix ? " · " + eur(N(d.prix)) : ""}</span></label>
     <button class="mini" data-act="fa-edit" data-id="${d.id}">Modifier</button></div>`;
-  return `<div class="card"><div class="top"><h2>Factures du bien</h2><span class="chip">${L.length}</span></div><div class="small muted">Scanne ou ajoute tes factures (travaux, charges, assurance…) : elles sont rangées ici avec un aperçu. Coche-en plusieurs pour les envoyer ensemble en un seul PDF.</div>
+  return `<div class="card"><div class="top"><h2>Factures du bien</h2><span class="chip">${L.length}</span></div><div class="small muted">Scanne ou ajoute tes factures (travaux, charges, assurance…) : elles sont rangées ici avec un aperçu. Coche-en plusieurs pour les envoyer ensemble en un seul PDF. Elles suivent la sauvegarde complète (.zip) pour être retrouvées sur un autre appareil.</div>
     <div class="btns"><button class="btn" style="flex:1" data-act="fa-add">📷 Scanner / ajouter des factures</button></div>
     ${L.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:10px 0">${L.map(cell).join("")}</div>
     <div class="btns"><button class="btn sm ghost" data-act="fa-all">${n === L.length ? "Tout décocher" : "Tout cocher"}</button><button class="btn" style="flex:1" data-act="fa-send" ${n ? "" : "disabled"}>📤 Envoyer ${n ? n + " facture" + (n > 1 ? "s" : "") + (tot ? " · " + eur(tot) : "") : "la sélection"}</button><button class="btn sm ghost" data-act="fa-save" ${n ? "" : "disabled"}>Enregistrer en PDF</button></div>` : '<div class="empty">Aucune facture pour ce bien.</div>'}</div>`;
@@ -5793,7 +5802,7 @@ const cmpEc = s => s === "Neuf" || s === "Bon" ? "" : s === "Moyen" ? "m" : s ==
 const cmpCell = r => r.hdr ? `<span>${esc(r.c)}</span>` : null;
 const cmpChip = s => `<span class="e ${cmpEc(s)}">${esc(s || "non noté")}</span>`;
 function cmpRows(kind, e){ if (!e) return []; if (kind === "inv") return (e.items || []).map(i => ({p:i.grp || "Autres", n:i.nom, q:i.qte || "", s:i.etat || "", c:i.com || ""}));
-  const o = [["Compteur électricité", e.elec], ["Compteur eau", e.eau], ["Compteur gaz", e.gaz], ["Clés remises", e.cles], ["Détecteur de fumée", e.fumee], ["Remarques", e.rem]].filter(x => x[1]).map(x => ({p:"Relevés, clés et remarques", n:x[0], q:"", s:"", c:String(x[1]), hdr:true}));
+  const o = [["Compteur électricité", e.elec], ["Compteur eau", e.eau], ["Compteur gaz", e.gaz], ["Clés remises", e.cles], ["Détecteur de fumée", e.fumee]].filter(x => x[1]).map(x => ({p:"Relevés, clés et remarques", n:x[0], q:"", s:"", c:String(x[1]), hdr:true})).concat((e.clesL || []).map(c => ({p:"Relevés, clés et remarques", n:"Clé : " + (c.type || "?"), q:"", s:"", c:[c.nb ? "× " + c.nb : "", c.com].filter(Boolean).join(" · "), hdr:true})));
   (e.pieces || []).forEach(p => (p.items || []).forEach(i => o.push({p:p.nom, n:i.nom, q:"", s:i.etat || "", c:i.com || ""}))); return o; }
 function cmpDiff(x){ if (!x.a) return "ajout"; if (!x.b) return "absent"; if (x.a.hdr || x.b.hdr) return x.a.c !== x.b.c ? "qte" : ""; const ra = RANK[x.a.s], rb = RANK[x.b.s];
   if (x.b.s && x.a.s !== x.b.s) return rb > ra ? "pire" : "mieux"; if (x.a.q && x.b.q && x.a.q !== x.b.q) return +x.b.q < +x.a.q ? "pire" : "qte"; return ""; }
@@ -5877,6 +5886,223 @@ document.addEventListener("click", async ev => {
 document.addEventListener("change", ev => { const t = ev.target, a = t && t.dataset && t.dataset.cm; if (!a || !V.cmp) return;
   if (a === "bien"){ V.cmp.bien = t.value; cmpDefaults(); } else if (a === "eid") V.cmp.eid = t.value; else if (a === "sid") V.cmp.sid = t.value; else if (a === "doc") V.cmp.doc = t.value; else if (a === "sync"){ V.cmp.sync = t.checked; return; } else return; cmpRender(); });
 window.addEventListener("resize", () => { if (V.cmp) cmpRender(); });
+
+/* ============ Lecture structurée d'un état des lieux / inventaire en PDF (texte, pas scan) ============
+   On garde la position de chaque mot : les tableaux sont reconnus par leurs en-têtes (Élément, Très bon, Bon, Moyen,
+   Mauvais, Commentaire / Quantité, État…), chaque ligne est rattachée à sa colonne. Tout reste sur l'appareil. */
+const PR_FOOT = /^(page\s*\d+\s*\/\s*\d+|paraphes\s*:?)$/i;
+const PR_HEAD_WORDS = /^(très|bon|état|etat|moyen|mauvais|[eé]l[eé]ment|commentaire|quantit[eé]|etat à l['’]entrée|etat à la|sortie|type cl[eé]|nombre|date de remise|partie privative|n°|descriptif et état)$/i;
+const prNum = s => /^\d+([.,]\d+)?$/.test(String(s).trim());
+const prIso = s => { const m = /(\d{2})[\/.](\d{2})[\/.](\d{4})/.exec(s || ""); return m ? m[3] + "-" + m[2] + "-" + m[1] : ""; };
+const prClean = s => String(s || "").replace(/\s+/g, " ").trim();
+const prEmpty = s => { const t = prClean(s); return !t || /^[\/\-–—.]+$/.test(t); };
+function prRows(items, tol){ /* regroupe les mots par ligne (même hauteur), de haut en bas puis de gauche à droite */
+  const L = items.slice().sort((a, b) => b.y - a.y || a.x - b.x), rows = [];
+  for (const it of L){ const r = rows.find(r => Math.abs(r.y - it.y) <= (tol || 3.5)); if (r){ r.it.push(it); r.y = (r.y * (r.it.length - 1) + it.y) / r.it.length; } else rows.push({y:it.y, it:[it]}); }
+  rows.forEach(r => r.it.sort((a, b) => a.x - b.x)); return rows.sort((a, b) => b.y - a.y);
+}
+const prTxt = its => prClean(its.slice().sort((a, b) => b.y - a.y || a.x - b.x).map(i => i.s).join(" "));
+const prCx = i => i.x + i.w / 2;
+function prHeads(items){ const hs = items.map(i => i.h).sort((a, b) => a - b), med = hs[Math.floor(hs.length / 2)] || 10; return items.filter(i => i.h >= med * 1.3 && !PR_FOOT.test(i.s)); }
+/* regroupe des lignes de texte de la colonne « élément » : un nom sur 2-3 lignes reste un seul élément */
+function prElems(its, gap){ const L = prRows(its, 3), out = []; for (const r of L){ const t = prClean(r.it.map(i => i.s).join(" ")), last = out[out.length - 1];
+    if (last && last.ymin - r.y < (gap || 18)){ last.nom += " " + t; last.ymin = r.y; last.ys.push(r.y); } else out.push({nom:t, ymax:r.y, ymin:r.y, ys:[r.y]}); }
+  out.forEach(e => e.yc = e.ys.reduce((a, b) => a + b, 0) / e.ys.length); return out; }
+const prNear = (list, y, max) => { let b = null, d = max || 30; for (const e of list){ const k = Math.abs(e.yc - y); if (k < d){ d = k; b = e; } } return b; };
+
+function prHeader(its){ /* repère les colonnes d'un tableau à partir de ses mots d'en-tête */
+  const f = re => its.find(i => re.test(i.s)), g = re => its.filter(i => re.test(i.s));
+  const el = f(/^[eé]l[eé]ment$/i), qt = f(/^quantit/i);
+  if (el && qt){ const en = f(/l['’]entrée$/i), so = f(/sortie$/i), q = prCx(qt), e1 = en ? prCx(en) : q + 80, s1 = so ? prCx(so) : e1 + 70;
+    return {kind:"inv", y:Math.min(...its.map(i => i.y)), qx:q, ex:e1, sx:s1, cut1:(q + e1) / 2, cut2:(e1 + s1) / 2}; }
+  if (el && f(/^commentaire$/i) && f(/^mauvais$/i)){ const tb = f(/^très$/i), bn = f(/^Bon$/), md = f(/^moyen$/i), mv = f(/^mauvais$/i);
+    const c = [prCx(tb), prCx(bn), prCx(md), prCx(mv)], sp = (c[3] - c[0]) / 3;
+    return {kind:"edl", y:Math.min(...its.map(i => i.y)), c, sp, left:c[0] - sp / 2, right:c[3] + sp / 2, cmt:f(/^commentaire$/i)}; }
+  const ty = f(/^type cl/i), nb = f(/^nombre$/i);
+  if (ty && nb){ const dt = f(/^date de remise/i), cm = f(/^commentaire$/i); const nx = prCx(nb), dc = dt ? prCx(dt) : nx + 80, cc = cm ? prCx(cm) : dc + 150; return {kind:"cles", y:Math.min(...its.map(i => i.y)), c1:(prCx(ty) + nx) / 2, c2:(nx + dc) / 2, c3:(dc + cc) / 2}; }
+  const pp = f(/^partie privative/i); if (pp) return {kind:"parties", y:Math.min(...its.map(i => i.y)), left:140, nx:(f(/^n°$/i) || {x:160}).x, dx:(f(/^descriptif/i) || {x:340}).x - 10};
+  return null;
+}
+function prFindHeaders(items){ /* un en-tête = la ligne contenant « Élément » (ou « Type clé », « Partie privative ») + les mots d'en-tête voisins */
+  const out = [], anchors = items.filter(i => /^([eé]l[eé]ment|type cl[eé]|partie privative)$/i.test(i.s));
+  for (const a of anchors){ const near = items.filter(i => i.y <= a.y + 28 && i.y >= a.y - 28 && PR_HEAD_WORDS.test(i.s) && i.h < 12); const h = prHeader(near); if (h && !out.some(o => Math.abs(o.y0 - a.y) < 40 && o.kind === h.kind)){ h.y0 = a.y; h.top = Math.max(...near.map(i => i.y)); h.words = near; out.push(h); } }
+  return out.sort((a, b) => b.y0 - a.y0);
+}
+function prColon(items, label){ /* valeur située à droite de l'étiquette, sur la même ligne */
+  const l = items.find(i => label.test(i.s)); if (!l) return ""; const v = items.filter(i => i !== l && Math.abs(i.y - l.y) < 6 && i.x > l.x + l.w - 2).sort((a, b) => a.x - b.x);
+  return prClean(v.map(i => i.s).join(" ").replace(/^:\s*/, "")); }
+function prParty(its){ /* colonne « Bailleur » ou « Locataire » */
+  const rows = prRows(its.filter(i => !PR_FOOT.test(i.s)), 3), o = {}; let adr = null;
+  const stop = /^(adresse|téléphone|telephone|né\(e\)|nationalité|nationalite|ci-après|ci-apres)/i;
+  for (const r of rows){ const t = prClean(r.it.map(i => i.s).join(" ")), first = r.it[0].s;
+    if (/^nom\b/i.test(first)){ const v = r.it.filter(i => !/^nom\b|^:$/i.test(i.s)); o.nom = v[0] ? v[0].s : ""; o.prenom = v.slice(1).map(i => i.s).join(" "); adr = null; }
+    else if (/^adresse [ée]lectronique/i.test(t)){ adr = "mail"; }
+    else if (/^adresse/i.test(first)){ adr = []; }
+    else if (/^(téléphone|telephone)/i.test(first)){ o.tel = prClean(r.it.slice(1).map(i => i.s).join(" ").replace(/^:\s*/, "")); adr = null; }
+    else if (/^né\(e\)/i.test(first)){ o.ne = prClean(r.it.slice(1).map(i => i.s).join(" ").replace(/^:\s*/, "")); adr = null; }
+    else if (/^à$/i.test(first)){ o.lieu = prClean(r.it.slice(1).map(i => i.s).join(" ")); adr = null; }
+    else if (/^nationalit/i.test(first)){ o.nat = prClean(r.it.slice(1).map(i => i.s).join(" ").replace(/^:\s*/, "")); adr = null; }
+    else if (/^ci-apr/i.test(first)){ adr = null; }
+    else if (adr === "mail"){ if (/@/.test(t)) o.mail = t; }
+    else if (Array.isArray(adr)){ if (/@/.test(t)) o.mail = t; else adr.push(t); o.adr = adr.join(", "); }
+    else if (/@/.test(t)) o.mail = t; }
+  return o; }
+
+/* pages : [{w, h, items:[{s, x, y, w, h}]}] -> structure du document, ou null si rien d'exploitable */
+function prParse(pages){
+  const all = []; pages.forEach((p, n) => p.items.forEach(i => all.push(Object.assign({}, i, {pg:n}))));
+  if (all.reduce((a, i) => a + i.s.length, 0) < 150) return null;
+  const first = pages[0].items, title = prHeads(first).sort((a, b) => b.y - a.y)[0];
+  const tt = title ? title.s : "", kind = /inventaire|meubles/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "inv" : /[ée]tat des lieux/i.test(tt + " " + prTxt(first.slice(0, 12))) ? "edl" : null;
+  if (!kind) return null;
+  const doc = {kind, type:/sortie/i.test(tt) ? "sortie" : "entree", date:"", info:{}, bailleur:null, locataire:null, clesL:[], parties:[], pieces:[], items:[]};
+  let cur = null, curInv = null, pend = null; const NOT_SEC = /^(autres commentaires|signature|infos utiles|clés|cles|parties privatives|les locaux|le bailleur|locataire|le\(s\)|[ée]tat des lieux|inventaire|liste)/i; /* dernière section de tableau d'état (pour les tableaux qui continuent à la page suivante) */
+  pages.forEach((pg, n) => {
+    const items = pg.items.filter(i => !PR_FOOT.test(i.s) && i.y > 30), heads = prHeads(items).sort((a, b) => b.y - a.y), hdrs = prFindHeaders(items);
+    /* ---- première page : en-tête, locaux, bailleur / locataire ---- */
+    if (n === 0 || (!doc.bailleur && /bailleur/i.test(prTxt(items)))){
+      const d = prColon(items, /^(entrée|sortie|date|établi)/i); if (!doc.date) doc.date = prIso(d) || prIso(prTxt(items));
+      const nb = prColon(items, /^nombre$|^nombre de pièces$/i), nbp = items.find(i => /^nombre de pièces$/i.test(i.s)); if (nbp){ const v = items.filter(i => Math.abs(i.y - nbp.y) < 6 && i.x > nbp.x + nbp.w && prNum(i.s)).sort((a, b) => a.x - b.x)[0]; if (v) doc.info.nbPieces = v.s; }
+      const sf = items.find(i => /^surface habitable$/i.test(i.s)); if (sf){ const v = items.filter(i => Math.abs(i.y - sf.y) < 6 && i.x > sf.x + sf.w); doc.info.surface = prClean(v.map(i => i.s).join(" ")); }
+      const la = items.find(i => /^adresse\s*:?$/i.test(i.s) && i.x < 200 && i.y > 400), chf = items.find(i => /^chauffage/i.test(i.s));
+      if (la && !doc.info.adresse){ const top = la.y - 4, bot = chf ? chf.y + 6 : la.y - 90; doc.info.adresse = prRows(items.filter(i => i.y < top && i.y > bot && i.x < 560 && i.h < 12 && !/^(chauffage|eau chaude)/i.test(i.s)), 3).map(r => prClean(r.it.map(i => i.s).join(" "))).join(", "); }
+      const bh = heads.find(h => /bailleur/i.test(h.s)), lh = heads.find(h => /locataire|preneur/i.test(h.s));
+      if (bh && lh){ const mid = lh.x - 12, top = Math.min(bh.y, lh.y) - 4, rest = items.filter(i => i.y < top && !heads.includes(i));
+        const nextH = heads.filter(h => h.y < top - 10)[0], low = nextH ? nextH.y : 30, R = rest.filter(i => i.y > low);
+        doc.bailleur = prParty(R.filter(i => i.x < mid)); doc.locataire = prParty(R.filter(i => i.x >= mid)); }
+    }
+    /* ---- infos utiles : compteurs, ancien occupant ---- */
+    const ih = heads.find(h => /infos utiles/i.test(h.s));
+    if (ih){ const z = items.filter(i => i.y < ih.y - 4 && i.y > (heads.filter(h => h.y < ih.y)[0] || {y:60}).y), val = (re, dx, dy) => { const l = z.find(i => re.test(i.s)); if (!l) return ""; const v = z.filter(i => i !== l && i.y < l.y + 3 && i.y > l.y - (dy || 40) && i.x > l.x - 4 && i.x < l.x + (dx || 120) && !/^(n°|hc|hp|edf|gaz|eau|ancien|relevé|compteur|occupant|froide|chaude)/i.test(i.s) && !prEmpty(i.s)); return prClean(v.sort((a, b) => b.y - a.y || a.x - b.x).map(i => i.s).join(" ")); };
+      const at = (lab, rx) => { const l = z.find(i => lab.test(i.s)); if (!l) return ""; const v = z.filter(i => Math.abs(i.y - l.y) < 8 && i.x > l.x + l.w - 2 && i.x < (rx || l.x + 90) && !prEmpty(i.s)); return prClean(v.map(i => i.s).join(" ")); };
+      const nEdf = z.find(i => /^edf compteur$/i.test(i.s)), nGaz = z.find(i => /^gaz compteur$/i.test(i.s));
+      const numAt = c => { if (!c) return ""; const l = z.find(i => /^n°$/i.test(i.s) && Math.abs(i.x - c.x) < 20); if (!l) return ""; return prClean(z.filter(i => Math.abs(i.y - l.y) < 8 && i.x > l.x + l.w - 2 && i.x < l.x + 110 && !prEmpty(i.s)).map(i => i.s).join(" ")); };
+      doc.info.edfN = numAt(nEdf); doc.info.gazN = numAt(nGaz); doc.info.edfHC = at(/^hc$/i, 290); doc.info.edfHP = at(/^hp$/i, 290);
+      const ao = z.find(i => /^ancien occupant$/i.test(i.s)); if (ao){ doc.info.ancien = prClean(z.filter(i => i.y < ao.y + 3 && i.y > ao.y - 30 && i.x > ao.x - 10 && i.x < ao.x + 110 && i !== ao && !prEmpty(i.s)).map(i => i.s).join(" ")); }
+      const rl = (lab, nm) => { const l = z.find(i => lab.test(i.s)); if (!l) return ""; return prClean(z.filter(i => i.y < l.y - 2 && i.y > l.y - 40 && i.x > l.x - 20 && i.x < l.x + 110 && !/relev/i.test(i.s) && !prEmpty(i.s)).map(i => i.s).join(" ")); };
+      doc.info.eauF = rl(/^eau froide/i); doc.info.eauC = rl(/^eau chaude relev/i); doc.info.gazR = rl(/^gaz relev/i);
+      Object.keys(doc.info).forEach(k => { if (prEmpty(doc.info[k])) delete doc.info[k]; }); }
+    /* ---- tableaux ---- */
+    hdrs.forEach((h, k) => {
+      const lower = hdrs.slice(k + 1)[0], hy = h.y0, below = heads.filter(x => x.y < h.top - 2), stopY = Math.max(below.length ? below[0].y + 14 : -1, lower ? lower.top + 12 : -1, 32);
+      const zone = items.filter(i => i.y < h.y - 4 && i.y > stopY - 0 && !h.words.includes(i) && !heads.includes(i));
+      /* titre de la section : le dernier grand titre au-dessus de l'en-tête (sinon : suite du tableau précédent) */
+      const above = heads.filter(x => x.y > h.top - 1 && !NOT_SEC.test(x.s)).sort((a, b) => a.y - b.y)[0];
+      const title = above ? prClean(above.s) : (pend || null); if (!above) pend = null; else pend = null;
+      if (h.kind === "edl"){
+        let sec = title && !(cur && cur.nom === title && !above) ? null : cur; if (title){ sec = doc.pieces.find(p => p.nom === title && p._pg === n) ; if (!sec){ sec = {nom:title, items:[], _pg:n}; doc.pieces.push(sec); } } else if (!sec){ sec = {nom:"Document importé", items:[], _pg:n}; doc.pieces.push(sec); }
+        cur = sec;
+        const names = zone.filter(i => prCx(i) < h.left && !/^autres commentaires/i.test(i.s)), els = prElems(names, 18);
+        const stopA = zone.find(i => /^autres commentaires/i.test(i.s)); const lim = stopA ? stopA.y : -1;
+        const E = els.filter(e => e.ymin > lim - 2).map(e => ({id:null, nom:e.nom, etat:"", com:"", yc:e.yc}));
+        for (const i of zone.filter(i => prCx(i) >= h.left && i.y > lim)){ const e = prNear(E, i.y, 26); if (!e) continue; const cx = prCx(i);
+          if (cx < h.right){ if (/^[xX✓✔✗✘☒■●×+*]$/.test(i.s)){ const idx = Math.round((cx - h.c[0]) / h.sp); e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][Math.max(0, Math.min(3, idx))]; } }
+          else e.com = prClean(e.com + " " + i.s); }
+        E.forEach(e => { delete e.yc; sec.items.push(e); });
+      } else if (h.kind === "inv"){
+        if (title) curInv = title; const grp = curInv || "Mobilier", names = zone.filter(i => i.x < h.qx - 28 && prCx(i) < h.qx - 18), els = prElems(names, 18);
+        const anchors = prRows(zone.filter(i => prCx(i) >= h.qx - 18 && prCx(i) < h.cut2), 6).map(r => ({yc:r.y, q:prClean(r.it.filter(i => prCx(i) < h.cut1).map(i => i.s).join(" ")), s:prClean(r.it.filter(i => prCx(i) >= h.cut1).map(i => i.s).join(" "))}));
+        const rowsOut = [];
+        for (const a of anchors){ const e = prNear(els, a.yc, 30); rowsOut.push({nom:e ? e.nom : "", q:a.q, s:a.s, e}); }
+        els.forEach(e => { if (!rowsOut.some(r => r.e === e)) rowsOut.push({nom:e.nom, q:"", s:"", e}); });
+        rowsOut.sort((a, b) => (b.e ? b.e.yc : 0) - (a.e ? a.e.yc : 0));
+        for (const r of rowsOut){ if (!r.nom) continue; doc.items.push({grp, nom:r.nom, qte:prNum(r.q) ? r.q : (r.q ? "1" : "1"), etat:normEtat(r.s) || "", com:normEtat(r.s) ? "" : r.s}); }
+      } else if (h.kind === "cles"){
+        const rows = prRows(zone.filter(i => i.y > stopY), 6);
+        for (const r of rows){ const c = { type:"", nb:"", date:"", com:"" }; for (const i of r.it){ const cx = prCx(i); if (cx < h.c1) c.type = prClean(c.type + " " + i.s); else if (cx < h.c2) c.nb = prClean(c.nb + " " + i.s); else if (cx < h.c3) c.date = prClean(c.date + " " + i.s); else c.com = prClean(c.com + " " + i.s); }
+          if (c.type || c.nb) doc.clesL.push(c); }
+      } else if (h.kind === "parties"){
+        const rows = prRows(zone.filter(i => i.y > stopY), 8);
+        for (const r of rows){ const p = {nom:"", n:"", desc:""}; for (const i of r.it){ const cx = prCx(i); if (cx < h.left + 40) p.nom = prClean(p.nom + " " + i.s); else if (cx < h.dx) p.n = prClean(p.n + " " + i.s); else p.desc = prClean(p.desc + " " + i.s); }
+          if (p.nom && (!prEmpty(p.n) || !prEmpty(p.desc))) doc.parties.push(p); }
+      }
+    });
+    const sh = heads.filter(x => !NOT_SEC.test(x.s)).sort((a, b) => a.y - b.y)[0];
+    if (sh && !hdrs.some(h => h.y0 < sh.y)) pend = prClean(sh.s);
+  });
+  doc.pieces.forEach(p => delete p._pg);
+  doc.pieces = doc.pieces.filter(p => p.items.length);
+  /* pièces du modèle jamais remplies (ex. chambres 1 à 3 pour un studio) : on ne les reprend pas, si au moins une pièce a du contenu */
+  const used = p => p.items.some(i => i.etat || i.com); doc.skipped = [];
+  if (doc.pieces.some(used)){ doc.skipped = doc.pieces.filter(p => !used(p)).map(p => p.nom); doc.pieces = doc.pieces.filter(used); }
+  const n = doc.kind === "inv" ? doc.items.length : doc.pieces.reduce((a, p) => a + p.items.length, 0);
+  return n ? doc : null;
+}
+async function pdfRead(buf){
+  const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(buf.slice(0))}).promise, pages = [];
+  for (let i = 1; i <= Math.min(pdf.numPages, 40); i++){ const pg = await pdf.getPage(i), tc = await pg.getTextContent();
+    pages.push({w:pg.view[2], h:pg.view[3], items:tc.items.filter(t => t.str && t.str.trim()).map(t => ({s:t.str.trim(), x:t.transform[4], y:t.transform[5], w:t.width, h:t.height}))}); }
+  return prParse(pages);
+}
+
+/* ---------- reprise dans l'appli : champs, import, PDF, fiche ---------- */
+const prFull = p => p ? [p.prenom, p.nom].filter(Boolean).join(" ") : "";
+function prApply(e, R, blank){ /* range ce qui a été lu dans un état des lieux / inventaire */
+  if (!R) return e;
+  if (R.kind === "edl") e.pieces = R.pieces.map(p => ({id:uid(), nom:p.nom, items:p.items.map(i => ({id:uid(), nom:i.nom, etat:blank ? "" : i.etat, com:blank ? "" : i.com, ph:[]}))}));
+  else e.items = R.items.map(i => ({id:uid(), grp:i.grp, nom:i.nom, qte:i.qte || "1", etat:blank ? "" : i.etat, com:blank ? "" : i.com}));
+  if (R.info && Object.keys(R.info).length) e.info = R.info;
+  if (R.bailleur && Object.keys(R.bailleur).length) e.bailleur = R.bailleur;
+  if (R.locataire && Object.keys(R.locataire).length) e.locataire = R.locataire;
+  if (R.clesL && R.clesL.length) e.clesL = R.clesL;
+  if (R.parties && R.parties.length) e.parties = R.parties;
+  if (!e.loc && R.locataire) e.loc = prFull(R.locataire);
+  return e;
+}
+const prCopy = (to, from) => { ["info", "bailleur", "locataire", "clesL", "parties"].forEach(k => { if (from && from[k]) to[k] = JSON.parse(JSON.stringify(from[k])); }); return to; };
+const prNb = R => R ? (R.kind === "inv" ? R.items.length + " article(s)" : R.pieces.length + " pièce(s), " + R.pieces.reduce((a, p) => a + p.items.length, 0) + " éléments" + (R.skipped && R.skipped.length ? " (" + R.skipped.length + " pièce(s) vides du modèle ignorées)" : "")) : "";
+function prPartyLines(p){ return !p ? null : [prFull(p), p.adr, [p.tel, p.mail].filter(Boolean).join(" · "), p.ne ? "Né(e) le " + p.ne + (p.lieu ? " à " + p.lieu : "") + (p.nat ? " · " + p.nat : "") : ""]; }
+function prInfoRows(e){ const i = e.info || {}; return [["Adresse du logement", i.adresse], ["Nombre de pièces", i.nbPieces], ["Surface habitable", i.surface], ["Compteur EDF n°", i.edfN], ["Relevé EDF HC", i.edfHC], ["Relevé EDF HP", i.edfHP], ["Compteur gaz n°", i.gazN], ["Relevé gaz", i.gazR], ["Eau froide (relevé)", i.eauF], ["Eau chaude (relevé)", i.eauC], ["Ancien occupant", i.ancien]].filter(r => r[1]); }
+function prInfoTables(d, e){ const tw = d.W - 2 * d.M, R = prInfoRows(e);
+  if (R.length){ d.need(60); d.h("Le logement et les compteurs", 12); dTable(d, [{h:"Information", w:170}, {h:"Valeur", w:tw - 170}], R.map(r => [r[0], String(r[1])])); }
+  if ((e.clesL || []).length){ d.need(60); d.h("Clés", 12); dTable(d, [{h:"Type de clé", w:170}, {h:"Nombre", w:55}, {h:"Date de remise", w:90}, {h:"Commentaire", w:tw - 315}], e.clesL.map(c => [c.type || "", c.nb || "", c.date || "", c.com || ""])); }
+  if ((e.parties || []).length){ d.need(60); d.h("Parties privatives attachées au logement", 12); dTable(d, [{h:"Partie privative", w:140}, {h:"N°", w:60}, {h:"Descriptif et état", w:tw - 200}], e.parties.map(p => [p.nom, p.n || "", p.desc || ""])); }
+}
+function prInfoCard(e){ if (!e.info && !e.bailleur && !e.locataire && !(e.clesL || []).length) return "";
+  const li = a => a ? a.filter(Boolean).map(x => esc(x)).join("<br>") : "";
+  return `<details class="card" style="padding:12px 16px"><summary style="font-weight:700;cursor:pointer">Reprises du document importé</summary>
+    <div class="small" style="margin-top:8px">${e.bailleur ? `<b>Bailleur</b><br>${li(prPartyLines(e.bailleur))}<br><br>` : ""}${e.locataire ? `<b>Locataire</b><br>${li(prPartyLines(e.locataire))}<br><br>` : ""}
+    ${prInfoRows(e).map(r => `<b>${esc(r[0])}</b> : ${esc(String(r[1]))}`).join("<br>")}
+    ${(e.clesL || []).length ? `<br><br><b>Clés</b><br>${e.clesL.map(c => esc([c.type, c.nb ? "× " + c.nb : "", c.date, c.com].filter(Boolean).join(" · "))).join("<br>")}` : ""}</div>
+    <div class="small muted" style="margin-top:6px">Ces informations figurent aussi dans le PDF de l'appli.</div></details>`; }
+
+/* ============ Classeur : tous les documents scannés / importés, rangés par bien, triés ============ */
+const CLS_CSS = document.createElement("style"); CLS_CSS.textContent = `#cls{position:fixed;inset:0;z-index:60;background:var(--bg,#f3f6f5);display:flex;flex-direction:column}
+#cls .cbar{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 8px}#cls .cbar .ct{flex:1;text-align:center;font-weight:700}
+#cls .cctl{padding:0 14px 8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}#cls .cctl select,#cls .cctl input{padding:8px;font-size:14px;border-radius:10px;width:100%;box-sizing:border-box}
+#cls .cl{flex:1;min-height:0;overflow:auto;padding:0 12px calc(14px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+#cls .ci{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;background:#fff;border-radius:14px;padding:10px;margin-bottom:8px;align-items:center}
+#cls .ci img.thumb{width:56px;height:56px;object-fit:cover;border-radius:8px}#cls .ci b{display:block;overflow-wrap:anywhere}#cls .ci .s{font-size:12px;color:#5b6f69}#cls .ci select{margin-top:6px;padding:6px;font-size:13px;border-radius:8px;max-width:100%}`;
+document.head.appendChild(CLS_CSS);
+const clsType = d => d.kind === "autre" ? (annexLabel(d.sub) || "Autre document") : (FKIND[d.kind] || "Document");
+const clsKindOf = d => d.kind === "autre" ? "autre" : d.kind;
+function clsList(){ const c = V.cls, q = (c.q || "").toLowerCase().trim();
+  let L = docList("docs").filter(d => !d.del && (!c.bien || d.bien === c.bien) && (!c.kind || clsKindOf(d) === c.kind) && (!q || [d.nom, d.fname, d.fourn, d.objet, clsType(d), bienName(d.bien)].join(" ").toLowerCase().includes(q)));
+  const dt = d => d.date || (d.upd ? new Date(d.upd).toISOString().slice(0, 10) : "");
+  const S_ = {new:(a, b) => dt(b).localeCompare(dt(a)), old:(a, b) => dt(a).localeCompare(dt(b)), nom:(a, b) => String(a.nom || a.fname).localeCompare(String(b.nom || b.fname), "fr"), type:(a, b) => clsType(a).localeCompare(clsType(b), "fr") || dt(b).localeCompare(dt(a)), bien:(a, b) => bienName(a.bien).localeCompare(bienName(b.bien), "fr") || dt(b).localeCompare(dt(a))};
+  return L.sort(S_[c.sort] || S_.new); }
+function clsRender(){
+  const c = V.cls; if (!c) return; let el = document.getElementById("cls"); if (!el){ el = document.createElement("div"); el.id = "cls"; document.body.appendChild(el); }
+  const L = clsList(), biens = S.biens.filter(b => !b.del), kinds = [["", "Tous les types"], ["fact", "Factures"], ["bail", "Baux"], ["edl", "États des lieux"], ["inv", "Inventaires"], ["autre", "Diagnostics et autres"]], sorts = [["new", "Plus récents"], ["old", "Plus anciens"], ["nom", "Nom (A-Z)"], ["type", "Type"], ["bien", "Bien"]];
+  const o = (arr, cur) => arr.map(x => `<option value="${esc(x[0])}" ${x[0] === cur ? "selected" : ""}>${esc(x[1])}</option>`).join("");
+  el.innerHTML = `<div class="cbar" ${DEMO ? 'style="padding-top:calc(64px + env(safe-area-inset-top,0px))"' : ""}><button class="btn sm ghost" data-cl="close">✕ Fermer</button><span class="ct">Classeur · ${L.length} document(s)</span><span style="width:70px"></span></div>
+    <div class="cctl"><select data-cl="bien"><option value="">Tous les biens</option>${biens.map(b => `<option value="${b.id}" ${b.id === c.bien ? "selected" : ""}>${esc(b.nom)}</option>`).join("")}</select>
+    <select data-cl="kind">${o(kinds, c.kind)}</select><select data-cl="sort">${o(sorts, c.sort)}</select><input data-cl="q" type="search" placeholder="Rechercher" value="${esc(c.q || "")}"></div>
+    <div class="cl">${L.map(d => `<div class="ci">${thumb(d.id, d.fname || d.nom, d.type)}<div><b>${esc(d.nom || d.fname || "Document")}</b><div class="s">${esc(bienName(d.bien))} · ${esc(clsType(d))} · ${d.date ? esc(frDate(d.date)) : "sans date"}${d.size ? " · " + Math.max(1, Math.round(d.size / 1024)) + " Ko" : ""}</div>
+      <select data-cl="move" data-id="${d.id}" aria-label="Ranger dans un autre bien"><option value="">Ranger dans…</option>${biens.filter(b => b.id !== d.bien).map(b => `<option value="${b.id}">${esc(b.nom)}</option>`).join("")}</select></div></div>`).join("") || '<div class="empty" style="padding:24px 8px">Aucun document pour ces filtres. Les scans et imports de chaque bien (Biens › Documents) apparaissent ici.</div>'}</div>`;
+}
+function classeurCard(){ const n = docList("docs").filter(d => !d.del).length;
+  return `<div class="card"><h2>Classeur de tous les documents</h2><div class="small muted">Tous les scans et imports de tous tes biens au même endroit : filtre par bien ou par type, tri par date, recherche, et déplacement d'un document vers un autre bien.</div>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="cl-open">📚 Ouvrir le classeur (${n})</button></div></div>`; }
+document.addEventListener("click", ev => {
+  const o = ev.target.closest("[data-act='cl-open']"); if (o){ V.cls = {bien:"", kind:"", sort:"new", q:""}; clsRender(); return; }
+  const b = ev.target.closest("[data-cl='close']"); if (b){ const el = document.getElementById("cls"); if (el) el.remove(); V.cls = null; }
+});
+document.addEventListener("change", ev => { const t = ev.target, a = t && t.dataset && t.dataset.cl; if (!a || !V.cls) return;
+  if (a === "move"){ if (!t.value) return; const d = docList("docs").find(x => x.id === t.dataset.id); if (!d) return; d.bien = t.value; d.upd = Date.now();
+    ["edl", "inv"].forEach(k => docList(k).forEach(e => { if (e.fichier === d.id){ e.bien = t.value; e.upd = Date.now(); } })); persist(); toast("Rangé dans « " + bienName(t.value) + " »"); clsRender(); return; }
+  if (a === "bien") V.cls.bien = t.value; else if (a === "kind") V.cls.kind = t.value; else if (a === "sort") V.cls.sort = t.value; else return; clsRender(); });
+document.addEventListener("input", ev => { const t = ev.target; if (!t || !t.dataset || t.dataset.cl !== "q" || !V.cls) return; V.cls.q = t.value; const pos = t.selectionStart; clsRender(); const n = document.querySelector("#cls [data-cl=q]"); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} } });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
