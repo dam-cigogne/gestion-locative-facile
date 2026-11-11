@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.57";
+const APP_VERSION = "1.7.58";
 const CHANGELOG = [
+  {v:"1.7.58", date:"2026-11-11", titre:"Récapitulatif imprimable, alerte documents manquants, copies retirées", items:["Vue d'ensemble des biens › « 🖨 Imprimer le récapitulatif (PDF) » : un tableau clair par bien (document, durée, date, valable jusqu'au, état en couleur), avec en première page ce qu'il faut faire en priorité. Les pièces sont rangées en groupes, à l'écran comme sur le PDF : 🔴 obligatoires pour tout bail, 🟠 obligatoires selon le logement (plomb avant 1949, électricité et gaz après 15 ans, bruit, copropriété…), ⚪ suivi du propriétaire ; chaque ligne du PDF dit quand le document est exigé. Tu choisis les biens, tu peux ajouter les pièces de la location ou n'imprimer que ce qui reste à faire.","Quand tu découpes un dossier, les copies du même fichier rangées dans d'autres catégories sont retirées (case cochée par défaut) et chaque ligne a un bouton « Voir » qui n'ouvre que ses pages.","Le bandeau en haut du bien et de l'accueil signale aussi les documents toujours obligatoires pour louer qui manquent (DPE, état des risques, mesurage loi Boutin) : « À faire faire avant la prochaine location ». Les autres diagnostics (plomb, électricité, gaz, amiante…) dépendent de l'immeuble : ils ne déclenchent pas l'alerte, tu peux les marquer « Non concerné » avec le ⚙."]},
   {v:"1.7.57", date:"2026-11-11", titre:"Découper un dossier de diagnostics, DPE à dates fixes, affichage iPhone", items:["Pièces à joindre : un gros PDF qui réunit tous les diagnostics (DPE, surface, électricité, amiante, plomb, ERP, bruit…) s'importe une seule fois sur la ligne « Autres diagnostics / dossier complet ». Le bouton « ✂ Découper » (proposé aussitôt après l'import) repère chaque partie d'après ses titres, lit la date de chacune (scan compris) et propose une ligne par diagnostic. Tu corriges le type ou les pages si besoin. Le fichier complet reste entier : c'est lui qui part avec le bail ; chaque ligne ouvre seulement ses pages. Supprimer le gros fichier supprime ses lignes.","Un DPE réalisé entre 2013 et 2017 n'est plus valable depuis le 31/12/2022, entre janvier 2018 et juin 2021 depuis le 31/12/2024 (règle de la loi) : l'appli le signale périmé, au lieu de compter 10 ans.","Nouvelles pièces : bruit des aérodromes (zone PEB, 6 mois), grille de vétusté et convention Anah (elles n'apparaissent comme « Non concerné » que tant que tu n'en importes pas).","iPhone : les lignes des pièces à joindre ne se tassent plus en colonne étroite, les boutons passent sous le texte."]},
   {v:"1.7.56", date:"2026-11-11", titre:"Importer un tableau de loyers (Excel .xls ou .xlsx)", items:["Réglages › Données › Importer un fichier : l'appli lit maintenant un tableau de suivi des loyers (une feuille, les années en colonnes avec les mois, un logement par ligne, fichier .xls ou .xlsx). Tu associes chaque ligne à un de tes biens (ou tu crées le bien, ou tu ignores la ligne), puis « Importer les loyers » ajoute chaque loyer mensuel comme recette « Loyer », déjà pointée. Les mois vides ou marqués « - » sont ignorés et un loyer déjà présent n'est pas ajouté deux fois.","Un même PDF qui réunit le bail, l'état des lieux et l'inventaire : l'appli repère les pages de chaque document d'après leur titre et ne lit que celles du document demandé (les pages du contrat ne produisent plus de lignes parasites). Les pages lues sont indiquées."]},
   {v:"1.7.55", date:"2026-11-11", titre:"ERP gratuit, plomb et amiante selon le résultat, mesurage Boutin", items:["Pièces à joindre : un lien « 🔗 Faire l'ERP » à côté de l'état des risques ouvre le site officiel Géorisques (errial.georisques.gouv.fr), gratuit, pour le renouveler.","Plomb et amiante : un bouton « Résultat ? » (absence / présence) : absence = sans limite de durée, présence = 6 ans pour le plomb et 3 ans pour l'amiante (réglable avec ⚙).","Nouvelle pièce « Mesurage loi Boutin (surface habitable) » : sans limite de durée.","Le bouton « Voir » du bandeau rouge ou orange t'amène maintenant jusqu'à la liste des pièces, même quand tu es déjà sur l'onglet Documents. Le message de relecture des dates est plus clair.","Lecture d'un état des lieux scanné : les lignes parasites (bruit de bordures, taches) ne sont plus reprises comme éléments ou pièces."]},
@@ -1728,6 +1729,8 @@ const HELP = {
     "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
     "Pièces à joindre : la date du document sert à voir s'il est à jour ; ⚙ règle la durée de validité et « à refaire à chaque location ».",
     "Un seul gros PDF de diagnostics : importe-le sur « Autres diagnostics / dossier complet » puis « ✂ Découper » : une ligne par diagnostic (date lue), le fichier complet est gardé pour le bail. Les anciens DPE (2013 à juin 2021) ont une fin de validité fixe.",
+    "Le bandeau rouge ou orange signale aussi un DPE, un ERP ou un mesurage Boutin manquant : à faire faire avant la prochaine location.",
+    "Vue d'ensemble des biens › 🖨 Imprimer le récapitulatif : tableau PDF de l'état de tous les documents, bien par bien.",
     "Visale / garantie loyers impayés : sur la fiche du locataire, choisis le type de garantie, note le numéro de visa et la validité, importe le contrat ; Biens › Visale réunit le tout avec un lien direct vers visale.fr.",
     "Import d'un état des lieux ou d'un inventaire en PDF : l'appli lit le document en entier (pièces, états, clés, bailleur, locataire) et le refabrique dans son propre format.",
     "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; « ✏️ Renommer » change son nom, « Ranger dans… » le déplace vers un autre bien.",
@@ -6362,6 +6365,13 @@ const AV_BIEN = ["dpe", "erp", "bruit", "boutin", "plomb", "elec", "gaz", "amian
 const avCfg = (k, bien) => { const A = (S.cfg || {}).annexV || {}; return Object.assign({}, ANNEX_VAL[k] || {m:null}, A[k] || {}, A[bien + "|" + k] || {}); };
 /* DPE faits avant juillet 2021 : fin de validité fixée par la loi (2013-2017 : 31/12/2022 · 2018 à juin 2021 : 31/12/2024) */
 const dpeOld = iso => !iso ? "" : iso >= "2013-01-01" && iso <= "2017-12-31" ? "2022-12-31" : iso >= "2018-01-01" && iso <= "2021-06-30" ? "2024-12-31" : "";
+/* documents toujours obligatoires pour louer : manquants = alerte (les autres diagnostics dépendent de l'immeuble : plomb avant 1949, électricité et gaz après 15 ans…) */
+const AV_REQ = ["dpe", "erp", "boutin"];
+/* rangement par importance : obligatoire pour tout bail / selon le logement / suivi du propriétaire */
+const AV_GRP_BIEN = [["🔴 Obligatoires pour tout bail", ["dpe", "erp", "boutin"]], ["🟠 Obligatoires selon le logement", ["plomb", "elec", "gaz", "amiante", "bruit", "copro", "permis", "vetuste", "anah"]], ["⚪ Suivi du propriétaire et divers", ["diag", "pno", "taxe"]]];
+const AV_GRP_LOC = [["🔴 Obligatoires à chaque location", ["notice", "assur"]], ["🟠 Selon le cas", ["caution", "charges", "repar", "caf"]]];
+const AV_WHEN = {dpe:"toujours", erp:"toujours, refait à chaque location", boutin:"toujours (surface dans le bail)", plomb:"immeuble d'avant 1949", elec:"installation de plus de 15 ans", gaz:"installation de plus de 15 ans", amiante:"permis avant juillet 1997, à tenir à disposition", bruit:"zone d'exposition au bruit", copro:"si copropriété", permis:"si la commune l'impose", vetuste:"si convenue (logement vide)", anah:"si logement conventionné", diag:"copie complète, jointe au bail", pno:"conseillé, pas une annexe", taxe:"suivi, pas une annexe", notice:"toujours, version en vigueur", assur:"avant la remise des clés, chaque année", caution:"si le bailleur l'exige", charges:"si charges au réel", repar:"annexe habituelle", caf:"si allocation logement"};
+const avGroups = (id, G) => G.map(([t, ks]) => `<div class="small" style="margin:12px 0 2px;font-weight:700">${t}</div><div class="rows">${ks.map(k => avRow(id, k)).join("")}</div>`).join("");
 const avAdd = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 const avLab = k => annexLabel(k);
 function avStat(bien, k){
@@ -6383,7 +6393,7 @@ function avRow(id, k){
   const s = avStat(id, k), a = k;
   if (s.st === "na") return `<div class="row" style="opacity:.55;flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="mini" data-act="im-open" data-v="autre" data-s="${a}">Importer</button><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
   const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + (s.d.res === "absence" ? "absence" : "présence") : AV_RES[k] ? " · résultat à préciser" : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
-  return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
+  return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="fl-open" data-id="${s.d.id}">Voir</button><button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
 }
 function avSummary(id, keys){
   const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
@@ -6396,14 +6406,14 @@ function visaleRow(id){
 }
 function annexRows(id){
   const name = typeof bienName === "function" ? bienName(id) : id;
-  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div><div class="btns" style="margin:8px 0"><button class="btn ghost" data-act="av-reread-all" data-b="${esc(id)}">↻ Relire la date de tous les documents importés</button></div><div class="small muted" id="av-rr-note"></div>${avSummary(id, AV_BIEN)}<div class="rows">${AV_BIEN.map(k => avRow(id, k)).join("")}</div>
-    <div class="small" style="margin-top:12px"><b>👤 Documents de la location</b> : à refaire à chaque nouveau locataire.</div>${avSummary(id, AV_LOC)}<div class="rows">${AV_LOC.map(k => avRow(id, k)).join("")}${visaleRow(id)}</div>`;
+  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div><div class="btns" style="margin:8px 0"><button class="btn ghost" data-act="av-reread-all" data-b="${esc(id)}">↻ Relire la date de tous les documents importés</button></div><div class="small muted" id="av-rr-note"></div>${avSummary(id, AV_BIEN)}${avGroups(id, AV_GRP_BIEN)}
+    <div class="small" style="margin-top:12px"><b>👤 Documents de la location</b> : à refaire à chaque nouveau locataire.</div>${avSummary(id, AV_LOC)}${avGroups(id, AV_GRP_LOC)}<div class="rows">${visaleRow(id)}</div>`;
 }
 const AV_SYM = {ok:["✓", "#1A7A4C"], bientot:["⏳", "#B26A00"], perime:["✗", "#B3261E"], refaire:["✗", "#B3261E"], manque:["–", "#8A9690"], na:["·", "#B5BDB9"]};
 function annexOverview(){
   const ids = typeof bienIds === "function" ? bienIds() : []; if (!ids.length) return "";
   const th = "padding:5px 6px;text-align:center;font-size:12px", td = "padding:5px 6px;text-align:center;font-weight:700;font-size:15px";
-  return `<div class="card"><h2>Vue d'ensemble des biens</h2><div class="small muted">Les documents propres à chaque bien d'un coup d'œil : ✓ à jour · ⏳ expire bientôt · ✗ périmé · – manquant · · non concerné. Touche un bien pour ouvrir son dossier.</div>
+  return `<div class="card"><h2>Vue d'ensemble des biens</h2><div class="small muted">Les documents propres à chaque bien d'un coup d'œil : ✓ à jour · ⏳ expire bientôt · ✗ périmé · – manquant · · non concerné. Touche un bien pour ouvrir son dossier.</div><div class="btns" style="margin:6px 0"><button class="btn ghost" data-act="av-print">🖨 Imprimer le récapitulatif (PDF)</button></div>
     <div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%"><thead><tr><th style="${th};text-align:left">Document</th>${ids.map(i => `<th style="${th}"><button class="mini" data-act="bsel" data-v="${esc(i)}">${esc(bienName(i))}</button></th>`).join("")}</tr></thead>
     <tbody>${AV_BIEN.map(k => `<tr style="border-top:1px solid var(--line,#e3e8e6)"><td style="${th};text-align:left">${esc(avLab(k))}${avDurTxt(avCfg(k, "")) ? `<div class="small muted" style="font-weight:400">⏱ ${esc(avDurTxt(avCfg(k, "")))}</div>` : ""}</td>${ids.map(i => { const s = avStat(i, k), y = AV_SYM[s.st]; return `<td style="${td};color:${y[1]}" title="${esc(s.exp ? "valable jusqu'au " + frDate(s.exp) : s.st)}">${y[0]}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div></div>`;
 }
@@ -6419,16 +6429,17 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 
 /* alertes : documents périmés / à refaire (rouge), bientôt périmés (orange) */
 function avProblems(id){
-  const out = {late:[], soon:[]};
+  const out = {late:[], soon:[], miss:[]};
+  AV_REQ.forEach(k => { if (avStat(id, k).st === "manque") out.miss.push(avLab(k)); });
   [...AV_BIEN, ...AV_LOC].forEach(k => { const s = avStat(id, k); if (s.st === "perime" || s.st === "refaire") out.late.push(avLab(k) + (s.st === "refaire" ? " (à refaire)" : " (périmé)")); else if (s.st === "bientot") out.soon.push(avLab(k)); });
   const t = tenantFor(id, todayIso()), e = t && t.gl && typeof glEnd === "function" ? glEnd(t.gl) : ""; if (e === "exp") out.late.push("Garantie " + (typeof glLab === "function" ? glLab(t) : "") + " (expirée)"); else if (e === "soon") out.soon.push("Garantie " + (typeof glLab === "function" ? glLab(t) : ""));
   return out;
 }
 function avAlert(id, home){
-  const p = avProblems(id); if (!p.late.length && !p.soon.length) return "";
+  const p = avProblems(id); if (!p.late.length && !p.soon.length && !p.miss.length) return "";
   const red = p.late.length > 0, col = red ? "#B3261E" : "#B26A00", bg = red ? "#FDECEA" : "#FFF4DE";
-  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : "⏳ Documents bientôt périmés"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
-    ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}</div>`;
+  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : p.soon.length ? "⏳ Documents bientôt périmés" : "📋 Documents obligatoires manquants"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
+    ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}${p.miss.length ? `<div class="small" style="color:${red ? col : "#B26A00"}">${red || p.soon.length ? "Manquant : " : "À faire faire avant la prochaine location : "}<b>${esc(p.miss.join(" · "))}</b></div>` : ""}</div>`;
 }
 const avAlertHome = () => (typeof bienIds === "function" ? bienIds() : []).map(i => avAlert(i, true)).join("");
 
@@ -6499,6 +6510,52 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 /* « Voir » de l'alerte : amène sur la liste des pièces, même si on est déjà sur l'onglet Documents */
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-av]"); if (!b) return; setTimeout(() => { const c = document.getElementById("pj-card"); if (c) c.scrollIntoView({behavior:"smooth", block:"start"}); }, 60); });
 
+/* ============ Récapitulatif imprimable : état de tous les documents, bien par bien ============ */
+const AV_TXT = {ok:"A jour", bientot:"Expire bientot", perime:"PERIME", refaire:"A REFAIRE", manque:"Manquant"}, AV_COL = {ok:"#1A7A4C", bientot:"#B26A00", perime:"#B3261E", refaire:"#B3261E", manque:"#6B7873"};
+function annexPdf(ids, o){
+  o = o || {}; const d = new PdfDoc("Pièces à joindre"), M = d.M, R = d.W - M, keys = [...AV_BIEN, ...(o.loc ? AV_LOC : [])];
+  d.text(M, d.y, "Pièces à joindre au bail", {size:20, bold:true}); d.y -= 20;
+  d.para("Etat des documents au " + frDate(todayIso()) + (S.cfg && S.cfg.bailleur ? " · Bailleur : " + S.cfg.bailleur : "") + ". Un diagnostic périmé ou manquant est à refaire faire avant la prochaine location.", 9.5, 13);
+  const todo = ids.map(i => ({i, p:avProblems(i)})).filter(x => x.p.late.length || x.p.soon.length || x.p.miss.length);
+  d.h("A faire en priorité", 13);
+  if (!todo.length) d.para("Rien : tous les documents suivis sont à jour.", 10, 14);
+  for (const x of todo){ d.need(30); d.text(M, d.y, bienName(x.i), {size:10.5, bold:true}); d.y -= 14;
+    const L = (txt, c) => { d.need(14); d.rect(M + 6, d.y + 1, 5, 5, c); let ln = ""; const out = []; for (const w of txt.split(" ")){ const t = ln ? ln + " " + w : w; if (pdfW(t, 9.5) > R - M - 20){ out.push(ln); ln = w; } else ln = t; } out.push(ln); out.forEach((l2, j) => { if (j) d.need(13); d.text(M + 16, d.y, l2, {size:9.5}); d.y -= 13; }); };
+    if (x.p.miss.length) L("Manquant (obligatoire) : " + x.p.miss.join(", "), "#B3261E");
+    if (x.p.late.length) L("A refaire : " + x.p.late.join(", "), "#B3261E");
+    if (x.p.soon.length) L("Expire bientot : " + x.p.soon.join(", "), "#B26A00");
+    d.y -= 4; }
+  for (const i of ids){
+    d.newPage(); const b = S.biens.find(z => z.id === i) || {};
+    d.text(M, d.y, bienName(i), {size:16, bold:true, color:"#0E6B5C"}); d.y -= 16; if (b.adresse) { d.text(M, d.y, b.adresse, {size:9.5, color:"#5C6B66"}); d.y -= 14; }
+    const X = [M, M + 262, M + 332, M + 424]; let any = false;
+    for (const [gt, ks] of [...AV_GRP_BIEN, ...(o.loc ? AV_GRP_LOC : [])]){
+      const rows = ks.map(k => ({k, s:avStat(i, k)})).filter(r => r.s.st !== "na" && (!o.todo || r.s.st !== "ok")); if (!rows.length) continue; any = true;
+      d.need(60); d.y -= 8; d.rect(M, d.y - 4, R - M, 16, gt.startsWith("🔴") ? "#F6D9D5" : gt.startsWith("🟠") ? "#FBE9C8" : "#E6EBE8");
+      d.text(M + 6, d.y, gt.replace(/^\S+\s/, ""), {size:10, bold:true}); d.y -= 14;
+      ["Document", "Edite le", "Valable jusqu'au", "Etat"].forEach((t, j) => d.text(X[j], d.y, t, {size:8, bold:true, color:"#5C6B66"})); d.y -= 14;
+      for (const {k, s} of rows){ d.need(30); const c = s.c || {}, dur = c.m === null || c.m === undefined ? "" : c.m === 0 ? "sans limite" : avDur(c.m);
+        let lab = avLab(k); if (lab.length > 46) lab = lab.slice(0, 44) + "...";
+        d.text(X[0], d.y, lab, {size:9.5, bold:true}); d.text(X[1], d.y, s.d ? frDate(s.d.date) : "-", {size:9});
+        d.text(X[2], d.y, s.exp ? frDate(s.exp) : s.d ? (c.m === 0 ? "sans limite" : "au dossier") : "-", {size:9});
+        d.pill(X[3], d.y, (s.st === "manque" ? (AV_REQ.includes(k) || ks === AV_GRP_BIEN[0][1] || ks === AV_GRP_LOC[0][1] ? "MANQUANT !" : "Non fourni") : AV_TXT[s.st]).toUpperCase(), AV_COL[s.st]);
+        d.y -= 11; d.text(X[0], d.y, "Exige : " + (AV_WHEN[k] || "") + (dur ? " · validite " + dur : "") + (s.d && s.why ? " · " + s.why : ""), {size:7.5, color:"#5C6B66"});
+        d.y -= 6; d.line(M, d.y + 3, R, d.y + 3); d.y -= 11; }
+    }
+    if (!any) d.para("Rien a signaler pour ce bien.", 10, 14);
+  }
+  return d.finish("Pieces a joindre");
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-print'],[data-act='av-print-ok']"); if (!b) return;
+  const ids = typeof bienIds === "function" ? bienIds() : [];
+  if (b.dataset.act === "av-print"){ openSheet(`<h2>Imprimer le récapitulatif</h2><div class="small muted">Un tableau clair par bien : chaque document, sa date, sa validité et son état (à jour, bientôt, périmé, manquant), avec en première page ce qu'il faut faire en priorité.</div>
+      ${ids.map((i, k) => `<label style="display:flex;gap:8px;align-items:center;padding:6px 0"><input type="checkbox" id="ap-b-${k}" checked> ${esc(bienName(i))}</label>`).join("")}
+      <label style="display:flex;gap:8px;align-items:center;padding:6px 0"><input type="checkbox" id="ap-loc"> Ajouter les pièces de la location (assurance, caution…)</label>
+      <label style="display:flex;gap:8px;align-items:center;padding:6px 0"><input type="checkbox" id="ap-todo"> Seulement ce qui reste à faire (masquer les documents à jour)</label>
+      <div class="btns"><button class="btn" style="flex:1" data-act="av-print-ok">Créer le PDF</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); return; }
+  const sel = ids.filter((i, k) => $("#ap-b-" + k) && $("#ap-b-" + k).checked); if (!sel.length) return toast("Choisis au moins un bien");
+  const pdf = annexPdf(sel, {loc:$("#ap-loc").checked, todo:$("#ap-todo").checked}); closeSheet(); saveFile("pieces-a-joindre.pdf", pdf, "application/pdf"); });
+
 /* ============ Découper un dossier de diagnostics (un gros PDF) en une ligne par diagnostic ============ */
 /* Le gros fichier reste entier (c'est lui qui est joint au bail) ; chaque ligne créée pointe vers ses pages (parent + pages). */
 const SPL_KEYS = [
@@ -6562,6 +6619,7 @@ async function splStart(mid){
     V.spl = {mid, n:r.n, secs:r.secs, total:pdf.numPages}; sheetSplit();
   } catch(e){ toast("Découpage impossible : " + (e && e.message || "erreur")); }
 }
+const splDups = m => docList("docs").filter(x => !x.del && x.id !== m.id && x.bien === m.bien && x.kind === "autre" && !x.parent && x.fname === m.fname && x.size === m.size);
 function sheetSplit(){
   const s = V.spl; if (!s) return; const m = docList("docs").find(x => x.id === s.mid);
   const opts = [["", "À ignorer (lettre, résumé, facture…)"], ...ANNEXES.filter(a => a[0] !== "diag").map(a => [a[0], a[1]])];
@@ -6569,7 +6627,7 @@ function sheetSplit(){
     ${dxS("sp-k-" + i, "Type de diagnostic", opts, c.k)}
     <div style="display:flex;gap:8px"><label class="f" style="flex:1">Page de début<input id="sp-a-${i}" inputmode="numeric" value="${c.from}"></label><label class="f" style="flex:1">Page de fin<input id="sp-b-${i}" inputmode="numeric" value="${c.to}"></label></div>
     ${c.k ? `<label class="f">Date d'édition lue<input id="sp-d-${i}" type="date" value="${esc(c.date || "")}"></label>${c.k === "plomb" || c.k === "amiante" ? `<label class="f">Résultat<select id="sp-r-${i}"><option value="">À préciser</option><option value="absence" ${c.res === "absence" ? "selected" : ""}>Absence</option><option value="presence" ${c.res === "presence" ? "selected" : ""}>Présence</option></select></label>` : ""}` : ""}</div>`;
-  openSheet(`<h2>Découper « ${esc(m ? m.nom : "dossier")} »</h2><div class="info">${s.secs.filter(c => c.k).length} partie(s) reconnue(s) sur ${s.total} pages. Le fichier complet est conservé tel quel (c'est lui qui part avec le bail) : chaque ligne créée ouvre seulement ses pages. Corrige le type ou les pages si besoin, décoche ce que tu ne veux pas.</div>${s.secs.map(row).join("")}
+  openSheet(`<h2>Découper « ${esc(m ? m.nom : "dossier")} »</h2><div class="info">${s.secs.filter(c => c.k).length} partie(s) reconnue(s) sur ${s.total} pages. Le fichier complet est conservé tel quel (c'est lui qui part avec le bail) : chaque ligne créée ouvre seulement ses pages. Corrige le type ou les pages si besoin, décoche ce que tu ne veux pas.</div>${splDups(m || {}).length ? `<div class="info"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="sp-dup" checked> <span>${splDups(m).length} copie(s) du même fichier sont rangées dans d'autres catégories (${esc([...new Set(splDups(m).map(x => x.sub ? annexLabel(x.sub) : "Autre"))].join(", "))}) : je les retire, les lignes ci-dessous les remplacent.</span></label></div>` : ""}${s.secs.map(row).join("")}
     <div class="btns"><button class="btn" style="flex:1" data-act="spl-ok">Créer les lignes</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
 function splSave(){
@@ -6579,6 +6637,8 @@ function splSave(){
   s.secs.forEach((c, i) => { if (!$("#sp-on-" + i) || !$("#sp-on-" + i).checked) return; const k = dxV("sp-k-" + i); if (!k) return;
     let a = Math.max(1, parseInt(dxV("sp-a-" + i), 10) || c.from), b = Math.min(s.total, parseInt(dxV("sp-b-" + i), 10) || c.to); if (b < a) b = a;
     docList("docs").push({id:uid(), bien:m.bien, kind:"autre", nom:annexLabel(k) + " · p. " + a + (b > a ? "–" + b : ""), sub:k, fname:m.fname, date:dxV("sp-d-" + i) || m.date, type:"application/pdf", size:0, parent:m.id, pages:[a, b], res:$("#sp-r-" + i) ? $("#sp-r-" + i).value : "", upd:Date.now()}); n++; });
+  if (n){ m.sub = "diag"; m.upd = Date.now();
+    if ($("#sp-dup") && $("#sp-dup").checked) splDups(m).forEach(x => { x.del = true; x.upd = Date.now(); flDel(x.id); docList("docs").forEach(c => { if (c.parent === x.id && !c.del){ c.del = true; c.upd = Date.now(); } }); }); }
   persist(); closeSheet(); render(); V.spl = null;
   toast(n ? n + " ligne" + (n > 1 ? "s" : "") + " créée" + (n > 1 ? "s" : "") + " : le fichier complet est gardé pour le bail" : "Rien de créé");
 }
