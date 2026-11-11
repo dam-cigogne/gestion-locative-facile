@@ -1496,8 +1496,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.54";
+const APP_VERSION = "1.7.55";
 const CHANGELOG = [
+  {v:"1.7.55", date:"2026-11-11", titre:"ERP gratuit, plomb et amiante selon le résultat, mesurage Boutin", items:["Pièces à joindre : un lien « 🔗 Faire l'ERP » à côté de l'état des risques ouvre le site officiel Géorisques (errial.georisques.gouv.fr), gratuit, pour le renouveler.","Plomb et amiante : un bouton « Résultat ? » (absence / présence) : absence = sans limite de durée, présence = 6 ans pour le plomb et 3 ans pour l'amiante (réglable avec ⚙).","Nouvelle pièce « Mesurage loi Boutin (surface habitable) » : sans limite de durée.","Le bouton « Voir » du bandeau rouge ou orange t'amène maintenant jusqu'à la liste des pièces, même quand tu es déjà sur l'onglet Documents. Le message de relecture des dates est plus clair.","Lecture d'un état des lieux scanné : les lignes parasites (bruit de bordures, taches) ne sont plus reprises comme éléments ou pièces."]},
   {v:"1.7.54", date:"2026-11-11", titre:"Lire un bail existant", items:["Biens › Location › Bail : « 📥 Lire un bail existant » lit un ancien contrat (scan, PDF ou photo : modèle « contrat de location meublée » à cases, contrat de stationnement) et remplit le formulaire : bailleur, locataire, adresse, étage, surface, chauffage, eau chaude, durée, date, loyer, charges, dépôt, annexes cochées. L'écriture manuelle n'est pas lue : les champs douteux sont signalés pour que tu les saisisses ; tu peux ensuite créer le bail au format de l'appli."]},
   {v:"1.7.53", date:"2026-11-11", titre:"Relire la date des documents déjà importés", items:["Pièces à joindre : un bouton ↻ à côté de chaque document relit la date écrite sur le papier à partir du fichier déjà importé (plus besoin de le réimporter) ; « ↻ Relire la date de tous les documents importés » le fait pour tout le bien d'un coup. Si le document n'est pas lisible, la date se saisit avec 📅.","État des lieux et inventaire : un bloc « Bailleur et locataire (modifiables) » permet de corriger ou compléter nom, adresse, téléphone, e-mail et naissance, repris dans le PDF. Bail : adresse et naissance du locataire ajoutées.","Comparer entrée / sortie côte à côte : case « Défilement lié » pour faire défiler les deux documents ensemble."]},
   {v:"1.7.52", date:"2026-11-11", titre:"Ancien état des lieux validé, sortie prête, date lue sur le papier", items:["Ancien état des lieux importé : « ✅ Valider la retranscription » crée le PDF de l'appli, rangé dans la fiche du locataire, et prépare la sortie (copie de l'entrée). L'écran montre l'entrée à gauche et la sortie préparée à droite ; « ✅ La sortie est prête » l'affiche sous le nom du locataire (pastille verte, « en préparation » en orange).","Pièces à joindre : la durée de validité (6 mois, 6 ans, 10 ans, sans limite…) s'affiche à côté de chaque pièce et dans la vue d'ensemble.","Pièces à joindre (diagnostics…) : à l'import, l'appli lit la date écrite sur le document (PDF, scan ou photo) et vérifie qu'il parle bien du type choisi ; la date reste modifiable (📅) à tout moment."]},
@@ -1718,7 +1719,7 @@ const HELP = {
     "Départ : « Clôturer ce locataire » (fiche du locataire) coche seul les étapes retenues, dépôt restitué et locataire clos.",
     "Ce sont des repères généraux : vérifie les délais et les règles sur service-public.fr avant chaque location."]},
   "bld-docs":{t:"Biens › Documents", p:"Les modèles vierges et les papiers du logement. Tout ce qui concerne le locataire est dans Locataires.", l:[
-    "Diagnostics et pièces à joindre : à l'import, la date d'édition est lue sur le document (PDF, scan, photo) et le type est vérifié ; 📅 corrige la date, ↻ la relit depuis le fichier déjà importé.",
+    "Diagnostics et pièces à joindre : à l'import, la date d'édition est lue sur le document (PDF, scan, photo) et le type est vérifié ; 📅 corrige la date, ↻ la relit depuis le fichier déjà importé. Plomb et amiante : « Résultat ? » bascule absence (sans limite) / présence (6 ans, 3 ans). ERP : « 🔗 Faire l'ERP » ouvre Géorisques (gratuit).",
     "Bail : « 📥 Lire un bail existant » (scan, PDF, photo) remplit le formulaire à partir d'un ancien contrat ; l'écriture manuelle est à saisir.",
     "Valider la retranscription : crée le PDF d'entrée dans la fiche du locataire et prépare la sortie ; entrée à gauche, sortie à droite ; « La sortie est prête » met une pastille sous le nom du locataire.",
     "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
@@ -4031,7 +4032,7 @@ function viewDocs(){
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="blank" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="blank" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="blank" data-v="rappel">Rappel avant état de sortie</button></div></div>
   ${annexOverview()}
-  <div class="card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. La date d'édition de chaque pièce sert à voir d'un coup d'œil si elle est à jour, bientôt périmée ou à refaire ; ⚙ règle la durée de validité.</div>
+  <div class="card" id="pj-card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. La date d'édition de chaque pièce sert à voir d'un coup d'œil si elle est à jour, bientôt périmée ou à refaire ; ⚙ règle la durée de validité.</div>
     ${annexRows(id)}</div>
   <div class="card"><h2>Documents du bien</h2><div class="small muted">DPE, assurance PNO, taxe foncière, copropriété, diagnostics… gardés avec le dossier du bien, sur ce téléphone.</div>
     <div class="btns"><button class="btn sm ghost" data-act="im-open" data-v="autre">Importer un document</button></div>
@@ -4294,7 +4295,7 @@ function bailPdf(o, sig){
   Hh("8. Annexes remises au locataire");
   const bx = ok => ok ? "[ X ]" : "[    ]", bn = V.bsel, has = k => docList(k).some(x => x.bien === bn && !x.del && x.type === "entree");
   P((VIDE ? "" : bx(has("inv")) + " Inventaire et état du mobilier        ") + bx(has("edl")) + " État des lieux d'entrée");
-  P(bx(["diag", "dpe", "erp", "plomb", "elec", "gaz", "amiante"].some(k => annexHas(bn, k))) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
+  P(bx(["diag", "dpe", "erp", "boutin", "plomb", "elec", "gaz", "amiante"].some(k => annexHas(bn, k))) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
   P(bx(annexHas(bn, "notice")) + " Notice d'information relative aux droits et obligations des locataires et des bailleurs");
   P(bx(annexHas(bn, "copro")) + " Extraits du règlement de copropriété (destination, jouissance et usage des parties privatives et communes)");
   ["charges", "repar", "caution", "assur"].filter(k => annexHas(bn, k)).forEach(k => P(bx(true) + " " + annexLabel(k)));
@@ -4402,7 +4403,7 @@ async function flGet(fid){ const db = PH.db || await phOpen(); if (!db) return n
   return new Promise(res => { try { const q = db.transaction("p").objectStore("p").get("f:" + fid); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch(e){ res(null); } }); }
 async function flDel(fid){ const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").delete("f:" + fid); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
-const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques (ERP)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
+const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques et pollutions (ERP)"], ["boutin", "Mesurage loi Boutin (surface habitable)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
 const annexLabel = k => (ANNEXES.find(a => a[0] === k) || [0, ""])[1];
 const annexHas = (bien, k) => fileDocs(bien, "autre").some(d => d.sub === k);
 const FKIND = {fact:"Facture", bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autre document"};
@@ -6027,6 +6028,12 @@ function prParty(its){ /* colonne « Bailleur » ou « Locataire » */
   return o; }
 
 /* pages : [{w, h, items:[{s, x, y, w, h}]}] -> structure du document, ou null si rien d'exploitable */
+/* un libellé d'élément ou de pièce lu par OCR doit ressembler à des mots : sinon c'est du bruit (bordures, taches) */
+function prNameOk(s){
+  s = (s || "").trim(); const L = (s.match(/\p{L}/gu) || []).length, N = s.replace(/\s/g, "").length;
+  if (s.length < 3 || L < 3 || L / Math.max(1, N) < 0.6 || !/\p{L}{3,}/u.test(s)) return false;
+  const T = s.split(/\s+/), sh = T.filter(t => t.length <= 2 && !/^(à|de|du|la|le|et|en|un|ou|au)$/i.test(t)).length; return !(T.length >= 4 && sh / T.length > 0.5);
+}
 function prParse(pages, opt){
   const OCR = !!(opt && opt.ocr);
   const all = []; pages.forEach((p, n) => p.items.forEach(i => all.push(Object.assign({}, i, {pg:n}))));
@@ -6069,13 +6076,13 @@ function prParse(pages, opt){
       const zone = items.filter(i => i.y < h.y - 4 && i.y > stopY - 0 && !h.words.includes(i) && !heads.includes(i));
       /* titre de la section : le dernier grand titre au-dessus de l'en-tête (sinon : suite du tableau précédent) */
       const above = heads.filter(x => x.y > h.top - 1 && !NOT_SEC.test(x.s)).sort((a, b) => a.y - b.y)[0];
-      const title = above ? prClean(above.s) : (pend || null); if (!above) pend = null; else pend = null;
+      const title = above && prNameOk(prClean(above.s)) ? prClean(above.s) : (pend || null); if (!above) pend = null; else pend = null;
       if (h.kind === "edl"){
         let sec = title && !(cur && cur.nom === title && !above) ? null : cur; if (title){ sec = doc.pieces.find(p => p.nom === title && p._pg === n) ; if (!sec){ sec = {nom:title, items:[], _pg:n}; doc.pieces.push(sec); } } else if (!sec){ sec = {nom:"Document importé", items:[], _pg:n}; doc.pieces.push(sec); }
         cur = sec;
         const names = zone.filter(i => prCx(i) < h.left && !/^autres commentaires/i.test(i.s)), els = prElems(names, 18);
         const stopA = zone.find(i => /^autres commentaires/i.test(i.s)); const lim = stopA ? stopA.y : -1;
-        const E = els.filter(e => e.ymin > lim - 2).map(e => ({id:null, nom:e.nom, etat:"", com:"", yc:e.yc}));
+        const E = els.filter(e => e.ymin > lim - 2 && prNameOk(e.nom)).map(e => ({id:null, nom:e.nom, etat:"", com:"", yc:e.yc}));
         if (pg.ink) for (const e of E){ const v = h.c.map(cx => pg.ink(cx, e.yc + 2, h.sp * 0.55, 13)), mx = Math.max(...v), k = v.indexOf(mx), o = Math.max(0, ...v.filter((x, j) => j !== k)); if (mx >= 0.025 && mx >= 2.2 * Math.max(o, 0.006)) e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][k]; }
         for (const i of zone.filter(i => prCx(i) >= h.left && i.y > lim)){ const e = prNear(E, i.y, 26); if (!e) continue; const cx = prCx(i);
           if (cx < h.right){ if (!pg.ink && /^[xX✓✔✗✘☒■●×+*kKvV]$/.test(i.s)){ const idx = Math.round((cx - h.c[0]) / h.sp); e.etat = ["Neuf", "Bon", "Moyen", "Mauvais"][Math.max(0, Math.min(3, idx))]; } }
@@ -6317,8 +6324,9 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 
 /* ============ Pièces à joindre : par bien / par location, date d'édition, validité, vue d'ensemble ============ */
 /* m : durée en mois (0 = sans limite, null = pas de suivi) · loc : à refaire à chaque nouvelle location */
-const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:0}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
-const AV_BIEN = ["dpe", "erp", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
+const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, boutin:{m:0}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:36}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
+const AV_RES = {plomb:1, amiante:1}, ERP_URL = "https://errial.georisques.gouv.fr/#/";
+const AV_BIEN = ["dpe", "erp", "boutin", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
 const avCfg = (k, bien) => { const A = (S.cfg || {}).annexV || {}; return Object.assign({}, ANNEX_VAL[k] || {m:null}, A[k] || {}, A[bien + "|" + k] || {}); };
 const avAdd = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 const avLab = k => annexLabel(k);
@@ -6327,6 +6335,7 @@ function avStat(bien, k){
   const L = fileDocs(bien, "autre").filter(d => d.sub === k).sort((a, b) => (b.date || "").localeCompare(a.date || "")), d = L[0];
   if (!d) return {st:"manque", c};
   const t = tenantFor(bien, todayIso()), today = todayIso();
+  if (AV_RES[k] && d.res === "absence") c.m = 0;
   if (c.loc && t && t.debut && d.date && d.date < t.debut) return {st:"refaire", d, c, why:"antérieur au bail de " + t.nom};
   if (c.m === null || c.m === undefined) return {st:"ok", d, c, txt:"Au dossier"};
   if (c.m === 0) return {st:"ok", d, c, txt:"Sans limite de durée"};
@@ -6339,8 +6348,8 @@ const avDur = m => m % 12 === 0 && m >= 12 ? (m / 12) + " an" + (m >= 24 ? "s" :
 function avRow(id, k){
   const s = avStat(id, k), a = k;
   if (s.st === "na") return `<div class="row" style="opacity:.55"><div class="main"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
-  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
-  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + (s.d.res === "absence" ? "absence" : "présence") : AV_RES[k] ? " · résultat à préciser" : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
+  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
 }
 function avSummary(id, keys){
   const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
@@ -6384,13 +6393,13 @@ function avProblems(id){
 function avAlert(id, home){
   const p = avProblems(id); if (!p.late.length && !p.soon.length) return "";
   const red = p.late.length > 0, col = red ? "#B3261E" : "#B26A00", bg = red ? "#FDECEA" : "#FFF4DE";
-  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : "⏳ Documents bientôt périmés"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
+  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : "⏳ Documents bientôt périmés"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
     ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}</div>`;
 }
 const avAlertHome = () => (typeof bienIds === "function" ? bienIds() : []).map(i => avAlert(i, true)).join("");
 
 /* ============ Date d'édition lue sur le papier (PDF texte, PDF scanné ou photo) + contrôle du type de document ============ */
-const AV_KW = {dpe:/performance [eé]nerg[eé]tique|\bDPE\b/i, erp:/[eé]tat des risques|\bERP\b|risques naturels/i, plomb:/plomb|\bCREP\b/i, elec:/installation int[eé]rieure d.[eé]lectricit[eé]|[eé]lectricit[eé]/i, gaz:/installation int[eé]rieure de gaz|\bgaz\b/i, amiante:/amiante/i, pno:/propri[eé]taire non occupant|\bPNO\b/i, taxe:/taxe fonci[eè]re/i, assur:/assurance|attestation/i, caf:/\bCAF\b|allocations familiales/i};
+const AV_KW = {boutin:/boutin|surface habitable|mesurage/i, dpe:/performance [eé]nerg[eé]tique|\bDPE\b/i, erp:/[eé]tat des risques|\bERP\b|risques naturels/i, plomb:/plomb|\bCREP\b/i, elec:/installation int[eé]rieure d.[eé]lectricit[eé]|[eé]lectricit[eé]/i, gaz:/installation int[eé]rieure de gaz|\bgaz\b/i, amiante:/amiante/i, pno:/propri[eé]taire non occupant|\bPNO\b/i, taxe:/taxe fonci[eè]re/i, assur:/assurance|attestation/i, caf:/\bCAF\b|allocations familiales/i};
 const AV_MOIS = {janvier:1, "février":2, fevrier:2, mars:3, avril:4, mai:5, juin:6, juillet:7, "août":8, aout:8, septembre:9, octobre:10, novembre:11, "décembre":12, decembre:12, janv:1, "févr":2, fevr:2, juil:7, sept:9, oct:10, nov:11, "déc":12, dec:12};
 function avDates(txt){
   const out = [], ok = (y, m, d) => y >= 1995 && y <= new Date().getFullYear() + 1 && m >= 1 && m <= 12 && d >= 1 && d <= 31, iso = (y, m, d) => y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"), today = todayIso();
@@ -6445,8 +6454,15 @@ document.addEventListener("click", async ev => { const b = ev.target.closest("[d
   for (const d of list){ toast("Lecture : " + (d.nom || avLab(d.sub)) + "…");
     try { const r = await avRereadDoc(d); if (r.err) bad.push((d.nom || avLab(d.sub)) + " (" + r.err + ")"); else { ok++; if (!r.match) warn.push(avLab(d.sub)); } } catch(e){ bad.push((d.nom || avLab(d.sub)) + " (lecture impossible)"); } }
   persist(); render();
-  const msg = ok + " date(s) relue(s)" + (warn.length ? " · ⚠️ type à vérifier : " + warn.join(", ") : "") + (bad.length ? " · à saisir avec 📅 : " + bad.join(", ") : "");
+  const msg = ok + (ok > 1 ? " dates relues" : " date relue") + (warn.length ? " · ⚠️ le document rangé dans « " + warn.join(", ") + " » ne parle pas de ce sujet : vérifie que c'est le bon fichier" : "") + (bad.length ? " · date non lue, à saisir avec 📅 : " + bad.join(", ") : "");
   toast(msg); const n = $("#av-rr-note"); if (n) n.textContent = msg; });
+
+/* plomb / amiante : absence = sans limite, présence = durée réglée */
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-res']"); if (!b) return; const d = docList("docs").find(x => x.id === b.dataset.id); if (!d) return;
+  d.res = d.res === "absence" ? "presence" : d.res === "presence" ? "" : "absence"; d.upd = Date.now(); persist(); render(); });
+
+/* « Voir » de l'alerte : amène sur la liste des pièces, même si on est déjà sur l'onglet Documents */
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-av]"); if (!b) return; setTimeout(() => { const c = document.getElementById("pj-card"); if (c) c.scrollIntoView({behavior:"smooth", block:"start"}); }, 60); });
 
 /* Lecture d'un bail existant (scan, PDF, photo) : remplit le formulaire de bail */
 const BK_MOIS = {janvier:1, fevrier:2, février:2, mars:3, avril:4, mai:5, juin:6, juillet:7, aout:8, août:8, septembre:9, octobre:10, novembre:11, decembre:12, décembre:12};
