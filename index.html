@@ -1492,8 +1492,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.46";
+const APP_VERSION = "1.7.47";
 const CHANGELOG = [
+  {v:"1.7.47", date:"2026-11-11", titre:"Comparer : choix libre et vrai document", items:["« Comparer » est toujours accessible : tu choisis le bien, puis les deux documents à comparer (entrée, sortie, importés ou préparés d'avance), même si le locataire n'est pas parti.","À droite de « Original / Retranscrit », on voit maintenant le vrai document fabriqué par l'appli (en-tête, relevés, clés, pièces), avec un bouton « Liste » pour revenir à la vue ligne par ligne.","« Entrée / Sortie » compare aussi les relevés de compteurs, les clés, le détecteur de fumée et les remarques."]},
   {v:"1.7.46", date:"2026-11-11", titre:"Comparer : entrée / sortie et original / retranscrit", items:["Biens › Documents : nouvelle carte « Comparer ». « Entrée / Sortie » aligne chaque ligne de l'état des lieux (ou de l'inventaire) d'entrée et de sortie, surligne ce qui est pire, manquant ou ajouté, avec le filtre « Différences ».","« Original / Retranscrit » : sur iPad, ton document importé (PDF, photo, Excel) à gauche et ce que l'appli en a lu à droite, avec défilement lié ; sur iPhone, deux onglets. Les lignes sans état ou au nom douteux sont marquées ⚠.","Bouton « PDF » : comparatif entrée / sortie à relire, envoyer ou joindre au dossier.","Noms d'éléments de l'état des lieux et de l'inventaire : plus coupés sur iPhone, ils passent sur toute la largeur."]},
   {v:"1.7.45", date:"2026-11-11", titre:"Factures du bien : scan, vignettes, envoi groupé", items:["Biens › Documents : nouvelle carte « Factures du bien ». Scanne une facture avec l'appareil photo ou choisis plusieurs photos / PDF d'un coup.","Les factures sont rangées avec un aperçu en vignette, le fournisseur, la date et le montant (modifiables).","Coche plusieurs factures puis « Envoyer » : elles partent en un seul PDF avec une page de garde (liste et total). Possible aussi de l'enregistrer. Elles sont aussi dans l'export ZIP du bien (dossier 05 Factures).","Mode démo rempli avec les nouveautés : factures avec vignettes, fiche bailleur fictive, départ en cours, bail en pré-lecture et documents préparés d'avance."]},
   {v:"1.7.44", date:"2026-11-11", titre:"Arrivée / Départ en 3 temps : préparatif, Jour J, dossier d'envoi", items:["Biens › Arrivée/Départ est maintenant découpé en trois : 1 · Préparatif (à cocher avant), 2 · Jour J pas à pas, 3 · Après.","Un écran d'explication s'ouvre quand tu touches « Départ du locataire », et « Prêt pour le jour J ? » liste les étapes avant de démarrer.","Jour J : l'étape en cours est mise en avant avec un gros bouton qui ouvre le bon document (état des lieux, inventaire, signatures…) puis « Fait, étape suivante ». Tu enchaînes sans chercher.","Prépare à l'avance (arrivée et départ) : le bail peut être envoyé en pré-lecture au locataire (bouton dans le bail), l'état des lieux et l'inventaire peuvent être préparés avant. Le jour J, ils sont marqués « préparé : attend le jour J » et le bail « envoyé en pré-lecture : attend la signature","Quand tout le Jour J est fait : gros bouton « Dossier d'envoi ». Tu coches les pièces (bail, ERP, diagnostics, permis, états des lieux, inventaires), tu peux relire le PDF complet, puis l'envoyer ou l'enregistrer."]},
@@ -5789,60 +5790,68 @@ const CMP_CSS = document.createElement("style"); CMP_CSS.textContent = `#cmp{pos
 #cmp table{border-collapse:collapse;font-size:11px}#cmp td{border:1px solid #dfe7e4;padding:3px 5px}`; document.head.appendChild(CMP_CSS);
 const cmpKey = (p, n) => String(p || "").toLowerCase().trim() + "|" + String(n || "").toLowerCase().replace(/\s+/g, " ").trim();
 const cmpEc = s => s === "Neuf" || s === "Bon" ? "" : s === "Moyen" ? "m" : s === "Mauvais" ? "x" : "n";
+const cmpCell = r => r.hdr ? `<span>${esc(r.c)}</span>` : null;
 const cmpChip = s => `<span class="e ${cmpEc(s)}">${esc(s || "non noté")}</span>`;
 function cmpRows(kind, e){ if (!e) return []; if (kind === "inv") return (e.items || []).map(i => ({p:i.grp || "Autres", n:i.nom, q:i.qte || "", s:i.etat || "", c:i.com || ""}));
-  const o = []; (e.pieces || []).forEach(p => (p.items || []).forEach(i => o.push({p:p.nom, n:i.nom, q:"", s:i.etat || "", c:i.com || ""}))); return o; }
-function cmpDiff(x){ if (!x.a) return "ajout"; if (!x.b) return "absent"; const ra = RANK[x.a.s], rb = RANK[x.b.s];
+  const o = [["Compteur électricité", e.elec], ["Compteur eau", e.eau], ["Compteur gaz", e.gaz], ["Clés remises", e.cles], ["Détecteur de fumée", e.fumee], ["Remarques", e.rem]].filter(x => x[1]).map(x => ({p:"Relevés, clés et remarques", n:x[0], q:"", s:"", c:String(x[1]), hdr:true}));
+  (e.pieces || []).forEach(p => (p.items || []).forEach(i => o.push({p:p.nom, n:i.nom, q:"", s:i.etat || "", c:i.com || ""}))); return o; }
+function cmpDiff(x){ if (!x.a) return "ajout"; if (!x.b) return "absent"; if (x.a.hdr || x.b.hdr) return x.a.c !== x.b.c ? "qte" : ""; const ra = RANK[x.a.s], rb = RANK[x.b.s];
   if (x.b.s && x.a.s !== x.b.s) return rb > ra ? "pire" : "mieux"; if (x.a.q && x.b.q && x.a.q !== x.b.q) return +x.b.q < +x.a.q ? "pire" : "qte"; return ""; }
 function cmpPair(a, b){ const mb = new Map(b.map(r => [cmpKey(r.p, r.n), r])), used = new Set(), out = [];
   a.forEach(r => { const m = mb.get(cmpKey(r.p, r.n)); if (m) used.add(m); out.push({p:r.p, n:r.n, a:r, b:m || null}); }); b.forEach(r => { if (!used.has(r)) out.push({p:r.p, n:r.n, a:null, b:r}); });
   out.forEach(x => { x.d = cmpDiff(x); }); return out; }
 const cmpDocs = (bien, kind, type) => docList(kind).filter(d => d.bien === bien && !d.del && (!type || d.type === type)).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-const cmpLbl = d => frDate(d.date) + (d.loc ? " · " + d.loc : "") + (d.fichier ? " · importé" : "");
+const cmpLbl = d => (d.type === "sortie" ? "Sortie " : "Entrée ") + frDate(d.date) + (d.loc ? " · " + d.loc : "") + (d.fichier ? " · importé" : "");
 function compareCard(id){
   const ne = cmpDocs(id, "edl", "entree").length, ns = cmpDocs(id, "edl", "sortie").length + cmpDocs(id, "inv", "sortie").length, ni = ["edl", "inv"].reduce((n, k) => n + cmpDocs(id, k).filter(d => d.fichier).length, 0);
   return `<div class="card"><h2>Comparer</h2><div class="small muted">Vérifie la sortie contre l'entrée, ou un document importé contre ce que l'appli en a retranscrit. Sur iPad, les deux côte à côte.</div>
-    <div class="btns"><button class="btn" style="flex:1" data-act="cm-open" data-v="es" ${ne && ns ? "" : "disabled"}>↔ Entrée / Sortie</button><button class="btn ghost" style="flex:1" data-act="cm-open" data-v="ot" ${ni ? "" : "disabled"}>🔍 Original / Retranscrit</button></div>
-    ${ne && ns ? "" : '<div class="small muted" style="margin-top:6px">Entrée / Sortie : il faut un état des lieux (ou inventaire) d\'entrée et un de sortie.</div>'}${ni ? "" : '<div class="small muted">Original / Retranscrit : importe d\'abord un état des lieux ou un inventaire déjà fait.</div>'}</div>`;
+    <div class="btns"><button class="btn" style="flex:1" data-act="cm-open" data-v="es">↔ Entrée / Sortie</button><button class="btn ghost" style="flex:1" data-act="cm-open" data-v="ot">🔍 Original / Retranscrit</button></div>
+    </div>`;
 }
 function cmpOpen(mode){
-  const bien = V.bsel, kinds = ["edl", "inv"].filter(k => mode === "ot" ? cmpDocs(bien, k).some(d => d.fichier) : cmpDocs(bien, k, "entree").length && cmpDocs(bien, k, "sortie").length), kind = kinds[0] || "edl";
+  const bien = V.bsel, kinds = ["edl", "inv"].filter(k => mode === "ot" ? cmpDocs(bien, k).some(d => d.fichier) : cmpDocs(bien, k).length > 1), kind = kinds[0] || "edl";
   V.cmp = {bien, mode, kind, only:false, tab:"a", sync:true}; cmpDefaults(); cmpRender();
 }
 function cmpDefaults(){ const c = V.cmp; if (c.mode === "ot"){ const L = cmpDocs(c.bien, c.kind).filter(d => d.fichier); c.doc = L[0] && L[0].id; return; }
-  const s = cmpDocs(c.bien, c.kind, "sortie")[0], e = (s && s.ref && docGet(c.kind, s.ref)) || cmpDocs(c.bien, c.kind, "entree")[0]; c.sid = s && s.id; c.eid = e && e.id; }
+  const all = cmpDocs(c.bien, c.kind), s0 = cmpDocs(c.bien, c.kind, "sortie")[0], e0 = (s0 && s0.ref && docGet(c.kind, s0.ref)) || cmpDocs(c.bien, c.kind, "entree")[0];
+  c.sid = (s0 || all.find(d => d !== e0) || {}).id; c.eid = (e0 || all[0] || {}).id; }
 function cmpPairs(){ const c = V.cmp, A = c.eid && docGet(c.kind, c.eid), B = c.sid && docGet(c.kind, c.sid); return {A, B, rows:cmpPair(cmpRows(c.kind, A), cmpRows(c.kind, B))}; }
 function cmpRender(){
   const c = V.cmp; if (!c) return; let el = document.getElementById("cmp"); if (!el){ el = document.createElement("div"); el.id = "cmp"; document.body.appendChild(el); }
   const wide = window.innerWidth >= 700, es = c.mode === "es", kinds = [["edl", "État des lieux"], ["inv", "Inventaire"]];
   const opt = (L, cur) => L.map(d => `<option value="${d.id}" ${d.id === cur ? "selected" : ""}>${esc(cmpLbl(d))}</option>`).join("");
-  let ctl = `<div class="seg">${kinds.map(k => `<button class="${c.kind === k[0] ? "on" : ""}" data-cm="kind" data-v="${k[0]}">${k[1]}</button>`).join("")}</div>`, body = "", title = es ? "Entrée / Sortie" : "Original / Retranscrit";
+  let ctl = `<select data-cm="bien">${S.biens.map(b => `<option value="${b.id}" ${b.id === c.bien ? "selected" : ""}>${esc(b.nom)}</option>`).join("")}</select><div class="seg">${kinds.map(k => `<button class="${c.kind === k[0] ? "on" : ""}" data-cm="kind" data-v="${k[0]}">${k[1]}</button>`).join("")}</div>`, body = "", title = es ? "Entrée / Sortie" : "Original / Retranscrit";
   if (es){ const {A, B, rows} = cmpPairs(), nd = rows.filter(x => x.d && x.d !== "mieux" && x.d !== "qte").length, vis = c.only ? rows.filter(x => x.d) : rows;
-    ctl += `<select data-cm="eid">${opt(cmpDocs(c.bien, c.kind, "entree"), c.eid) || '<option value="">Aucune entrée</option>'}</select><select data-cm="sid">${opt(cmpDocs(c.bien, c.kind, "sortie"), c.sid) || '<option value="">Aucune sortie</option>'}</select>
+    ctl += `<select data-cm="eid">${opt(cmpDocs(c.bien, c.kind), c.eid) || '<option value="">Aucun document</option>'}</select><select data-cm="sid">${opt(cmpDocs(c.bien, c.kind), c.sid) || '<option value="">Aucun document</option>'}</select>
       <div class="seg"><button class="${c.only ? "" : "on"}" data-cm="only" data-v="0">Tout</button><button class="${c.only ? "on" : ""}" data-cm="only" data-v="1">Différences (${rows.filter(x => x.d).length})</button></div>`;
     let h = "", g = null; for (const x of vis){ if (x.p !== g){ g = x.p; h += `<div class="gr">${esc(g)}</div>`; }
-      const cell = r => r ? `${cmpChip(r.s)}${r.q ? ' <span class="cm">× ' + esc(r.q) + "</span>" : ""}${r.c ? '<div class="cm">' + esc(r.c) + "</div>" : ""}` : '<span class="e n">absent</span>';
+      const cell = r => r && r.hdr ? `<span>${esc(r.c)}</span>` : r ? `${cmpChip(r.s)}${r.q ? ' <span class="cm">× ' + esc(r.q) + "</span>" : ""}${r.c ? '<div class="cm">' + esc(r.c) + "</div>" : ""}` : '<span class="e n">absent</span>';
       h += `<div class="rw ${x.d === "pire" || x.d === "absent" ? "d1" : x.d ? "d2" : ""}"><b>${esc(x.n)}${x.d === "ajout" ? ' <span class="cm">(ajouté)</span>' : ""}</b><div>${cell(x.a)}</div><div>${cell(x.b)}</div></div>`; }
-    body = `<div class="pane" style="grid-column:1/-1"><div class="ph">${nd} point(s) à regarder sur ${rows.length} · entrée ${A ? frDate(A.date) : "?"} → sortie ${B ? frDate(B.date) : "?"}</div><div class="rw" style="border:0;font-size:11px;color:#5b6f69"><span>Élément</span><span>Entrée</span><span>Sortie</span></div>${h || '<div class="empty">Aucune différence.</div>'}</div>`;
+    body = `<div class="pane" style="grid-column:1/-1"><div class="ph">${nd} point(s) à regarder sur ${rows.length} · entrée ${A ? frDate(A.date) : "?"} → sortie ${B ? frDate(B.date) : "?"}</div><div class="rw" style="border:0;font-size:11px;color:#5b6f69"><span>Élément</span><span>Entrée</span><span>Sortie</span></div>${h || '<div class="empty" style="padding:14px 0">' + (A && B ? "Aucune différence." : "Aucun document à comparer pour ce bien (" + (c.kind === "inv" ? "inventaire" : "état des lieux") + "). Choisis un autre bien ou l\\'autre type en haut, ou crée / importe d\\'abord les documents.") + "</div>"}</div>`;
   } else { const L = cmpDocs(c.bien, c.kind).filter(d => d.fichier), d = L.find(x => x.id === c.doc) || L[0];
     ctl += `<select data-cm="doc">${opt(L, d && d.id) || '<option value="">Aucun import</option>'}</select>${wide ? `<label style="font-size:13px"><input type="checkbox" data-cm="sync" ${c.sync ? "checked" : ""}> Défilement lié</label>` : `<div class="seg"><button class="${c.tab === "a" ? "on" : ""}" data-cm="tab" data-v="a">Original</button><button class="${c.tab === "b" ? "on" : ""}" data-cm="tab" data-v="b">Retranscrit</button></div>`}`;
-    const rows = d ? cmpRows(c.kind, d) : [], sans = rows.filter(r => !r.s).length, bad = rows.filter(r => r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n)).length; let h = "", g = null;
-    for (const r of rows){ if (r.p !== g){ g = r.p; h += `<div class="gr">${esc(g)}</div>`; } const flag = !r.s || r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n);
-      h += `<div class="rt" ${flag ? 'style="background:#fff7e0;margin:0 -12px;padding:6px 12px"' : ""}><span>${flag ? "⚠ " : ""}${esc(r.n)}${r.c ? '<div class="cm">' + esc(r.c) + "</div>" : ""}</span>${r.q ? '<span class="cm">× ' + esc(r.q) + "</span>" : "<span></span>"}${cmpChip(r.s)}</div>`; }
-    const pa = `<div class="pane" id="cmp-a"><div class="ph">Original · ${d ? "document importé" : ""}</div><div id="cmp-orig" class="small muted">Chargement…</div></div>`,
-      pb = `<div class="pane" id="cmp-b"><div class="ph">Retranscrit par l'appli · ${rows.length} élément(s)${sans || bad ? " · " + (sans + bad) + " à vérifier" : " · tout est renseigné"}</div>${h || '<div class="empty">Rien n\'a pu être lu : le contenu a été gardé en pièce jointe, à remplir à la main.</div>'}</div>`;
-    body = wide ? pa + pb : (c.tab === "a" ? pa : pb); if (d) c.fid = d.fichier; c.dname = ""; }
+    const rows = d ? cmpRows(c.kind, d) : [], sans = rows.filter(r => !r.s && !r.hdr).length, bad = rows.filter(r => r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n)).length; let h = "", g = null;
+    for (const r of rows){ if (r.p !== g){ g = r.p; h += `<div class="gr">${esc(g)}</div>`; } const flag = !r.hdr && (!r.s || r.n.length < 3 || !/[a-zà-ÿ]{2}/i.test(r.n));
+      h += `<div class="rt" ${flag ? 'style="background:#fff7e0;margin:0 -12px;padding:6px 12px"' : ""}><span>${flag ? "⚠ " : ""}${esc(r.n)}${r.c && !r.hdr ? '<div class="cm">' + esc(r.c) + "</div>" : ""}</span>${r.hdr ? '<span class="cm" style="grid-column:2/4;text-align:right">' + esc(r.c) + "</span>" : (r.q ? '<span class="cm">× ' + esc(r.q) + "</span>" : "<span></span>") + cmpChip(r.s)}</div>`; }
+    const sg = `<span class="seg" style="display:inline-flex;margin-left:8px"><button class="${c.view === "list" ? "" : "on"}" data-cm="view" data-v="pdf">Document de l'appli</button><button class="${c.view === "list" ? "on" : ""}" data-cm="view" data-v="list">Liste</button></span>`,
+      pa = `<div class="pane" id="cmp-a"><div class="ph">Original · document importé</div><div id="cmp-orig" class="small muted">Chargement…</div></div>`,
+      pb = `<div class="pane" id="cmp-b"><div class="ph">Retranscrit par l'appli${sg}<div class="cm" style="font-weight:400">${rows.length} élément(s)${sans || bad ? " · " + (sans + bad) + " à vérifier" : " · tout est renseigné"}</div></div>${c.view === "list" ? (h || '<div class="empty">' + (d ? "" : "Aucun document importé pour ce bien : choisis un autre bien ou l\'autre type en haut. ") + 'Rien n\'a pu être lu : le contenu a été gardé en pièce jointe, à remplir à la main.</div>') : '<div id="cmp-gen" class="small muted">Création du document…</div>'}</div>`;
+    body = wide ? pa + pb : (c.tab === "a" ? pa : pb); c.fid = d ? d.fichier : null; c.dname = ""; c.cur = d || null; }
   el.innerHTML = `<div class="cbar" ${DEMO ? 'style="padding-top:calc(64px + env(safe-area-inset-top,0px))"' : ""}><button class="btn sm ghost" data-cm="close">✕ Fermer</button><span class="ct">${title}</span>${es ? '<button class="btn sm" data-cm="pdf">📄 PDF</button>' : "<span></span>"}</div><div class="cctl">${ctl}</div><div class="cbody" style="grid-template-columns:${es ? "1fr" : wide ? "1fr 1fr" : "1fr"}">${body}</div>`;
-  if (!es && document.getElementById("cmp-orig")) cmpOrig(document.getElementById("cmp-orig"), c.fid, c.dname);
+  if (!es && document.getElementById("cmp-orig") && !c.fid) document.getElementById("cmp-orig").textContent = "Aucun document importé."; else if (!es && document.getElementById("cmp-orig")) cmpOrig(document.getElementById("cmp-orig"), c.fid, c.dname);
+  if (!es && c.view !== "list" && document.getElementById("cmp-gen")) cmpGen(document.getElementById("cmp-gen"), c.kind, c.cur);
   if (!es && wide){ const a = document.getElementById("cmp-a"), b = document.getElementById("cmp-b"); let lock = 0; const sy = (f, t) => f.addEventListener("scroll", () => { if (!c.sync || lock) return; lock = 1; t.scrollTop = f.scrollTop / Math.max(1, f.scrollHeight - f.clientHeight) * (t.scrollHeight - t.clientHeight); setTimeout(() => lock = 0, 30); }); if (a && b){ sy(a, b); sy(b, a); } }
 }
+async function cmpPdfPages(el, data){ const L = await loadPdfJs(), doc = await L.getDocument({data}).promise, w = Math.max(300, el.clientWidth || 400); el.innerHTML = "";
+  for (let i = 1; i <= Math.min(doc.numPages, 30); i++){ const pg = await doc.getPage(i), vp0 = pg.getViewport({scale:1}), vp = pg.getViewport({scale:w * 2 / vp0.width}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; el.appendChild(cv); await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; } }
+async function cmpGen(el, kind, d){ if (!d){ el.textContent = "Aucun document."; return; }
+  try { const bytes = await pdfRelect(() => kind === "edl" ? edlPdf(d) : invPdf(d), d); await cmpPdfPages(el, new Uint8Array(bytes)); } catch(e){ el.textContent = "Document impossible à créer (" + (e && e.message || "erreur") + ")."; } }
 async function cmpOrig(el, fid, name){
   const rec = fid && await flGet(fid); if (!rec){ el.textContent = "Fichier introuvable sur cet appareil."; return; }
   const type = rec.type || mimeOf(name || ""), n = name || rec.name || "";
   try {
     if (/^image\//.test(type) && !/heic|heif/.test(type)){ el.innerHTML = ""; const im = document.createElement("img"); im.className = "og"; im.src = URL.createObjectURL(new Blob([rec.buf], {type})); el.appendChild(im); }
-    else if (type === "application/pdf"){ const L = await loadPdfJs(), doc = await L.getDocument({data:new Uint8Array(rec.buf.slice(0))}).promise, w = Math.max(300, el.clientWidth || 400); el.innerHTML = "";
-      for (let i = 1; i <= Math.min(doc.numPages, 30); i++){ const pg = await doc.getPage(i), vp0 = pg.getViewport({scale:1}), sc = w * 2 / vp0.width, vp = pg.getViewport({scale:sc}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; el.appendChild(cv); await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; } }
+    else if (type === "application/pdf") await cmpPdfPages(el, new Uint8Array(rec.buf.slice(0)));
     else if (/\.(xlsx|xls|csv)$/i.test(n) || /sheet|excel|csv/.test(type)){ const wb = /\.csv$/i.test(n) ? XLSX.read(new TextDecoder("utf-8").decode(new Uint8Array(rec.buf)).replace(/^﻿/, ""), {type:"string"}) : XLSX.read(rec.buf, {type:"array"}); el.innerHTML = XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[0]]); }
     else { el.innerHTML = 'Ce format ne s\'affiche pas ici. <button class="btn sm ghost" data-cm="dl">Ouvrir le fichier</button>'; }
   } catch(e){ el.innerHTML = "Aperçu impossible (" + esc(e && e.message || "erreur") + '). <button class="btn sm ghost" data-cm="dl">Ouvrir le fichier</button>'; }
@@ -5851,7 +5860,7 @@ function cmpPdf(){
   const {A, B, rows} = cmpPairs(), c = V.cmp, d = new PdfDoc("Comparatif entrée / sortie"), tw = d.W - 2 * d.M, w = (tw - 150) / 2;
   titleBlock(d, (c.kind === "inv" ? "INVENTAIRE" : "ÉTAT DES LIEUX") + " · COMPARATIF ENTRÉE / SORTIE", bienName(c.bien) + " · entrée du " + frDate(A && A.date) + " · sortie du " + frDate(B && B.date));
   const nd = rows.filter(x => x.d === "pire" || x.d === "absent").length; d.para(nd ? nd + " point(s) en dégradation ou manquants (surlignés)." : "Aucune dégradation relevée.", 10, 14); d.y -= 4;
-  const cell = r => r ? [r.s || "non noté", r.q ? "× " + r.q : "", r.c].filter(Boolean).join(" · ") : "absent";
+  const cell = r => r && r.hdr ? r.c : r ? [r.s || "non noté", r.q ? "× " + r.q : "", r.c].filter(Boolean).join(" · ") : "absent";
   for (const g of [...new Set(rows.map(x => x.p))]){ d.need(60); d.h(g, 12);
     dTable(d, [{h:"Élément", w:150}, {h:"Entrée", w}, {h:"Sortie", w}], rows.filter(x => x.p === g).map(x => ({cells:[x.n + (x.d === "ajout" ? " (ajouté)" : ""), cell(x.a), cell(x.b)], fill:x.d === "pire" || x.d === "absent" ? "#FBE9E7" : x.d ? "#FFF6DD" : null}))); }
   return d.finish("Comparatif entrée / sortie");
@@ -5860,13 +5869,13 @@ document.addEventListener("click", async ev => {
   const cb = ev.target.closest("[data-cm]"), ba = ev.target.closest("[data-act='cm-open']");
   if (ba){ cmpOpen(ba.dataset.v); return; } if (!cb) return; const a = cb.dataset.cm, v = cb.dataset.v, c = V.cmp; if (!c) return;
   if (a === "close"){ const el = document.getElementById("cmp"); if (el) el.remove(); V.cmp = null; return; }
-  if (a === "kind"){ c.kind = v; cmpDefaults(); } else if (a === "only") c.only = v === "1"; else if (a === "tab") c.tab = v;
+  if (a === "kind"){ c.kind = v; cmpDefaults(); } else if (a === "only") c.only = v === "1"; else if (a === "tab") c.tab = v; else if (a === "view") c.view = v;
   else if (a === "pdf"){ try { const bytes = cmpPdf(); await relectOpen("Comparatif entrée-sortie - " + cleanName(bienName(c.bien)) + ".pdf", bytes); } catch(e){ toast("PDF impossible : " + (e && e.message || e)); } return; }
   else if (a === "dl"){ const r = c.fid && await flGet(c.fid); if (r) saveFile(c.dname || r.name || "document", r.buf, r.type); return; } else return;
   cmpRender();
 });
 document.addEventListener("change", ev => { const t = ev.target, a = t && t.dataset && t.dataset.cm; if (!a || !V.cmp) return;
-  if (a === "eid") V.cmp.eid = t.value; else if (a === "sid") V.cmp.sid = t.value; else if (a === "doc") V.cmp.doc = t.value; else if (a === "sync"){ V.cmp.sync = t.checked; return; } else return; cmpRender(); });
+  if (a === "bien"){ V.cmp.bien = t.value; cmpDefaults(); } else if (a === "eid") V.cmp.eid = t.value; else if (a === "sid") V.cmp.sid = t.value; else if (a === "doc") V.cmp.doc = t.value; else if (a === "sync"){ V.cmp.sync = t.checked; return; } else return; cmpRender(); });
 window.addEventListener("resize", () => { if (V.cmp) cmpRender(); });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
