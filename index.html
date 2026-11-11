@@ -1255,14 +1255,14 @@ function sheetPin(mode){
 }
 function viewSet(){
   const p = V.pending;
-  const pend = p ? `<div class="card" style="border-color:var(--accent)"><h2>Fichier lu : ${esc(p.name)}</h2>
+  const pend = p && p.kind === "loyers" ? loPend(p) : p ? `<div class="card" style="border-color:var(--accent)"><h2>Fichier lu : ${esc(p.name)}</h2>
     <div class="small">${p.kind === "json" ? bkSummary(p.data) : p.kind === "dos" ? esc(p.sum) : `${p.d.biens ? p.d.biens.length + " bien(s), " : ""}${p.d.tarifs ? p.d.tarifs.length + " tarif(s), " : ""}${p.d.journal.length} opération(s), ${p.d.factures.length} facture(s), ${p.d.locataires.length} locataire(s).`}</div>
     <div class="btns"><button class="btn" data-act="imp-merge">${p.kind === "json" ? "Restaurer" : p.kind === "dos" ? "Ranger les fichiers" : "Fusionner (recommandé)"}</button>
     ${p.kind !== "echange" ? "" : `<button class="btn ghost" data-act="imp-replace">Remplacer mes données</button>`}<button class="btn ghost" data-act="imp-cancel">Annuler</button></div></div>` : "";
   const head = `<div class="top"><div class="app">Réglages</div><button class="q" data-act="help" aria-label="Aide">?</button></div>${V.msg ? `<div class="info">${esc(V.msg)}</div>` : ""}${pend}`;
   const sync = `<div class="card"><h2>Synchroniser avec Excel</h2>
     <div class="small muted"><b>Excel → appli</b> : dans Excel, bouton « Exporter vers l'appli », puis importe ici <b>export_appli.xlsx</b>. Les lignes déjà connues sont mises à jour, les nouvelles ajoutées, celles supprimées dans Excel retirées.<br><b>Appli → Excel</b> : exporte le journal, enregistre-le dans Fichiers › dossier IMPORT, puis bouton « Importer depuis l'appli » dans Excel.</div>
-    <label class="f">Importer un fichier (export_appli.xlsx, sauvegarde .json ou .zip)<input id="file" type="file" accept="*/*"></label>
+    <label class="f">Importer un fichier (export_appli.xlsx, tableau de loyers .xls/.xlsx, sauvegarde .json ou .zip)<input id="file" type="file" accept="*/*"></label>
     <div class="btns"><button class="btn" data-act="exp-journal">Exporter le journal (.xlsx)</button><button class="btn ghost" data-act="exp-json">Sauvegarde légère (.json)</button></div>
     <div class="btns"><button class="btn" data-act="exp-zip">Sauvegarde complète avec fichiers (.zip)</button></div>
     <div class="small muted"><b>Que fait chaque bouton ?</b><br>• <b>Exporter le journal (.xlsx)</b> : sert à l'exploitation dans ton fichier Excel dédié (comptabilité, bilans). Ce n'est pas une sauvegarde.<br><b>Quelle sauvegarde choisir ?</b><br>• <b>Légère (.json)</b> : tes données (biens, opérations, locataires, fiches, états des lieux et inventaires en texte). Petite, mais <b>sans</b> photos ni fichiers (pièces d'identité, contrats, PDF importés).<br>• <b>Complète avec fichiers (.zip)</b> : tout, photos et documents des locataires compris. C'est celle à faire avant de changer de téléphone. Pour restaurer, importe le .zip ci-dessus tel quel (ne le décompresse pas).<br>Aucune n'est chiffrée et le .zip contient des papiers personnels : garde-les dans un endroit privé, jamais dans un dossier partagé.</div></div>`;
@@ -1325,8 +1325,9 @@ async function onFile(file){
       V.pending = {kind:"json", name:file.name, data:obj, d:{journal:obj.journal, biens:obj.biens || [], factures:[], locataires:obj.locataires || []}};
     } else {
       const wb = XLSX.read(buf, {type:"array", sheets:["Biens_appli","Tarifs_appli","Journal_appli","Factures_appli","Locataires_appli","Reglages_appli","FraisPartages_appli"]});
-      const d = parseEchange(wb); if (!d) throw new Error("feuilles « …_appli » introuvables (utilise le bouton d'export de la macro Excel).");
-      V.pending = {kind:"echange", name:file.name, d};
+      const d = parseEchange(wb);
+      if (!d){ const m = parseLoyers(XLSX.read(buf, {type:"array"})); if (!m) throw new Error("ni feuilles « …_appli », ni tableau de loyers (années, mois, un logement par ligne) reconnus."); V.pending = {kind:"loyers", name:file.name, m, map:Object.fromEntries(m.labels.map(l => [l, loGuess(l)]))}; }
+      else V.pending = {kind:"echange", name:file.name, d};
     }
     V.msg = ""; render(); toast("Fichier lu : appuie sur le bouton vert pour valider");
     setTimeout(() => { const c = document.querySelector('#main .card[style*="accent"]'); if (c) c.scrollIntoView({block:"center"}); }, 150);
@@ -1496,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.55";
+const APP_VERSION = "1.7.56";
 const CHANGELOG = [
+  {v:"1.7.56", date:"2026-11-11", titre:"Importer un tableau de loyers (Excel .xls ou .xlsx)", items:["Réglages › Données › Importer un fichier : l'appli lit maintenant un tableau de suivi des loyers (une feuille, les années en colonnes avec les mois, un logement par ligne, fichier .xls ou .xlsx). Tu associes chaque ligne à un de tes biens (ou tu crées le bien, ou tu ignores la ligne), puis « Importer les loyers » ajoute chaque loyer mensuel comme recette « Loyer », déjà pointée. Les mois vides ou marqués « - » sont ignorés et un loyer déjà présent n'est pas ajouté deux fois.","Un même PDF qui réunit le bail, l'état des lieux et l'inventaire : l'appli repère les pages de chaque document d'après leur titre et ne lit que celles du document demandé (les pages du contrat ne produisent plus de lignes parasites). Les pages lues sont indiquées."]},
   {v:"1.7.55", date:"2026-11-11", titre:"ERP gratuit, plomb et amiante selon le résultat, mesurage Boutin", items:["Pièces à joindre : un lien « 🔗 Faire l'ERP » à côté de l'état des risques ouvre le site officiel Géorisques (errial.georisques.gouv.fr), gratuit, pour le renouveler.","Plomb et amiante : un bouton « Résultat ? » (absence / présence) : absence = sans limite de durée, présence = 6 ans pour le plomb et 3 ans pour l'amiante (réglable avec ⚙).","Nouvelle pièce « Mesurage loi Boutin (surface habitable) » : sans limite de durée.","Le bouton « Voir » du bandeau rouge ou orange t'amène maintenant jusqu'à la liste des pièces, même quand tu es déjà sur l'onglet Documents. Le message de relecture des dates est plus clair.","Lecture d'un état des lieux scanné : les lignes parasites (bruit de bordures, taches) ne sont plus reprises comme éléments ou pièces."]},
   {v:"1.7.54", date:"2026-11-11", titre:"Lire un bail existant", items:["Biens › Location › Bail : « 📥 Lire un bail existant » lit un ancien contrat (scan, PDF ou photo : modèle « contrat de location meublée » à cases, contrat de stationnement) et remplit le formulaire : bailleur, locataire, adresse, étage, surface, chauffage, eau chaude, durée, date, loyer, charges, dépôt, annexes cochées. L'écriture manuelle n'est pas lue : les champs douteux sont signalés pour que tu les saisisses ; tu peux ensuite créer le bail au format de l'appli."]},
   {v:"1.7.53", date:"2026-11-11", titre:"Relire la date des documents déjà importés", items:["Pièces à joindre : un bouton ↻ à côté de chaque document relit la date écrite sur le papier à partir du fichier déjà importé (plus besoin de le réimporter) ; « ↻ Relire la date de tous les documents importés » le fait pour tout le bien d'un coup. Si le document n'est pas lisible, la date se saisit avec 📅.","État des lieux et inventaire : un bloc « Bailleur et locataire (modifiables) » permet de corriger ou compléter nom, adresse, téléphone, e-mail et naissance, repris dans le PDF. Bail : adresse et naissance du locataire ajoutées.","Comparer entrée / sortie côte à côte : case « Défilement lié » pour faire défiler les deux documents ensemble."]},
@@ -4459,7 +4461,7 @@ document.addEventListener("click", async ev => {
       try {
         const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); let date = dxV("im-date") || todayIso(), loc = dxV("im-loc"), R = null;
         await flPut(fid, {name:f.name, type, buf});
-        if (/\.pdf$/i.test(f.name) && (v === "edl" || v === "inv")){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== v) R = null; if (R && R.date && (!dxV("im-date") || dxV("im-date") === todayIso())) date = R.date; }
+        if (/\.pdf$/i.test(f.name) && (v === "edl" || v === "inv")){ toast("Lecture du document…"); try { R = await pdfRead(buf, v); } catch(e){ R = null; } if (R && R.kind !== v) R = null; if (R && R.date && (!dxV("im-date") || dxV("im-date") === todayIso())) date = R.date; }
         docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now()});
         let msg = "Document importé", bulkId = "";
         if (v === "edl"){ let pieces = null;
@@ -4830,7 +4832,7 @@ async function dxCreateFromFile(kind, f){
     await flPut(fid, {name:f.name, type, buf});
     docList("docs").push({id:fid, bien, kind, nom:"Entrée · " + f.name, sub:"", fname:f.name, date:edate, type, size:f.size, upd:Date.now()});
     let items = null, pieces = null, R = null;
-    if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
+    if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf, kind); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
     if (/\.(xlsx|xls|csv)$/i.test(f.name)){ const it = invFromSheet(buf, f.name);
       if (it && it.length){ if (kind === "inv") items = it; else { const map = {}; pieces = []; it.forEach(x => { let p = map[x.grp]; if (!p){ map[x.grp] = p = {id:uid(), nom:x.grp, items:[]}; pieces.push(p); } p.items.push({id:uid(), nom:x.nom, etat:x.etat, com:x.com, ph:[]}); }); } } }
     const eid = uid(), base = {id:eid, bien, type:"entree", date:edate, loc, rem:"", ref:"", fichier:fid, upd:Date.now()};
@@ -4887,7 +4889,7 @@ async function dxFromFileBlank(kind, f){
         else { const map = {}, pieces = []; it.forEach(x => { let p = map[x.grp]; if (!p){ map[x.grp] = p = {nom:x.grp, items:[]}; pieces.push(p); } p.items.push({nom:x.nom}); }); tpl = {pieces}; }
         dxMake(kind, "entree", date, loc, null, tpl); toast(it.length + " ligne(s) recopiée(s), vierges"); return; }
       toast("Aucune ligne reconnue dans ce tableau : colle la liste à la main"); return; }
-    let R = null; if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
+    let R = null; if (/\.pdf$/i.test(f.name)){ toast("Lecture du document…"); try { R = await pdfRead(buf, kind); } catch(e){ R = null; } if (R && R.kind !== kind) R = null; }
     if (R){ const tpl = kind === "inv" ? {items:R.items} : {pieces:R.pieces}; dxMake(kind, "entree", R.date || date, loc || prFull(R.locataire), null, tpl); const d0 = docCur(); if (d0){ prCopy(d0, R); persist(); render(); } toast("Document lu : " + prNb(R) + " (états laissés vides)"); return; }
     let lines = [], note = "";
     try { if (/\.pdf$/i.test(f.name)) lines = await pdfLines(buf); else lines = new TextDecoder("utf-8").decode(new Uint8Array(buf)).split(/\r?\n/); } catch(e){ note = "Lecture impossible (" + e.message + "). Colle la liste à la main."; }
@@ -5926,7 +5928,7 @@ document.addEventListener("click", async ev => {
   if (a === "corr"){ const d = c.cur; if (!d) return; const k = c.kind; const el = document.getElementById("cmp"); if (el) el.remove(); V.cmp = null; V.bsel = d.bien; V.tab = "bld"; V.bsub = "loc"; V.doc = {kind:k, id:d.id, open:{}}; if (typeof render === "function") render(); return; }
   if (a === "relire"){ c.conf = "relire"; cmpRender(); return; } if (a === "conf-no"){ c.conf = ""; cmpRender(); return; }
   if (a === "relire-ok"){ c.conf = ""; const d = c.cur, r = d && d.fichier && await flGet(d.fichier); if (!r){ toast("Fichier d'origine introuvable"); cmpRender(); return; }
-    toast("Nouvelle lecture du document…"); let R = null; try { R = await pdfRead(r.buf); } catch(e){} if (!R || R.kind !== c.kind){ toast("Rien de plus n'a pu être lu : rien n'a changé."); cmpRender(); return; }
+    toast("Nouvelle lecture du document…"); let R = null; try { R = await pdfRead(r.buf, c.kind); } catch(e){} if (!R || R.kind !== c.kind){ toast("Rien de plus n'a pu être lu : rien n'a changé."); cmpRender(); return; }
     cmpDocs(c.bien, c.kind, "sortie").filter(x => x.ref === d.id && !(x.pieces || x.items || []).some(p => p.etat || (p.items || []).some(i => i.etat))).forEach(x => { x.del = true; });
     prApply(d, R); d.valid = ""; d.upd = Date.now(); persist(); toast("Document relu : " + prNb(R)); cmpRender(); return; }
   if (a === "valid"){ const d = c.cur; if (!d) return; let sp = cmpDocs(c.bien, c.kind, "sortie").find(x => x.ref === d.id);
@@ -6117,13 +6119,32 @@ function prParse(pages, opt){
   const n = doc.kind === "inv" ? doc.items.length : doc.pieces.reduce((a, p) => a + p.items.length, 0);
   doc.ocr = OCR; return n ? doc : null;
 }
-async function pdfRead(buf){
+/* Un même PDF peut réunir le bail, l'état des lieux et l'inventaire : on classe les pages d'après leur en-tête
+   et on ne lit que celles du document voulu (les pages sans titre suivent la page précédente) */
+function prKindOfHead(t){
+  t = (t || "").replace(/\s+/g, " ").replace(/inventaire (?:et remise )?des cl[ée]s|inventaire et remise des cl[ée]s/ig, "");
+  if (/inventaire|mobilier|meubles meublants/i.test(t) && !/[ée]tat des lieux/i.test(t)) return "inv";
+  if (!/[ée]tat des lieux/i.test(t) && ((t.match(/buffet|lampadaire|rideaux|canap[ée]|vaisselle|[ée]lectrom[ée]nager|ustensiles|matelas|vaisselier|armoire|tabouret/ig) || []).length >= 2 || /dress[ée] contradictoirement/i.test(t))) return "inv";
+  if (/[ée]tat des lieux|[ée]tat d.entr[ée]e|[ée]tat de sortie/i.test(t)) return "edl";
+  if (/contrat de location|conditions g[ée]n[ée]rales|conditions particuli|\bbail\b|obligations du|clause r[ée]solutoire|honoraires|entre les soussign|d[ée]signation|dur[ée]e du contrat/i.test(t)) return "bail";
+  return "";
+}
+function prSelectPages(kinds, want){   /* kinds : tableau par page ("edl", "inv", "bail" ou "") -> numéros de pages (0-based) à lire */
+  const keep = []; let cur = "";
+  kinds.forEach((k, i) => { if (k) cur = k; if ((k || cur) === want && cur !== "bail") keep.push(i); });
+  return keep;
+}
+async function pdfRead(buf, want){
   const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(buf.slice(0))}).promise, pages = [];
   for (let i = 1; i <= Math.min(pdf.numPages, 40); i++){ const pg = await pdf.getPage(i), tc = await pg.getTextContent();
     pages.push({w:pg.view[2], h:pg.view[3], items:tc.items.filter(t => t.str && t.str.trim()).map(t => ({s:t.str.trim(), x:t.transform[4], y:t.transform[5], w:t.width, h:t.height}))}); }
-  const R = prParse(pages);
+  let use = pages;
+  if (want && pages.length > 1 && pages.reduce((a, p) => a + p.items.length, 0) > 80){
+    const kinds = pages.map(p => prKindOfHead(p.items.slice().sort((a, b) => b.y - a.y).slice(0, 14).map(i => i.s).join(" "))), keep = prSelectPages(kinds, want);
+    if (keep.length && keep.length < pages.length){ use = keep.map(i => pages[i]); toast("Pages lues : " + keep.map(i => i + 1).join(", ") + " sur " + pages.length + " (le reste du fichier est ignoré)"); } }
+  const R = prParse(use);
   if (R || pages.reduce((a, p) => a + p.items.length, 0) > 80) return R;
-  return pdfReadScan(pdf);
+  return pdfReadScan(pdf, want);
 }
 /* ---- document scanné : on dessine chaque page, la lecture optique (sur l'appareil) donne les mots avec leur position,
    et les croix manuscrites sont repérées par l'encre dans chaque case ---- */
@@ -6139,12 +6160,21 @@ function prHeadsOcr(items, hdrs){
   for (const i of body) if (/^(le )?bailleur$|^locataire|^le\(s\) preneur|^preneur|^infos utiles$/i.test(i.s) && !out.some(o => Math.abs(o.y - i.y) < 5 && Math.abs(o.x - i.x) < 5)) out.push({s:i.s, x:i.x, y:i.y, h:15.3, w:i.w});
   return out;
 }
-async function pdfReadScan(pdf){
-  const T = await loadTess(), n = Math.min(pdf.numPages, 14), pages = [], SC = 2;
+async function pdfReadScan(pdf, want){
+  const T = await loadTess(), total = Math.min(pdf.numPages, 30), pages = [], SC = 2; let sel = null;
   toast("Lecture du scan… (premier chargement : un peu long)");
   const w = await T.createWorker("fra", 1, {workerPath:TESS_WK, corePath:TESS_CORE, langPath:TESS_LANG});
   try {
-    for (let i = 1; i <= n; i++){ toast("Lecture du scan : page " + i + " sur " + n);
+    if (want && total > 1){   /* 1re passe rapide : le haut de chaque page (titre) pour savoir de quel document elle fait partie */
+      const kinds = [];
+      for (let i = 1; i <= total; i++){ toast("Repérage des pages : " + i + " sur " + total);
+        const pg = await pdf.getPage(i), vp = pg.getViewport({scale:1.3}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = Math.round(vp.height * 0.2);
+        const cx = cv.getContext("2d"); await pg.render({canvasContext:cx, viewport:vp}).promise;
+        const r = await w.recognize(cv); kinds.push(prKindOfHead(r.data.text || "")); }
+      const keep = prSelectPages(kinds, want); if (keep.length && keep.length < total) sel = keep.slice(0, 14); }
+    const list = sel || Array.from({length:Math.min(total, 14)}, (_, k) => k), n = list.length; let step = 0;
+    if (sel) toast("Pages lues : " + sel.map(i => i + 1).join(", ") + " sur " + total + " (le reste du fichier est ignoré)");
+    for (const pi of list){ step++; const i = pi + 1; toast("Lecture du scan : page " + step + " sur " + n);
       const pg = await pdf.getPage(i), vp = pg.getViewport({scale:SC}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
       await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
       const r = await w.recognize(cv), d = r.data; let words = d.words;
@@ -6570,6 +6600,51 @@ document.addEventListener("change", async ev => { const t = ev.target; if (!t ||
     const R = bkParse(txt), done = bkApply(R);
     note.innerHTML = `<b>${done.length} champ(s) repris du document.</b> Relis-les : l'écriture manuelle n'est pas lue.` + (R.warn.length ? `<br>⚠️ ${R.warn.map(esc).join("<br>⚠️ ")}` : "") + (R.info.length ? `<br>${R.info.map(esc).join("<br>")}` : "");
   } catch(e){ note.textContent = "Lecture impossible (" + (e && e.message || "erreur") + ") : saisis les champs à la main."; } });
+
+/* Import d'un tableau de loyers (une feuille : années en colonnes, mois, un logement par ligne) */
+const LO_MOIS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
+function loMonthIdx(v){ const k = norm(v); if (!k) return -1; const i = LO_MOIS.findIndex(m => k === m || (k.length >= 3 && m.startsWith(k.slice(0, 4)) && k.length <= m.length)); return i; }
+function parseLoyers(wb){
+  const out = {rows:{}, years:new Set(), cells:0};
+  for (const name of wb.SheetNames){
+    const ws = wb.Sheets[name]; if (!ws) continue; const a = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:""});
+    for (let r = 0; r < a.length; r++){
+      const row = a[r], mc = []; row.forEach((v, c) => { const m = typeof v === "string" ? loMonthIdx(v) : -1; if (m >= 0) mc.push({c, m}); });
+      if (mc.filter(x => x.m === 0).length < 1 || mc.length < 6) continue;
+      /* ligne de mois : repérer l'année de chaque bloc (au-dessus), puis les lignes de logements */
+      const blocks = []; let cur = null; for (const x of mc){ if (x.m === 0){ cur = {c0:x.c, cols:[]}; blocks.push(cur); } if (cur) cur.cols.push(x); }
+      for (const b of blocks){
+        let y = 0; for (let rr = r - 1; rr >= Math.max(0, r - 4) && !y; rr--) for (let c = b.c0 - 1; c <= b.c0 + 12 && !y; c++){ const v = a[rr] && a[rr][c]; const n = typeof v === "number" ? v : parseInt(v, 10); if (n >= 1990 && n <= 2100 && String(v).trim().length <= 6) y = n; }
+        if (!y) continue; out.years.add(y);
+        const cnt = c => a.slice(r + 1, r + 40).filter(rw => typeof rw[c] === "string" && /[a-zA-Z]{2}/.test(rw[c]) && loMonthIdx(rw[c]) < 0).length;
+        let labelCol = -1, best = 0; for (let c = 0; c < blocks[0].c0; c++){ const n = cnt(c); if (n > best){ best = n; labelCol = c; } } if (labelCol < 0) continue;
+        for (let rr = r + 1; rr < Math.min(a.length, r + 40); rr++){
+          const lab = String(a[rr][labelCol] ?? "").trim(); if (!lab || /^(total|d[eé]compte|date|montant|ann[eé]e)/i.test(lab)) continue;
+          if (a[rr].some(v => typeof v === "string" && loMonthIdx(v) >= 0)) break;
+          for (const x of b.cols){ const v = a[rr][x.c]; const n = typeof v === "number" ? v : parseNum(v); if (typeof n === "number" && isFinite(n) && n > 0 && n < 100000){ (out.rows[lab] = out.rows[lab] || []).push({y, m:x.m, mt:r2(n)}); out.cells++; } }
+        }
+      }
+    }
+  }
+  const labs = Object.keys(out.rows).filter(l => out.rows[l].length); if (!labs.length) return null; out.labels = labs; out.years = [...out.years].sort(); return out;
+}
+function loGuess(lab){ const k = norm(lab), L = live(S.biens); let b = L.find(x => norm(x.nom) === k || norm(x.id) === k); if (!b) b = L.find(x => { const n = norm(x.nom); return n && (k.includes(n) || n.includes(k)) && Math.abs(n.length - k.length) <= 3; }); return b ? b.id : "+"; }
+function loPend(p){
+  const m = p.m, tot = m.labels.reduce((s, l) => s + m.rows[l].length, 0);
+  return `<div class="card" style="border-color:var(--accent)"><h2>Tableau de loyers lu : ${esc(p.name)}</h2>
+    <div class="small">${tot} loyer(s) mensuel(s) trouvé(s), de ${m.years[0]} à ${m.years[m.years.length - 1]}. Choisis à quel bien de l'appli correspond chaque ligne du tableau.</div>
+    ${m.labels.map(l => { const v = p.map[l]; return `<label class="f">${esc(l)} <span class="muted">(${m.rows[l].length} loyer(s), ${Math.min(...m.rows[l].map(x => x.y))}-${Math.max(...m.rows[l].map(x => x.y))})</span><select data-lo="${esc(l)}">${live(S.biens).map(b => `<option value="${esc(b.id)}" ${v === b.id ? "selected" : ""}>${esc(b.nom)}</option>`).join("")}<option value="+" ${v === "+" ? "selected" : ""}>➕ Créer un nouveau bien « ${esc(l)} »</option><option value="-" ${v === "-" ? "selected" : ""}>Ignorer cette ligne</option></select></label>`; }).join("")}
+    <div class="small muted">Chaque loyer est ajouté comme une recette « Loyer » datée du 1er du mois, déjà pointée. Un loyer déjà présent n'est pas ajouté deux fois.</div>
+    <div class="btns"><button class="btn" data-act="lo-ok">Importer les loyers</button><button class="btn ghost" data-act="imp-cancel">Annuler</button></div></div>`;
+}
+document.addEventListener("change", ev => { const t = ev.target; if (!t || !t.dataset || t.dataset.lo === undefined || !V.pending || V.pending.kind !== "loyers") return; V.pending.map[t.dataset.lo] = t.value; });
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='lo-ok']"); if (!b) return; const p = V.pending; if (!p || p.kind !== "loyers") return; if (DEMO) return toast("Quitte d'abord le mode démo");
+  const inc = []; let nb = 0;
+  for (const lab of p.m.labels){ let id = p.map[lab]; if (id === "-") continue; const rows = p.m.rows[lab];
+    if (id === "+"){ const base = (norm(lab).toUpperCase() || "BIEN").slice(0, 12); id = base; let n = 2; while (S.biens.some(x => x.id === id)) id = base + n++; const y0 = Math.min(...rows.map(x => x.y));
+      S.biens.push({id, nom:lab, solde0:0, date0:y0 + "-01-01", loyer:rows[rows.length - 1].mt, credit:0, regime:"LMNP", notes:"Créé à l'import du tableau de loyers", upd:Date.now()}); nb++; }
+    for (const x of rows) inc.push({id:uid(), date:x.y + "-" + pad(x.m + 1) + "-01", bien:id, type:"Recette", cat:"Loyer", lib:"Loyer " + MOIS[x.m].toLowerCase(), montant:x.mt, compte:"Bien", pointe:"x", compta:"", justif:"", fourn:"", note:"Importé du tableau de loyers", upd:Date.now()}); }
+  const r = mergeJournal(S.journal, inc); V.pending = null; V.msg = `Loyers : ${r.add} ajouté(s)${r.dup ? ", " + r.dup + " déjà présent(s)" : ""}${nb ? ". " + nb + " bien(s) créé(s)" : ""}.`; migrate(); persist(); render(); });
 
 /* ---------- Signature : paraphe sur chaque page, signature papier (page à imprimer + scan), preuves renforcées ---------- */
 let PAPER = null;
