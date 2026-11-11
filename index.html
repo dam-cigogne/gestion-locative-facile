@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.56";
+const APP_VERSION = "1.7.57";
 const CHANGELOG = [
+  {v:"1.7.57", date:"2026-11-11", titre:"Découper un dossier de diagnostics, DPE à dates fixes, affichage iPhone", items:["Pièces à joindre : un gros PDF qui réunit tous les diagnostics (DPE, surface, électricité, amiante, plomb, ERP, bruit…) s'importe une seule fois sur la ligne « Autres diagnostics / dossier complet ». Le bouton « ✂ Découper » (proposé aussitôt après l'import) repère chaque partie d'après ses titres, lit la date de chacune (scan compris) et propose une ligne par diagnostic. Tu corriges le type ou les pages si besoin. Le fichier complet reste entier : c'est lui qui part avec le bail ; chaque ligne ouvre seulement ses pages. Supprimer le gros fichier supprime ses lignes.","Un DPE réalisé entre 2013 et 2017 n'est plus valable depuis le 31/12/2022, entre janvier 2018 et juin 2021 depuis le 31/12/2024 (règle de la loi) : l'appli le signale périmé, au lieu de compter 10 ans.","Nouvelles pièces : bruit des aérodromes (zone PEB, 6 mois), grille de vétusté et convention Anah (elles n'apparaissent comme « Non concerné » que tant que tu n'en importes pas).","iPhone : les lignes des pièces à joindre ne se tassent plus en colonne étroite, les boutons passent sous le texte."]},
   {v:"1.7.56", date:"2026-11-11", titre:"Importer un tableau de loyers (Excel .xls ou .xlsx)", items:["Réglages › Données › Importer un fichier : l'appli lit maintenant un tableau de suivi des loyers (une feuille, les années en colonnes avec les mois, un logement par ligne, fichier .xls ou .xlsx). Tu associes chaque ligne à un de tes biens (ou tu crées le bien, ou tu ignores la ligne), puis « Importer les loyers » ajoute chaque loyer mensuel comme recette « Loyer », déjà pointée. Les mois vides ou marqués « - » sont ignorés et un loyer déjà présent n'est pas ajouté deux fois.","Un même PDF qui réunit le bail, l'état des lieux et l'inventaire : l'appli repère les pages de chaque document d'après leur titre et ne lit que celles du document demandé (les pages du contrat ne produisent plus de lignes parasites). Les pages lues sont indiquées."]},
   {v:"1.7.55", date:"2026-11-11", titre:"ERP gratuit, plomb et amiante selon le résultat, mesurage Boutin", items:["Pièces à joindre : un lien « 🔗 Faire l'ERP » à côté de l'état des risques ouvre le site officiel Géorisques (errial.georisques.gouv.fr), gratuit, pour le renouveler.","Plomb et amiante : un bouton « Résultat ? » (absence / présence) : absence = sans limite de durée, présence = 6 ans pour le plomb et 3 ans pour l'amiante (réglable avec ⚙).","Nouvelle pièce « Mesurage loi Boutin (surface habitable) » : sans limite de durée.","Le bouton « Voir » du bandeau rouge ou orange t'amène maintenant jusqu'à la liste des pièces, même quand tu es déjà sur l'onglet Documents. Le message de relecture des dates est plus clair.","Lecture d'un état des lieux scanné : les lignes parasites (bruit de bordures, taches) ne sont plus reprises comme éléments ou pièces."]},
   {v:"1.7.54", date:"2026-11-11", titre:"Lire un bail existant", items:["Biens › Location › Bail : « 📥 Lire un bail existant » lit un ancien contrat (scan, PDF ou photo : modèle « contrat de location meublée » à cases, contrat de stationnement) et remplit le formulaire : bailleur, locataire, adresse, étage, surface, chauffage, eau chaude, durée, date, loyer, charges, dépôt, annexes cochées. L'écriture manuelle n'est pas lue : les champs douteux sont signalés pour que tu les saisisses ; tu peux ensuite créer le bail au format de l'appli."]},
@@ -1726,6 +1727,7 @@ const HELP = {
     "Valider la retranscription : crée le PDF d'entrée dans la fiche du locataire et prépare la sortie ; entrée à gauche, sortie à droite ; « La sortie est prête » met une pastille sous le nom du locataire.",
     "Bandeau rouge en haut de chaque bien (et sur l'accueil) quand un document est périmé ou à refaire ; touche « Voir » pour ouvrir les documents.",
     "Pièces à joindre : la date du document sert à voir s'il est à jour ; ⚙ règle la durée de validité et « à refaire à chaque location ».",
+    "Un seul gros PDF de diagnostics : importe-le sur « Autres diagnostics / dossier complet » puis « ✂ Découper » : une ligne par diagnostic (date lue), le fichier complet est gardé pour le bail. Les anciens DPE (2013 à juin 2021) ont une fin de validité fixe.",
     "Visale / garantie loyers impayés : sur la fiche du locataire, choisis le type de garantie, note le numéro de visa et la validité, importe le contrat ; Biens › Visale réunit le tout avec un lien direct vers visale.fr.",
     "Import d'un état des lieux ou d'un inventaire en PDF : l'appli lit le document en entier (pièces, états, clés, bailleur, locataire) et le refabrique dans son propre format.",
     "Classeur (Biens › Documents) : tous tes documents scannés, par bien et par type, triés par date ; « ✏️ Renommer » change son nom, « Ranger dans… » le déplace vers un autre bien.",
@@ -4297,10 +4299,10 @@ function bailPdf(o, sig){
   Hh("8. Annexes remises au locataire");
   const bx = ok => ok ? "[ X ]" : "[    ]", bn = V.bsel, has = k => docList(k).some(x => x.bien === bn && !x.del && x.type === "entree");
   P((VIDE ? "" : bx(has("inv")) + " Inventaire et état du mobilier        ") + bx(has("edl")) + " État des lieux d'entrée");
-  P(bx(["diag", "dpe", "erp", "boutin", "plomb", "elec", "gaz", "amiante"].some(k => annexHas(bn, k))) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
+  P(bx(["diag", "dpe", "erp", "bruit", "boutin", "plomb", "elec", "gaz", "amiante"].some(k => annexHas(bn, k))) + " Dossier de diagnostic technique (DPE, et selon le cas : plomb, amiante, électricité, gaz, risques)");
   P(bx(annexHas(bn, "notice")) + " Notice d'information relative aux droits et obligations des locataires et des bailleurs");
   P(bx(annexHas(bn, "copro")) + " Extraits du règlement de copropriété (destination, jouissance et usage des parties privatives et communes)");
-  ["charges", "repar", "caution", "assur"].filter(k => annexHas(bn, k)).forEach(k => P(bx(true) + " " + annexLabel(k)));
+  ["charges", "repar", "vetuste", "anah", "caution", "assur"].filter(k => annexHas(bn, k)).forEach(k => P(bx(true) + " " + annexLabel(k)));
   sigBlock(d, o.ville, o.debut, sig); if (sig) proofPage(d, sig, (VIDE ? "Contrat de location · " : "Contrat de location meublée · ") + (o.adr || "") + " · prise d'effet le " + frDate(o.debut)); return d.finish(VIDE ? "Contrat de location" : "Contrat de location meublée");
 }
 
@@ -4405,7 +4407,7 @@ async function flGet(fid){ const db = PH.db || await phOpen(); if (!db) return n
   return new Promise(res => { try { const q = db.transaction("p").objectStore("p").get("f:" + fid); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch(e){ res(null); } }); }
 async function flDel(fid){ const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").delete("f:" + fid); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
-const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques et pollutions (ERP)"], ["boutin", "Mesurage loi Boutin (surface habitable)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"]];
+const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques et pollutions (ERP)"], ["boutin", "Mesurage loi Boutin (surface habitable)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"], ["bruit", "Bruit des aérodromes (zone PEB)"], ["vetuste", "Grille de vétusté"], ["anah", "Convention Anah"]];
 const annexLabel = k => (ANNEXES.find(a => a[0] === k) || [0, ""])[1];
 const annexHas = (bien, k) => fileDocs(bien, "autre").some(d => d.sub === k);
 const FKIND = {fact:"Facture", bail:"Bail", edl:"État des lieux", inv:"Inventaire", autre:"Autre document"};
@@ -4415,8 +4417,8 @@ const sizeStr = n => n >= 1048576 ? (n / 1048576).toFixed(1).replace(".", ",") +
 const locFiles = (bien, pt) => docList("docs").filter(x => x.bien === bien && !x.del && x.kind === "loc" && x.ptype === pt);
 const fileDocs = (bien, kind) => docList("docs").filter(x => x.bien === bien && !x.del && (!kind || x.kind === kind));
 function fileRow(d){
-  return `<div class="row">${thumb(d.id, d.fname || d.nom, d.type)}<div class="main"><div class="t">${esc(d.nom)}</div><div class="s">${esc(d.sub ? annexLabel(d.sub) : (d.kind === "loc" && d.ptype ? d.ptype + " · fiche locataire" : (FKIND[d.kind] || "Document")))} · ${frDate(d.date)} · ${sizeStr(d.size || 0)}</div></div>
-    <button class="mini" data-act="fl-open" data-id="${d.id}">Ouvrir</button><button class="mini" data-act="fl-del" data-id="${d.id}" aria-label="Supprimer">×</button></div>`;
+  return `<div class="row">${thumb(d.id, d.fname || d.nom, d.type)}<div class="main"><div class="t">${esc(d.nom)}</div><div class="s">${esc(d.sub ? annexLabel(d.sub) : (d.kind === "loc" && d.ptype ? d.ptype + " · fiche locataire" : (FKIND[d.kind] || "Document")))} · ${frDate(d.date)} · ${d.parent ? "pages " + (d.pages || [1, 1]).filter((x, i, a) => i === 0 || x !== a[0]).join("–") : sizeStr(d.size || 0)}</div></div>
+    ${d.kind === "autre" && !d.parent && (d.type === "application/pdf" || /\.pdf$/i.test(d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${d.id}">✂ Découper</button>` : ""}<button class="mini" data-act="fl-open" data-id="${d.id}">Ouvrir</button><button class="mini" data-act="fl-del" data-id="${d.id}" aria-label="Supprimer">×</button></div>`;
 }
 function fileLink(e){
   const src = e.fichier ? e : (e.ref ? docGet(V.doc.kind, e.ref) : null), d = src && src.fichier ? docList("docs").find(x => x.id === src.fichier && !x.del) : null; if (!d) return "";
@@ -4462,7 +4464,7 @@ document.addEventListener("click", async ev => {
         const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); let date = dxV("im-date") || todayIso(), loc = dxV("im-loc"), R = null;
         await flPut(fid, {name:f.name, type, buf});
         if (/\.pdf$/i.test(f.name) && (v === "edl" || v === "inv")){ toast("Lecture du document…"); try { R = await pdfRead(buf, v); } catch(e){ R = null; } if (R && R.kind !== v) R = null; if (R && R.date && (!dxV("im-date") || dxV("im-date") === todayIso())) date = R.date; }
-        docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now()});
+        docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now()}); const doSplit = v === "autre" && dxV("im-sub") === "diag" && /\.pdf$/i.test(f.name);
         let msg = "Document importé", bulkId = "";
         if (v === "edl"){ let pieces = null;
           if (/\.(xlsx|xls|csv)$/i.test(f.name)){ const it = invFromSheet(buf, f.name); if (it && it.length){ const map = {}; pieces = []; it.forEach(x => { const p = map[x.grp] || (map[x.grp] = {id:uid(), nom:x.grp, items:[]}); if (!map[x.grp].added){ map[x.grp].added = 1; pieces.push(p); } p.items.push({id:uid(), nom:x.nom, etat:x.etat, com:x.com, ph:[]}); }); pieces.forEach(p => delete p.added); } }
@@ -4472,13 +4474,13 @@ document.addEventListener("click", async ev => {
         if (v === "inv"){ let items = /\.(xlsx|xls|csv)$/i.test(f.name) ? invFromSheet(buf, f.name) : null; const lu = items && items.length;
           if (!lu){ items = []; INV_DEF.forEach(([g, L]) => L.forEach(n => items.push({id:uid(), grp:g, nom:n, qte:"1", etat:"", com:""}))); }
           const nid = uid(); docList("inv").push({id:nid, bien:V.bsel, type:"entree", date, loc, rem:"", ref:"", fichier:fid, items, upd:Date.now()}); if (R){ prApply(docList("inv").find(x => x.id === nid), R); } msg = R ? "Document lu : " + prNb(R) + ", prêt pour la sortie" : lu ? "Inventaire lu : " + items.length + " article(s) repris" : "Document gardé"; if (!lu && !R) bulkId = nid; }
-        persist(); closeSheet(); toast(msg); render(); if (bulkId) bulkFromFile(v, bulkId, f, buf);
+        persist(); closeSheet(); toast(msg); render(); if (bulkId) bulkFromFile(v, bulkId, f, buf); if (doSplit) splStart(fid);
       } catch(err){ toast("Import impossible : " + err.message); }
       break; }
-    case "fl-open": { const d = docList("docs").find(x => x.id === id); if (d) viewFile(id, d.fname || d.nom); break; }
+    case "fl-open": { const d = docList("docs").find(x => x.id === id); if (d && d.parent) splView(d); else if (d) viewFile(id, d.fname || d.nom); break; }
     case "fl-del": { const d = docList("docs").find(x => x.id === id); if (!d) break;
       openSheet(`<h2>Supprimer ce document ?</h2><p style="margin:0">« ${esc(d.nom)} » sera retiré de l'appli. Ton original reste dans tes fichiers.</p><div class="btns"><button class="btn danger" data-act="fl-del-ok" data-id="${id}">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
-    case "fl-del-ok": { const d = docList("docs").find(x => x.id === id); if (d){ d.del = true; d.upd = Date.now(); flDel(id); for (const k of ["edl", "inv"]) docList(k).forEach(e => { if (e.fichier === id) e.fichier = ""; }); persist(); } closeSheet(); render(); break; }
+    case "fl-del-ok": { const d = docList("docs").find(x => x.id === id); if (d){ d.del = true; d.upd = Date.now(); flDel(id); docList("docs").forEach(x => { if (x.parent === id && !x.del){ x.del = true; x.upd = Date.now(); } }); for (const k of ["edl", "inv"]) docList(k).forEach(e => { if (e.fichier === id) e.fichier = ""; }); persist(); } closeSheet(); render(); break; }
   }
 });
 
@@ -6354,32 +6356,34 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 
 /* ============ Pièces à joindre : par bien / par location, date d'édition, validité, vue d'ensemble ============ */
 /* m : durée en mois (0 = sans limite, null = pas de suivi) · loc : à refaire à chaque nouvelle location */
-const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, boutin:{m:0}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:36}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
+const ANNEX_VAL = {dpe:{m:120}, erp:{m:6}, bruit:{m:6, na:true}, vetuste:{m:null, na:true}, anah:{m:null, na:true}, boutin:{m:0}, plomb:{m:72}, elec:{m:72}, gaz:{m:72}, amiante:{m:36}, diag:{m:null}, copro:{m:null}, permis:{m:null}, pno:{m:12}, taxe:{m:12}, notice:{m:null}, charges:{m:null}, repar:{m:null}, caution:{m:null, loc:true}, assur:{m:12, loc:true}, caf:{m:null, loc:true}};
 const AV_RES = {plomb:1, amiante:1}, ERP_URL = "https://errial.georisques.gouv.fr/#/";
-const AV_BIEN = ["dpe", "erp", "boutin", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
+const AV_BIEN = ["dpe", "erp", "bruit", "boutin", "plomb", "elec", "gaz", "amiante", "diag", "copro", "permis", "vetuste", "anah", "pno", "taxe"], AV_LOC = ["notice", "charges", "repar", "caution", "assur", "caf"];
 const avCfg = (k, bien) => { const A = (S.cfg || {}).annexV || {}; return Object.assign({}, ANNEX_VAL[k] || {m:null}, A[k] || {}, A[bien + "|" + k] || {}); };
+/* DPE faits avant juillet 2021 : fin de validité fixée par la loi (2013-2017 : 31/12/2022 · 2018 à juin 2021 : 31/12/2024) */
+const dpeOld = iso => !iso ? "" : iso >= "2013-01-01" && iso <= "2017-12-31" ? "2022-12-31" : iso >= "2018-01-01" && iso <= "2021-06-30" ? "2024-12-31" : "";
 const avAdd = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 const avLab = k => annexLabel(k);
 function avStat(bien, k){
-  const c = avCfg(k, bien); if (c.na) return {st:"na", c};
-  const L = fileDocs(bien, "autre").filter(d => d.sub === k).sort((a, b) => (b.date || "").localeCompare(a.date || "")), d = L[0];
+  const c = avCfg(k, bien), L = fileDocs(bien, "autre").filter(d => d.sub === k).sort((a, b) => (b.date || "").localeCompare(a.date || "")), d = L[0];
+  if (c.na && !d) return {st:"na", c};
   if (!d) return {st:"manque", c};
   const t = tenantFor(bien, todayIso()), today = todayIso();
   if (AV_RES[k] && d.res === "absence") c.m = 0;
   if (c.loc && t && t.debut && d.date && d.date < t.debut) return {st:"refaire", d, c, why:"antérieur au bail de " + t.nom};
   if (c.m === null || c.m === undefined) return {st:"ok", d, c, txt:"Au dossier"};
   if (c.m === 0) return {st:"ok", d, c, txt:"Sans limite de durée"};
-  const exp = avAdd(d.date || today, c.m), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
-  return {st:exp < today ? "perime" : exp <= soon ? "bientot" : "ok", d, c, exp};
+  const old = k === "dpe" && c.m === 120 ? dpeOld(d.date) : "", exp = old || avAdd(d.date || today, c.m), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  return {st:exp < today ? "perime" : exp <= soon ? "bientot" : "ok", d, c, exp, why:old ? "ancien DPE : validité arrêtée au " + frDate(old) : ""};
 }
 const AV_CHIP = {ok:'<span class="chip ok">À jour</span>', bientot:'<span class="chip warn">Expire bientôt</span>', perime:'<span class="chip bad">Périmé</span>', refaire:'<span class="chip bad">À refaire</span>'};
 const avDurTxt = c => c.m === null || c.m === undefined ? (c.loc ? "à chaque location" : "") : c.m === 0 ? "sans limite" : avDur(c.m) + (c.loc ? " · à chaque location" : "");
 const avDur = m => m % 12 === 0 && m >= 12 ? (m / 12) + " an" + (m >= 24 ? "s" : "") : m + " mois";
 function avRow(id, k){
   const s = avStat(id, k), a = k;
-  if (s.st === "na") return `<div class="row" style="opacity:.55"><div class="main"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+  if (s.st === "na") return `<div class="row" style="opacity:.55;flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="mini" data-act="im-open" data-v="autre" data-s="${a}">Importer</button><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
   const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + (s.d.res === "absence" ? "absence" : "présence") : AV_RES[k] ? " · résultat à préciser" : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
-  return `<div class="row"><div class="main"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>${s.d ? AV_CHIP[s.st] || "" : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div>`;
+  return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
 }
 function avSummary(id, keys){
   const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
@@ -6429,7 +6433,7 @@ function avAlert(id, home){
 const avAlertHome = () => (typeof bienIds === "function" ? bienIds() : []).map(i => avAlert(i, true)).join("");
 
 /* ============ Date d'édition lue sur le papier (PDF texte, PDF scanné ou photo) + contrôle du type de document ============ */
-const AV_KW = {boutin:/boutin|surface habitable|mesurage/i, dpe:/performance [eé]nerg[eé]tique|\bDPE\b/i, erp:/[eé]tat des risques|\bERP\b|risques naturels/i, plomb:/plomb|\bCREP\b/i, elec:/installation int[eé]rieure d.[eé]lectricit[eé]|[eé]lectricit[eé]/i, gaz:/installation int[eé]rieure de gaz|\bgaz\b/i, amiante:/amiante/i, pno:/propri[eé]taire non occupant|\bPNO\b/i, taxe:/taxe fonci[eè]re/i, assur:/assurance|attestation/i, caf:/\bCAF\b|allocations familiales/i};
+const AV_KW = {bruit:/nuisances sonores|plan d.exposition au bruit|bruit des a[eé]rodromes/i, vetuste:/v[eé]tust[eé]/i, anah:/\banah\b|conventionn/i, boutin:/boutin|surface habitable|mesurage/i, dpe:/performance [eé]nerg[eé]tique|\bDPE\b/i, erp:/[eé]tat des risques|\bERP\b|risques naturels/i, plomb:/plomb|\bCREP\b/i, elec:/installation int[eé]rieure d.[eé]lectricit[eé]|[eé]lectricit[eé]/i, gaz:/installation int[eé]rieure de gaz|\bgaz\b/i, amiante:/amiante/i, pno:/propri[eé]taire non occupant|\bPNO\b/i, taxe:/taxe fonci[eè]re/i, assur:/assurance|attestation/i, caf:/\bCAF\b|allocations familiales/i};
 const AV_MOIS = {janvier:1, "février":2, fevrier:2, mars:3, avril:4, mai:5, juin:6, juillet:7, "août":8, aout:8, septembre:9, octobre:10, novembre:11, "décembre":12, decembre:12, janv:1, "févr":2, fevr:2, juil:7, sept:9, oct:10, nov:11, "déc":12, dec:12};
 function avDates(txt){
   const out = [], ok = (y, m, d) => y >= 1995 && y <= new Date().getFullYear() + 1 && m >= 1 && m <= 12 && d >= 1 && d <= 31, iso = (y, m, d) => y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"), today = todayIso();
@@ -6471,6 +6475,7 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 
 /* relire la date d'une pièce déjà importée (lecture du fichier stocké) */
 async function avRereadDoc(d){
+  if (d.parent) return splReread(d);
   const r = await flGet(d.id); if (!r || !r.buf) return {err:"fichier introuvable"};
   const f = new File([r.buf], d.fname || d.nom || "doc", {type:r.type || mimeOf(d.fname || "")});
   const txt = await avReadFile(f); if (txt === null) return {err:"format non lisible"};
@@ -6493,6 +6498,114 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
 
 /* « Voir » de l'alerte : amène sur la liste des pièces, même si on est déjà sur l'onglet Documents */
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-av]"); if (!b) return; setTimeout(() => { const c = document.getElementById("pj-card"); if (c) c.scrollIntoView({behavior:"smooth", block:"start"}); }, 60); });
+
+/* ============ Découper un dossier de diagnostics (un gros PDF) en une ligne par diagnostic ============ */
+/* Le gros fichier reste entier (c'est lui qui est joint au bail) ; chaque ligne créée pointe vers ses pages (parent + pages). */
+const SPL_KEYS = [
+  ["", /resume de l.expertise|dossier technique immobilier|attestation sur l.honneur|^facture|\bfacture n|envoi des resultats|sommaire general|attestation d.assurance|certificat de qualification/],
+  ["bruit", /etat des nuisances sonores|cartographie du plan d.exposition au bruit|zones? de bruit des aerodromes|applicables dans les zones de bruit/],
+  ["dpe", /diagnostic de performance energetique|\bdpe\b/],
+  ["boutin", /attestation de (?:surface|superficie)|surface habitable|loi carrez|loi boutin|mesurage/],
+  ["elec", /installation interieure d.electricite/],
+  ["gaz", /installation interieure de gaz/],
+  ["amiante", /amiante/],
+  ["plomb", /exposition au plomb|\bcrep\b/],
+  ["erp", /etat des risques|risques et pollutions|arrete prefectoral|\bial\b|catastrophes? naturelles|pollution des sols|\berp\b/]];
+const splNorm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+/* titre de la page : null = pas de titre reconnu (la page continue la partie précédente) */
+function splKind(txt){
+  const h = splNorm(txt).slice(0, 320); let best = null, bi = 1e9;
+  for (const [k, re] of SPL_KEYS){ const m = re.exec(h); if (m && m.index < bi){ bi = m.index; best = k; } }
+  return best;
+}
+function splSections(kinds){
+  let cur = ""; const out = [];
+  kinds.forEach((k, i) => { if (k !== null) cur = k; const l = out[out.length - 1]; if (l && l.k === cur) l.to = i + 1; else out.push({k:cur, from:i + 1, to:i + 1}); });
+  return out;
+}
+const splPlombAbs = t => /n.a pas [eé]t[eé] rep[eé]r[eé]e? de rev[eê]tements? contenant du plomb|aucun rev[eê]tement.{0,40}plomb|absence de rev[eê]tements? contenant du plomb/i.test(String(t || ""));
+async function splAnalyse(pdf, prog){
+  const n = Math.min(pdf.numPages, 150), kinds = [], texts = []; let w = null;
+  const worker = async () => { if (!w){ const T = await loadTess(); w = await T.createWorker("fra", 1, {workerPath:TESS_WK, corePath:TESS_CORE, langPath:TESS_LANG}); } return w; };
+  try {
+    for (let i = 1; i <= n; i++){
+      prog && prog("Repérage des parties : page " + i + " sur " + n);
+      const pg = await pdf.getPage(i), tc = await pg.getTextContent(); let t = tc.items.map(x => x.str).join(" "), head = t;
+      if (t.replace(/\s/g, "").length < 40){
+        const vp = pg.getViewport({scale:1.5}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = Math.round(vp.height * 0.25);
+        await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+        try { head = (await (await worker()).recognize(cv)).data.text || ""; t = null; } catch(e){} }
+      texts.push(t); kinds.push(splKind(head));
+    }
+    const secs = splSections(kinds);
+    for (const s of secs){ if (!s.k) continue;
+      prog && prog("Lecture de la date : " + annexLabel(s.k));
+      let txt = ""; for (let i = s.from; i <= Math.min(s.to, s.from + 2); i++) txt += " " + (texts[i - 1] || "");
+      if (texts[s.from - 1] === null){
+        const pg = await pdf.getPage(s.from), vp = pg.getViewport({scale:2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
+        await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; txt = (await (await worker()).recognize(cv)).data.text || ""; }
+      s.date = avPickDate(txt) || "";
+      if (s.k === "plomb"){ let all = ""; for (let i = s.from; i <= s.to; i++) all += " " + (texts[i - 1] || ""); s.res = splPlombAbs(all || txt) ? "absence" : ""; }
+    }
+    return {n, secs};
+  } finally { try { if (w) await w.terminate(); } catch(e){} }
+}
+async function splStart(mid){
+  const m = docList("docs").find(x => x.id === mid && !x.del); if (!m) return;
+  try {
+    const rec = await flGet(mid); if (!rec || !rec.buf) return toast("Fichier introuvable sur cet appareil");
+    const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(rec.buf.slice(0))}).promise;
+    if (pdf.numPages < 2) return toast("Un seul feuillet : rien à découper");
+    toast("Lecture du dossier…");
+    const r = await splAnalyse(pdf, toast);
+    if (!r.secs.some(s => s.k)) return toast("Aucun titre de diagnostic reconnu dans ce fichier");
+    V.spl = {mid, n:r.n, secs:r.secs, total:pdf.numPages}; sheetSplit();
+  } catch(e){ toast("Découpage impossible : " + (e && e.message || "erreur")); }
+}
+function sheetSplit(){
+  const s = V.spl; if (!s) return; const m = docList("docs").find(x => x.id === s.mid);
+  const opts = [["", "À ignorer (lettre, résumé, facture…)"], ...ANNEXES.filter(a => a[0] !== "diag").map(a => [a[0], a[1]])];
+  const row = (c, i) => `<div class="card" style="padding:10px;gap:6px;margin:6px 0"><label style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" id="sp-on-${i}" ${c.k ? "checked" : ""}> Partie ${i + 1}</label>
+    ${dxS("sp-k-" + i, "Type de diagnostic", opts, c.k)}
+    <div style="display:flex;gap:8px"><label class="f" style="flex:1">Page de début<input id="sp-a-${i}" inputmode="numeric" value="${c.from}"></label><label class="f" style="flex:1">Page de fin<input id="sp-b-${i}" inputmode="numeric" value="${c.to}"></label></div>
+    ${c.k ? `<label class="f">Date d'édition lue<input id="sp-d-${i}" type="date" value="${esc(c.date || "")}"></label>${c.k === "plomb" || c.k === "amiante" ? `<label class="f">Résultat<select id="sp-r-${i}"><option value="">À préciser</option><option value="absence" ${c.res === "absence" ? "selected" : ""}>Absence</option><option value="presence" ${c.res === "presence" ? "selected" : ""}>Présence</option></select></label>` : ""}` : ""}</div>`;
+  openSheet(`<h2>Découper « ${esc(m ? m.nom : "dossier")} »</h2><div class="info">${s.secs.filter(c => c.k).length} partie(s) reconnue(s) sur ${s.total} pages. Le fichier complet est conservé tel quel (c'est lui qui part avec le bail) : chaque ligne créée ouvre seulement ses pages. Corrige le type ou les pages si besoin, décoche ce que tu ne veux pas.</div>${s.secs.map(row).join("")}
+    <div class="btns"><button class="btn" style="flex:1" data-act="spl-ok">Créer les lignes</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
+}
+function splSave(){
+  const s = V.spl; if (!s) return; const m = docList("docs").find(x => x.id === s.mid); if (!m) return;
+  const old = docList("docs").filter(x => x.parent === s.mid && !x.del); old.forEach(x => { x.del = true; x.upd = Date.now(); });
+  let n = 0;
+  s.secs.forEach((c, i) => { if (!$("#sp-on-" + i) || !$("#sp-on-" + i).checked) return; const k = dxV("sp-k-" + i); if (!k) return;
+    let a = Math.max(1, parseInt(dxV("sp-a-" + i), 10) || c.from), b = Math.min(s.total, parseInt(dxV("sp-b-" + i), 10) || c.to); if (b < a) b = a;
+    docList("docs").push({id:uid(), bien:m.bien, kind:"autre", nom:annexLabel(k) + " · p. " + a + (b > a ? "–" + b : ""), sub:k, fname:m.fname, date:dxV("sp-d-" + i) || m.date, type:"application/pdf", size:0, parent:m.id, pages:[a, b], res:$("#sp-r-" + i) ? $("#sp-r-" + i).value : "", upd:Date.now()}); n++; });
+  persist(); closeSheet(); render(); V.spl = null;
+  toast(n ? n + " ligne" + (n > 1 ? "s" : "") + " créée" + (n > 1 ? "s" : "") + " : le fichier complet est gardé pour le bail" : "Rien de créé");
+}
+async function splView(d){
+  const rec = await flGet(d.parent); if (!rec || !rec.buf) return toast("Fichier introuvable sur cet appareil");
+  try {
+    const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(rec.buf.slice(0))}).promise;
+    closeViewer(); const v = document.createElement("div"); v.id = "viewer";
+    v.innerHTML = `<div class="vbar"><span class="vt">${esc(d.nom)}</span><button class="mini" data-act="spl-full" data-id="${esc(d.parent)}">Fichier complet</button><button class="mini" data-act="vw-close">Fermer</button></div><div class="vimg" id="spl-pages" style="overflow:auto;padding:6px"></div>`;
+    document.body.appendChild(v); const box = v.querySelector("#spl-pages"), W = Math.max(280, (box.clientWidth || 360) - 12), a = (d.pages || [1, 1])[0], b = Math.min(pdf.numPages, (d.pages || [1, 1])[1]);
+    for (let i = a; i <= b; i++){ const pg = await pdf.getPage(i), v0 = pg.getViewport({scale:1}), sc = Math.min(2.2, 2 * W / v0.width), vp = pg.getViewport({scale:sc}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; cv.style.cssText = "width:100%;display:block;margin:0 0 8px;background:#fff";
+      box.appendChild(cv); await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; if (!document.getElementById("viewer")) return; }
+  } catch(e){ toast("Affichage impossible : " + (e && e.message || "erreur")); }
+}
+/* date relue pour une ligne issue d'un découpage : on relit ses pages dans le fichier complet */
+async function splReread(d){
+  const rec = await flGet(d.parent); if (!rec || !rec.buf) return {err:"fichier introuvable"};
+  const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(rec.buf.slice(0))}).promise, a = (d.pages || [1, 1])[0], b = Math.min(pdf.numPages, (d.pages || [1, 1])[1]); let txt = "";
+  for (let i = a; i <= Math.min(b, a + 2); i++){ const tc = await (await pdf.getPage(i)).getTextContent(); txt += " " + tc.items.map(t => t.str).join(" "); }
+  if (txt.replace(/\s/g, "").length < 80){ const pg = await pdf.getPage(a), vp = pg.getViewport({scale:2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; txt = await avOcr(cv); }
+  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt); if (!dt) return {err:"aucune date trouvée"};
+  d.date = dt; d.upd = Date.now(); return {date:dt, match};
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act^='spl-']"); if (!b) return; const a = b.dataset.act;
+  if (a === "spl-open") splStart(b.dataset.id);
+  else if (a === "spl-ok") splSave();
+  else if (a === "spl-full"){ const d = docList("docs").find(x => x.id === b.dataset.id); closeViewer(); if (d) viewFile(d.id, d.fname || d.nom); } });
 
 /* Lecture d'un bail existant (scan, PDF, photo) : remplit le formulaire de bail */
 const BK_MOIS = {janvier:1, fevrier:2, février:2, mars:3, avril:4, mai:5, juin:6, juillet:7, aout:8, août:8, septembre:9, octobre:10, novembre:11, decembre:12, décembre:12};
