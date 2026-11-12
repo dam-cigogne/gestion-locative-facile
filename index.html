@@ -1501,8 +1501,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.80";
+const APP_VERSION = "1.7.81";
 const CHANGELOG = [
+  {v:"1.7.81", date:"2026-11-12", titre:"Réception connectée : changer d'appareil, aperçu des modèles vierges", items:["Location › Candidats › Formulaire › Réglages : « 📲 Transférer sur un autre appareil » déménage la réception connectée (par exemple de l'iPhone vers l'iPad). L'ancien appareil relève d'abord les candidatures en attente, puis donne un paquet chiffré (à envoyer par AirDrop, Notes ou e-mail à toi-même) et un code de 8 caractères à taper sur le nouvel appareil. Le nouvel appareil (« 📥 Reprendre la réception d'un autre appareil ») vérifie la clé auprès de ton serveur avant d'activer ; ensuite, sur l'ancien, « ✓ C'est fait : couper la réception ici ». Le lien du formulaire envoyé aux candidats ne change pas. Les notifications sont à réactiver sur le nouvel appareil.","Modèles vierges (Mes modèles et Modèles vierges de mes logements) : bouton « 👁 Aperçu » sur les états des lieux et inventaires vierges, pour vérifier la liste à l'écran avant de l'imprimer.","Réception connectée : un envoi qui ne s'ouvre pas n'affiche plus seulement « illisible ». Un encadré orange explique pourquoi (chiffré avec une autre clé : ancien lien, lien d'un autre appareil ou du mode essai, envoi de test), dit quoi faire (renvoyer le lien de cet appareil) et propose « 🗑 Effacer ces envois du serveur ». Si une candidature s'ouvre mais que la fiche se remplit mal, elle est quand même gardée (« à compléter ») avec son texte et ses pièces, au lieu de rester sur le serveur. « Changer de clé » est bloqué en mode essai.","Réception connectée › Réglages : « 🧪 Test complet » chiffre une fausse candidature avec la clé de cet appareil, la dépose sur ton serveur, la relit, la déchiffre puis l'efface, et affiche chaque étape (✅ / ❌). Il dit si le problème vient de l'appareil, du serveur ou du lien envoyé."]},
   {v:"1.7.80", date:"2026-11-12", titre:"Modèles vierges de mes logements, modèle de bail vierge, remplissage du bail depuis mes documents", items:["Biens › Documents : nouvelle carte « Modèles vierges de mes logements », juste sous « Modèles vierges à imprimer ». Pour chaque appartement : état des lieux vierge, inventaire vierge (meublé) et bail, avec « prêt » ou « à créer ». « ☆ Créer le modèle vierge » le fait d'un coup à partir du dernier document du logement (sans les états) ; « 📄 PDF vierge » l'imprime ; « ✏️ Modifier » ouvre la liste ; pour le bail, « ➕ Créer le modèle de bail » ou « 👁 Aperçu ».","Modèles vierges de mes logements › Bail : « Créer / Modifier » ouvre le bail en mode modèle : le locataire, ses coordonnées et la date d'effet sont vides et cachés ; seules les infos de l'appartement restent. Un seul bouton « ☆ Enregistrer le modèle vierge » et « 👁 Aperçu ». Les aperçus du modèle n'affichent plus le nom du locataire actuel.","Bail : nouveau bouton « 🔎 Remplir avec mes documents déjà importés » : l'appli relit ton ancien bail gardé et tes pièces (DPE, mesurage loi Boutin, règlement de copropriété) et remplit surface, classe DPE, copropriété, chauffage, loyer… Chaque case remplie est surlignée en jaune avec « lu dans : … ». Zone tendue et loyers encadrés ne sont pas devinés (dépend de la commune)."]},
   {v:"1.7.79", date:"2026-11-12", titre:"Notifications de candidature, page Candidats plus lisible", items:["Réception connectée › « Créer mon serveur » : guide pas à pas en 7 étapes avec les noms exacts des menus Cloudflare, la vérification /ping et les messages d'erreur à reconnaître.","🔔 Notifications : dans Réglages de la réception connectée, « Activer les notifications ». À chaque nouveau candidat ou dossier, le téléphone affiche « 📬 Nouveau candidat ou nouveau dossier pour ta location », même appli fermée et écran verrouillé ; toucher la notification ouvre les candidats. Sur iPhone, l'appli doit être installée sur l'écran d'accueil. Il faut remettre à jour le code du serveur (version 2).","Nouveau bouton « Copier le code du serveur » (plus simple que le téléchargement sur téléphone).","Page Candidats refaite pour être lisible : la liste vient en premier, en grandes cartes (initiale, nom, étape en couleur, revenus comparés au loyer avec ✔ / ⚠ / ✖, barre des pièces reçues, date, et la prochaine étape à faire). Les nouvelles candidatures sont en tête avec la mention « Nouveau ». L'aide et la sauvegarde sont rangées en bas, repliées."]},
   {v:"1.7.78", date:"2026-11-12", titre:"Candidatures connectées (serveur perso) et réponse type Leboncoin", items:["Location › Candidats : nouvelle réception connectée, au choix. Avec ton propre serveur Cloudflare (gratuit), le candidat remplit le formulaire et sa candidature ou son dossier arrive tout seul dans l'appli, avec ses pièces, marqué 🆕. Plus de mail à recopier.","Sécurité : tout est chiffré sur le téléphone du candidat ; seule ton appli a la clé pour lire. Le serveur ne voit rien de lisible, chaque envoi est effacé dès qu'il est récupéré, et au plus tard au bout de 30 jours.","La réception par e-mail reste la méthode par défaut et marche toujours. Réglages de la réception connectée : bouton « Découvrir » ou « Réglages » dans la carte Formulaire de candidature (guide pas à pas et code du serveur à télécharger).","Annonce : boutons « Copier le titre » et « Copier le prix », lien de ton annonce enregistré pour chaque site, et une « Réponse type aux messages » à coller dans la messagerie Leboncoin avec le lien de ton formulaire."]},
@@ -1735,6 +1736,7 @@ const HELP = {
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
     "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
+    "Réception connectée sur un autre appareil : elle ne marche que sur un appareil à la fois (celui qui a la clé). Pour passer de l'iPhone à l'iPad : sur l'iPhone, Réglages de la réception › « 📲 Transférer sur un autre appareil » (paquet + code) ; sur l'iPad, « 📥 Reprendre la réception d'un autre appareil » ; puis sur l'iPhone « couper ici ». N'active pas une deuxième fois sur l'iPad : les candidats ayant le lien de l'iPhone n'arriveraient pas sur l'iPad.",
     "Réception connectée (facultative) : avec ton propre serveur Cloudflare gratuit, les candidatures et dossiers arrivent tout seuls dans l'appli (🆕), chiffrés sur le téléphone du candidat ; le serveur ne peut pas les lire et les efface dès réception (30 jours au plus). « Découvrir » dans la carte Formulaire de candidature.",
     "Annonce : « Réponse type aux messages » à copier dans la messagerie Leboncoin / PAP, avec le lien du formulaire ; boutons Copier le titre / le prix et lien de ton annonce par site.",
     "Permis de louer : si ton logement est dans une commune qui l'impose (Istres, centre ancien), active-le dans Réglages › Biens › Permis de louer. Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire.",
@@ -5323,7 +5325,7 @@ function dmodCard(){
   const L = dmods().sort((a, b) => a.kind.localeCompare(b.kind) || a.nom.localeCompare(b.nom)), id = V.bsel;
   return `<div class="card"><h2>Mes modèles</h2><div class="small muted">Tes listes types d'état des lieux et d'inventaire, et tes modèles de bail. Pour en créer un : ouvre un état des lieux, un inventaire ou le bail, puis « ☆ Enregistrer … modèle ».</div>
     <div class="rows">${L.map(m => `<div class="row" style="flex-wrap:wrap"><div class="main" style="min-width:60%"><div class="t">${m.bien === id ? "★ " : ""}${esc(m.nom)}</div><div class="s">${dmodLab(m.kind)} · ${dmodSize(m)} · ${m.bien ? esc(bienName(m.bien)) : "tous les logements"}</div></div>
-      <div class="btns" style="width:100%;margin:4px 0 0"><button class="mini" data-act="dm-use" data-id="${m.id}">Utiliser</button><button class="mini" data-act="dm-pdf" data-id="${m.id}">PDF vierge</button><button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button><button class="mini" data-act="dm-del" data-id="${m.id}">×</button></div></div>`).join("") }${bailModRows(id)}${!L.length && !bailModRows(id) ? '<div class="small muted" style="padding:8px 0">Aucun modèle pour l\'instant.</div>' : ""}</div></div>`;
+      <div class="btns" style="width:100%;margin:4px 0 0"><button class="mini" data-act="dm-use" data-id="${m.id}">Utiliser</button><button class="mini" data-act="dm-view" data-id="${m.id}">👁 Aperçu</button><button class="mini" data-act="dm-pdf" data-id="${m.id}">PDF vierge</button><button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button><button class="mini" data-act="dm-del" data-id="${m.id}">×</button></div></div>`).join("") }${bailModRows(id)}${!L.length && !bailModRows(id) ? '<div class="small muted" style="padding:8px 0">Aucun modèle pour l\'instant.</div>' : ""}</div></div>`;
 }
 document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, m = (S.dmods || []).find(x => x.id === b.dataset.id);
@@ -5338,10 +5340,11 @@ document.addEventListener("click", async ev => {
     case "dm-del": if (!m) break; openSheet(`<h2>Supprimer le modèle ?</h2><p style="margin:0">« ${esc(m.nom)} » sera retiré de tes modèles. Les documents déjà créés avec lui ne sont pas touchés.</p><div class="btns"><button class="btn danger" data-act="dm-del-ok" data-id="${m.id}">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break;
     case "dm-del-ok": if (!m) break; m.del = true; m.upd = Date.now(); persist(); closeSheet(); render(); break;
     case "dm-use": if (!m) break; V.dmPick = m.id; V.bsub = "loc"; render(); sheetNewDoc(m.kind, "entree"); break;
-    case "dm-pdf": { if (!m) break; toast("Création du PDF…"); try {
+    case "dm-view":
+    case "dm-pdf": { if (!m) break; toast(a === "dm-view" ? "Préparation de l'aperçu…" : "Création du PDF…"); try {
       const e = {id:"blank", bien:m.bien || V.bsel, type:"entree", date:"", loc:"", rem:"", elec:"", eau:"", gaz:"", cles:"", fumee:"", pieces:[], items:[]};
       if (m.kind === "edl") e.pieces = m.pieces.map(p => ({id:uid(), nom:p.nom, items:p.items.map(i => ({id:uid(), nom:i.nom, etat:"", com:"", ph:[]}))})); else e.items = m.items.map(i => ({id:uid(), grp:i.grp, nom:i.nom, qte:i.qte || "1", etat:"", com:""}));
-      const bytes = m.kind === "edl" ? await edlPdf(e) : invPdf(e); await saveFile(cleanName(m.nom) + ".pdf", bytes, "application/pdf"); } catch(err){ toast("PDF impossible : " + err.message); } break; }
+      const bytes = m.kind === "edl" ? await edlPdf(e) : invPdf(e); if (a === "dm-view") await relectOpen(cleanName(m.nom) + ".pdf", bytes); else await saveFile(cleanName(m.nom) + ".pdf", bytes, "application/pdf"); } catch(err){ toast("PDF impossible : " + err.message); } break; }
   }
 });
 
@@ -5351,7 +5354,7 @@ function vlogCard(cur){
   const row = (ic, lab, ok, sub, btns) => `<div class="row" style="flex-wrap:wrap;padding:8px 0"><div class="main" style="min-width:60%"><div class="t">${ic} ${lab} ${ok ? '<span class="chip ok">prêt</span>' : '<span class="chip warn">à créer</span>'}</div><div class="s">${sub}</div></div><div class="btns" style="width:100%;margin:4px 0 0">${btns}</div></div>`;
   const kindRow = (bien, kind) => { const m = dmods(kind).find(x => x.bien === bien), last = docList(kind).filter(x => x.bien === bien && !x.del).sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0], lab = kind === "edl" ? "État des lieux vierge" : "Inventaire du mobilier vierge";
     return row(kind === "edl" ? "🏠" : "🛋", lab, !!m, m ? esc(m.nom) + " · " + dmodSize(m) : last ? "Peut être créé d'un coup à partir du dernier " + (kind === "edl" ? "état des lieux" : "inventaire") + " (" + frDate(last.date) + "), sans les états." : "Pas encore de document pour ce logement : crée-en un (ou importe un ancien fichier), puis reviens ici.",
-      m ? `<button class="mini" data-act="dm-pdf" data-id="${m.id}">📄 PDF vierge</button><button class="mini" data-act="vl-edit" data-id="${m.id}">✏️ Modifier</button>${last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">↻ Reprendre le dernier</button>` : ""}<button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button>`
+      m ? `<button class="mini" data-act="dm-view" data-id="${m.id}">👁 Aperçu</button><button class="mini" data-act="dm-pdf" data-id="${m.id}">📄 PDF vierge</button><button class="mini" data-act="vl-edit" data-id="${m.id}">✏️ Modifier</button>${last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">↻ Reprendre le dernier</button>` : ""}<button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button>`
         : last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">☆ Créer le modèle vierge</button>` : `<button class="mini" data-act="vl-new" data-bien="${bien}" data-k="${kind}">➕ Créer ${kind === "edl" ? "l'état des lieux" : "l'inventaire"}</button>`); };
   const bailRow = bien => { const M = bailModel(bien); return row("📜", "Bail", !!M, M ? "Modèle enregistré le " + frDate(M.date) + " : le prochain bail est prérempli." : "Ouvre le bail, « 📥 Lire un bail existant » si tu en as un, relis, puis « ☆ Enregistrer le modèle ».",
     M ? `<button class="mini" data-act="bm-pdf" data-id="${bien}">👁 Aperçu</button><button class="mini" data-act="bm-use" data-mode="model" data-id="${bien}">✏️ Modifier</button>` : `<button class="mini" data-act="bm-use" data-mode="model" data-id="${bien}">➕ Créer le modèle de bail</button>`); };
@@ -6090,16 +6093,20 @@ async function cnxPull(silent){
     const priv = L.length ? await crypto.subtle.importKey("jwk", c.priv, {name:"ECDH", namedCurve:"P-256"}, false, ["deriveKey"]) : null;
     for (const it of L){
       if (!(c.done || []).includes(it.id)){
-        try { const g = await fetch(c.srv + "/g/" + it.id, {headers:H, cache:"no-store"}); if (!g.ok) continue;
-          const d = await cnxOpen(priv, new Uint8Array(await g.arrayBuffer())), res = await candImport(d.text, d.files, {src:"en ligne"});
-          if (!res) { bad++; continue; } res.c.nouv = 1; res.c.upd = Date.now(); n++;
-          c.done = (c.done || []).concat(it.id).slice(-200); persist();
-        } catch(e){ bad++; continue; } }
+        let d = null;
+        try { const g = await fetch(c.srv + "/g/" + it.id, {headers:H, cache:"no-store"}); if (!g.ok) continue; d = await cnxOpen(priv, new Uint8Array(await g.arrayBuffer())); }
+        catch(e){ bad++; c.bad = (c.bad || []).filter(x => x.id !== it.id).concat({id:it.id, t:it.t || 0, why:"cle"}).slice(-50); continue; }
+        /* déchiffré : on ne perd plus rien, même si la fiche ne se remplit pas bien */
+        let res = null; try { res = await candImport(d.text, d.files, {src:"en ligne"}); } catch(e){ res = null; }
+        if (!res){ try { const c2 = candFromParsed({nom:"Candidat (en ligne, à compléter)", message:String(d.text || "").slice(0, 20000)}); c2.src = "en ligne"; candList().push(c2); try { await candAttach(c2, d.files || []); } catch(e){} res = {c:c2}; } catch(e){ bad++; continue; } }
+        res.c.nouv = 1; res.c.upd = Date.now(); n++;
+        c.done = (c.done || []).concat(it.id).slice(-200); c.bad = (c.bad || []).filter(x => x.id !== it.id); persist(); }
       try { await fetch(c.srv + "/g/" + it.id, {method:"DELETE", headers:H}); } catch(e){}
     }
     c.last = Date.now(); persist(); if (n || !silent) render();
     if (n) toast("📥 " + n + (n > 1 ? " candidatures reçues" : " candidature reçue") + " en ligne");
-    else if (!silent) toast(bad ? bad + " envoi(s) illisible(s), laissé(s) sur le serveur" : "Aucune nouvelle candidature");
+    else if (!silent) toast(bad ? bad + " envoi(s) chiffré(s) avec une autre clé : voir l'explication dans l'encadré" : "Aucune nouvelle candidature");
+    if (bad || (c.bad || []).length) render();
   } catch(e){ if (!silent) toast("Serveur injoignable : " + (e.message || e)); }
   finally { CNX_BUSY = false; }
   return n;
@@ -6108,7 +6115,9 @@ function cnxBlock(bien){
   if (!cnxOn()) return `<div class="small muted" style="margin-top:4px">🔒 Nouveau : recevoir les candidatures <b>directement dans l'appli</b>, chiffrées, grâce à ton propre serveur (gratuit). <button class="mini" data-act="cnx-cfg">Découvrir</button></div>`;
   const c = cnxCfg(), nv = candList().filter(x => x.bien === bien && x.nouv && !x.del).length;
   return `<div class="info" style="margin-top:6px">🔒 <b>Réception connectée active</b> : les candidatures et dossiers arrivent tout seuls ici, chiffrés de bout en bout.${nv ? ` <b>${nv} nouveau${nv > 1 ? "x" : ""}</b>.` : ""}<br><span class="small muted">Dernier relevé : ${c.last ? new Date(c.last).toLocaleString("fr-FR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) : "jamais"}</span>
-    <div class="btns" style="margin-top:6px"><button class="btn sm" data-act="cnx-pull">📥 Relever maintenant</button><button class="btn sm ghost" data-act="cnx-cfg">Réglages</button></div></div>`;
+    <div class="btns" style="margin-top:6px"><button class="btn sm" data-act="cnx-pull">📥 Relever maintenant</button><button class="btn sm ghost" data-act="cnx-cfg">Réglages</button></div>
+    ${(c.bad || []).length ? `<div class="info" style="margin-top:8px;border:2px solid #C77D00;background:rgba(242,184,75,.15)"><b>⚠️ ${c.bad.length} envoi(s) impossible(s) à ouvrir</b> sur ton serveur. Ils ont été chiffrés avec une <b>autre clé</b> que celle de cet appareil : un ancien lien (avant « Changer de clé »), un lien créé sur un autre appareil ou en mode essai, ou un envoi de test. Personne ne peut plus les lire, ni toi ni le serveur.<br><b>À faire</b> : copie le lien ci-dessous (celui de cet appareil) et renvoie-le à la personne, ou refais ton essai avec. Puis efface ces envois.
+      <div class="btns" style="margin-top:6px"><button class="btn sm ghost" data-act="cnx-badclr">🗑 Effacer ces envois du serveur</button><button class="btn sm ghost" data-act="cnx-selftest">🧪 Test complet</button></div></div>` : ""}</div>`;
 }
 function sheetCnx(){
   const c = cnxCfg() || {}, on = cnxOn();
@@ -6116,8 +6125,9 @@ function sheetCnx(){
     <div class="info">Le candidat remplit le formulaire. Sa candidature et ses pièces sont <b>chiffrées sur son téléphone</b>, déposées sur <b>ton</b> serveur Cloudflare, puis récupérées par l'appli et <b>effacées du serveur</b>. Le serveur ne peut pas les lire ; ce qui n'est pas récupéré s'efface au bout de 30 jours. Sans serveur, la réception par e-mail continue de marcher.</div>
     <label class="f">Adresse de ton serveur<input id="cx-srv" inputmode="url" autocapitalize="off" placeholder="https://glf-cand.mon-compte.workers.dev" value="${esc(c.srv || "")}"></label>
     <div class="btns"><button class="btn sm ghost" data-act="cnx-test">Tester la connexion</button><button class="btn sm" style="flex:1" data-act="cnx-save">${on ? "Enregistrer" : "Activer la réception connectée"}</button></div>
-    ${on ? `<div class="btns"><button class="btn sm ghost" data-act="cnx-off">Revenir à l'e-mail seul</button><button class="btn sm danger" data-act="cnx-rekey">Changer de clé</button></div>
+    ${on ? `<div class="btns"><button class="btn sm" data-act="cnx-selftest">🧪 Test complet (chiffrer, déposer, relire)</button></div><div class="btns"><button class="btn sm ghost" data-act="cnx-off">Revenir à l'e-mail seul</button><button class="btn sm danger" data-act="cnx-rekey">Changer de clé</button></div>
     <div class="small muted">« Changer de clé » rend les liens déjà envoyés inutilisables (à faire si un lien a circulé là où il ne fallait pas). Relève d'abord les candidatures en attente.</div>` : ""}
+    ${on ? `<div class="card" style="padding:12px;background:var(--bg);margin:0"><div style="font-weight:700;font-size:16px">📲 Changer d'appareil</div><div class="small" style="margin:4px 0">La réception marche sur <b>un seul appareil</b> : celui-ci. Pour gérer tes candidats sur un autre (ex. l'iPad au lieu de l'iPhone), déménage-la : le lien du formulaire ne change pas.</div><div class="btns"><button class="btn sm" data-act="cnx-tx">📲 Transférer sur un autre appareil</button></div></div>` : `<div class="btns"><button class="btn sm ghost" style="flex:1" data-act="cnx-rx">📥 Reprendre la réception d'un autre appareil</button></div><div class="small muted">${c.moved ? "Réception transférée sur un autre appareil le " + frDate(c.moved) + ". " : ""}Elle est déjà active sur ton autre téléphone ou ta tablette ? N'active pas ici une deuxième fois : reprends-la avec ce bouton (l'ancien appareil te donne un paquet et un code).</div>`}
     ${on ? cnxNotifBox() : ""}
     <div class="small muted"><b>Important</b> : la clé de lecture est sur cet appareil, dans tes données (et dans ta sauvegarde .json). Si tu effaces l'appli sans sauvegarde, les candidatures en attente sur le serveur deviennent illisibles.</div>
     <details class="card" style="padding:10px;background:var(--bg)" ${on ? "" : "open"}><summary style="font-weight:700;cursor:pointer">Créer mon serveur (gratuit, environ 15 minutes)</summary>
@@ -6129,7 +6139,7 @@ function sheetCnx(){
         <li><b>Relier le stockage</b> : dans ton Worker glf-cand, onglet <b>Paramètres</b> › section <b>Liaisons</b> › <b>+ Ajouter une liaison</b> › <b>Espace de noms KV</b> › Ajouter. Nom de la variable : <b>CAND</b> (en majuscules, exactement), espace de noms : <b>glf-cand</b> › <b>Ajouter une liaison</b>.</li>
         <li><b>Le code</b> : appuie ci-dessous sur « Copier le code du serveur ». Dans le Worker, bouton <b>Modifier le code</b> (en haut à droite) › clique dans le code › tout sélectionner (Ctrl+A, ou Cmd+A sur Mac) › colle (Ctrl+V / Cmd+V) › bouton <b>Déployer</b>.</li>
         <li><b>Vérifier</b> : ouvre <b>https://glf-cand.TON-SOUS-DOMAINE.workers.dev/ping</b> dans le navigateur. Tu dois lire <b>{"ok":true,"v":1}</b>. Si tu lis « Stockage KV « CAND » non relié », refais l'étape 4. Si tu lis « Hello World », le code n'a pas été déployé : refais l'étape 5.</li>
-        <li><b>Dans l'appli</b>, sur le téléphone où tu gères tes candidats : colle l'adresse (sans /ping) dans le champ au-dessus › « Tester la connexion » › « Activer ». Active-la sur <b>un seul appareil</b> : c'est lui qui garde la clé de lecture.</li></ol>
+        <li><b>Dans l'appli</b>, sur le téléphone où tu gères tes candidats : colle l'adresse (sans /ping) dans le champ au-dessus › « Tester la connexion » › « Activer ». Active-la sur <b>un seul appareil</b> : c'est lui qui garde la clé de lecture. Pour changer d'appareil plus tard : « 📲 Transférer sur un autre appareil ».</li></ol>
       <div class="info" style="font-size:14px">Tu as déjà un serveur ? Pour les notifications, il faut sa <b>version 2</b> : refais seulement l'étape 5 (copier le code, Modifier le code, tout remplacer, Déployer). Vérifie ensuite /ping : il doit afficher <b>"v":2</b>.</div>
       <div class="btns"><button class="btn sm" data-act="cnx-copy">Copier le code du serveur</button><button class="btn sm ghost" data-act="cnx-code">Télécharger le code (.js)</button></div>
       <div class="small muted">Gratuit : l'offre gratuite de Cloudflare (100 000 requêtes par jour, 1 000 écritures par jour) dépasse très largement les besoins d'une location. Chaque propriétaire crée <b>son propre</b> serveur : personne d'autre ne voit passer ses candidatures.</div></details>
@@ -6155,12 +6165,102 @@ document.addEventListener("click", async ev => {
     const c = cnxCfg(); if (c && c.priv && c.srv === srv){ c.on = true; persist(); } else await cnxSetup(srv);
     closeSheet(); render(); toast("🔒 Réception connectée activée : envoie le lien du formulaire aux candidats"); return;
   }
+  if (a === "cnx-badclr"){ const c = cnxCfg(); if (!c) return; let k = 0; for (const x of c.bad || []){ try { const r = await fetch(c.srv + "/g/" + x.id, {method:"DELETE", headers:{"X-Tok":c.tok}}); if (r.ok) k++; } catch(e){} } c.bad = []; persist(); render(); toast(k + " envoi(s) illisible(s) effacé(s) du serveur"); return; }
   if (a === "cnx-off"){ const c = cnxCfg(); if (c){ c.on = false; persist(); } closeSheet(); render(); toast("Réception par e-mail seulement"); return; }
-  if (a === "cnx-rekey"){ const c = cnxCfg(); if (!c) return; await cnxPull(true); if (c.notif) await cnxNotifOff().catch(() => {}); await cnxSetup(c.srv); closeSheet(); render(); toast("Nouvelle clé : renvoie le nouveau lien aux candidats"); return; }
+  if (a === "cnx-rekey"){ if (DEMO) return toast("Mode essai ou démo : impossible ici"); const c = cnxCfg(); if (!c) return; await cnxPull(true); if (c.notif) await cnxNotifOff().catch(() => {}); await cnxSetup(c.srv); closeSheet(); render(); toast("Nouvelle clé : renvoie le nouveau lien aux candidats"); return; }
 });
 /* relevé automatique : à l'ouverture, puis au retour sur l'appli (au plus toutes les 2 minutes) */
 setTimeout(() => cnxPull(true), 2500);
 document.addEventListener("visibilitychange", () => { const c = cnxCfg(); if (document.visibilityState === "visible" && c && Date.now() - (c.last || 0) > 120000) cnxPull(true); });
+/* ---------- Transférer la réception connectée sur un autre appareil (iPhone → iPad, ou l'inverse) ----------
+   L'ancien appareil fabrique un « paquet » chiffré (clé de lecture, jeton, adresse du serveur) avec un code de 8 caractères (PBKDF2 + AES-GCM).
+   Le paquet et le code passent par deux chemins différents ; le nouvel appareil vérifie le serveur avant d'activer ; l'ancien coupe ensuite sa réception. */
+const CNX_TX_AB = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const cnxUnb = x => { x = String(x || "").replace(/-/g, "+").replace(/_/g, "/"); while (x.length % 4) x += "="; return Uint8Array.from(atob(x), ch => ch.charCodeAt(0)); };
+async function cnxTxKey(code, salt){ const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(code.replace(/[^A-Z0-9]/gi, "").toUpperCase()), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:200000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]); }
+async function cnxTxMake(){ const c = cnxCfg(), r = crypto.getRandomValues(new Uint8Array(8)), code = [...r].map(x => CNX_TX_AB[x % CNX_TX_AB.length]).join(""), salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify({srv:c.srv, tok:c.tok, box:c.box, pub:c.pub, priv:c.priv, vapid:c.vapid || null, done:c.done || []}));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, await cnxTxKey(code, salt), data)), all = new Uint8Array(28 + ct.length); all.set(salt); all.set(iv, 16); all.set(ct, 28);
+  return {code:code.slice(0, 4) + "-" + code.slice(4), pack:"GLFCNX1." + b64uE(all)}; }
+async function cnxTxOpen(pack, code){ const m = /GLFCNX1\.([A-Za-z0-9_-]+)/.exec(String(pack || "")); if (!m) throw new Error("paquet incomplet : copie-le en entier");
+  const u = cnxUnb(m[1]); let d; try { d = await crypto.subtle.decrypt({name:"AES-GCM", iv:u.slice(16, 28)}, await cnxTxKey(code, u.slice(0, 16)), u.slice(28)); } catch(e){ throw new Error("code faux (ou paquet abîmé)"); }
+  return JSON.parse(new TextDecoder().decode(d)); }
+async function sheetCnxTx(){
+  if (!cnxOn()) return toast("La réception connectée n'est pas active sur cet appareil");
+  if (DEMO) return toast("Mode essai ou démo : le transfert n'est pas possible ici");
+  toast("Relève des candidatures en attente…"); await cnxPull(true); const t = await cnxTxMake(); V.cnxTx = t;
+  openSheet(`<h2>📲 Transférer sur un autre appareil</h2>
+    <div class="info">La réception connectée ne marche que sur <b>un appareil à la fois</b> (celui qui a la clé de lecture). Ici, tu la <b>déménages</b> : le nouvel appareil reçoit la clé, puis celui-ci arrête de recevoir. Le lien du formulaire déjà envoyé aux candidats <b>reste le même</b>.</div>
+    <ol class="small" style="padding-left:18px;line-height:1.6;margin:8px 0">
+      <li>Sur <b>cet appareil</b> : « Envoyer le paquet » (AirDrop, Notes, e-mail à toi-même…). Le paquet est chiffré : sans le code, il ne sert à rien.</li>
+      <li>Sur <b>le nouvel appareil</b> (mis à jour, pas en mode essai) : Location › Candidats › Formulaire › Réglages › « 📥 Reprendre la réception d'un autre appareil ». Colle le paquet et <b>tape le code</b> ci-dessous (ne l'envoie pas avec le paquet).</li>
+      <li>Quand le nouvel appareil affiche « Reprise réussie », reviens ici et touche « ✓ C'est fait : couper ici ».</li>
+      <li>Sur le nouvel appareil, réactive les 🔔 notifications si tu les veux.</li></ol>
+    <div style="text-align:center;margin:10px 0"><div class="small muted">Code à taper sur le nouvel appareil</div><div style="font-size:34px;font-weight:800;letter-spacing:4px">${esc(t.code)}</div></div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="cnx-txshare">📤 Envoyer le paquet</button><button class="btn ghost" data-act="cnx-txcopy">Copier le paquet</button></div>
+    <div class="btns"><button class="btn sm danger" style="flex:1" data-act="cnx-txdone">✓ C'est fait : couper la réception ici</button></div>
+    <div class="small muted">Tant que tu n'as pas touché « couper ici », cet appareil continue de recevoir : si le transfert rate, rien n'est perdu. Ne coupe pas avant d'avoir vu « Reprise réussie » sur le nouvel appareil.</div>
+    <div class="btns"><button class="btn ghost" data-act="cnx-cfg">‹ Retour</button></div>`);
+}
+function sheetCnxRx(){
+  openSheet(`<h2>📥 Reprendre la réception d'un autre appareil</h2>
+    <div class="info">Sur l'<b>ancien appareil</b> : Location › Candidats › Formulaire › Réglages › « 📲 Transférer sur un autre appareil ». Il t'affiche un <b>code</b> et t'envoie un <b>paquet</b> (texte qui commence par GLFCNX1.).</div>
+    <label class="f">Paquet reçu (colle tout le texte)<textarea id="cx-pack" autocapitalize="off" autocorrect="off" spellcheck="false" style="min-height:90px" placeholder="GLFCNX1.…"></textarea></label>
+    <label class="f">Code affiché sur l'ancien appareil<input id="cx-code" autocapitalize="characters" autocomplete="off" placeholder="ABCD-1234" style="font-size:22px;letter-spacing:3px;text-transform:uppercase"></label>
+    <div class="btns"><button class="btn" style="flex:1" data-act="cnx-rxgo">📥 Reprendre la réception ici</button><button class="btn ghost" data-act="cnx-cfg">‹ Retour</button></div>
+    <div class="small muted">Si cet appareil avait déjà sa propre réception activée, elle est remplacée par celle de l'ancien appareil (les liens que tu as envoyés depuis l'ancien continuent de marcher).</div>`);
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act^='cnx-tx'],[data-act^='cnx-rx']"); if (!b) return; const a = b.dataset.act;
+  if (a === "cnx-tx") return sheetCnxTx().catch(e => toast("Transfert impossible : " + (e.message || e)));
+  if (a === "cnx-rx") return sheetCnxRx();
+  if (a === "cnx-txcopy"){ try { await navigator.clipboard.writeText(V.cnxTx.pack); toast("Paquet copié (le code n'est pas dedans)"); } catch(e){ toast("Copie impossible : utilise « Envoyer le paquet »"); } return; }
+  if (a === "cnx-txshare"){ const txt = V.cnxTx.pack; if (navigator.share){ try { await navigator.share({title:"Réception des candidatures (paquet chiffré)", text:txt}); return; } catch(e){ if (e && e.name === "AbortError") return; } } try { await navigator.clipboard.writeText(txt); toast("Paquet copié : colle-le dans un message à toi-même"); } catch(e){ toast("Partage impossible ici"); } return; }
+  if (a === "cnx-txdone"){ const c = cnxCfg(); if (!c) return; try { const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, no) => setTimeout(() => no(new Error("sw")), 1500))]), sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch(e){}
+    S.cfg.cnx = {on:false, srv:c.srv, moved:todayIso(), done:c.done || []}; V.cnxTx = null; persist(); closeSheet(); render(); toast("Réception coupée ici : c'est le nouvel appareil qui reçoit maintenant"); return; }
+  if (a === "cnx-rxgo"){ if (DEMO) return toast("Mode essai ou démo : quitte-le d'abord, puis recommence");
+    const pack = ($("#cx-pack") || {}).value || "", code = ($("#cx-code") || {}).value || ""; if (code.replace(/[^A-Z0-9]/gi, "").length !== 8) return toast("Le code a 8 caractères (ex. ABCD-1234)");
+    let o; try { toast("Ouverture du paquet…"); o = await cnxTxOpen(pack, code); } catch(e){ return toast("Échec : " + e.message); }
+    if (!o || !o.srv || !o.tok || !o.priv || !cnxSrvOk(o.srv)) return toast("Paquet invalide");
+    try { const r = await fetch(o.srv + "/l", {headers:{"X-Tok":o.tok}, cache:"no-store"}); if (!r.ok) throw new Error("code " + r.status); } catch(e){ return toast("Le serveur refuse cette clé (" + (e.message || e) + ") : rien n'a été changé"); }
+    S.cfg = S.cfg || {}; S.cfg.cnx = {on:true, srv:o.srv, tok:o.tok, box:o.box, pub:o.pub, priv:o.priv, vapid:o.vapid || undefined, done:o.done || [], last:0, recu:todayIso()}; persist();
+    openSheet(`<h2>✅ Reprise réussie</h2><div class="info">Cet appareil reçoit maintenant les candidatures et les dossiers. Le lien du formulaire ne change pas.</div>
+      <ol class="small" style="padding-left:18px;line-height:1.6"><li>Sur l'<b>ancien appareil</b>, touche « ✓ C'est fait : couper la réception ici ».</li><li>Ici, active les 🔔 notifications si tu les veux (Réglages de la réception connectée).</li></ol>
+      <div class="btns"><button class="btn" style="flex:1" data-act="cnx-cfg">Réglages de la réception</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+    render(); setTimeout(() => cnxPull(true), 400); return; }
+});
+/* ---------- Diagnostic : chiffre une fausse candidature avec la clé publique de CET appareil, la dépose, la relit et l'efface ---------- */
+async function cnxSelfTest(){
+  const c = cnxCfg(); if (!cnxOn()) return toast("Réception connectée non active ici"); if (DEMO) return toast("Mode essai ou démo : quitte-le d'abord");
+  const step = []; const out = (ok, msg) => { step.push((ok ? "✅ " : "❌ ") + msg); };
+  openSheet(`<h2>🧪 Test complet de la réception</h2><div class="small muted" id="cx-st">Test en cours (jusqu'à 30 secondes)…</div><div class="btns"><button class="btn ghost" data-act="cnx-cfg">‹ Retour</button></div>`);
+  const show = () => { const el = document.getElementById("cx-st"); if (el) el.innerHTML = step.join("<br>"); };
+  try {
+    const unb = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), ch => ch.charCodeAt(0)); };
+    const plainTxt = "CANDIDATURE – test de l'appli\nNom : Test Appli\nMessage : test automatique, à ignorer";
+    const head = new TextEncoder().encode(JSON.stringify({v:1, kind:"cand", text:plainTxt, t:Date.now(), files:[]})), plain = new Uint8Array(4 + head.length); new DataView(plain.buffer).setUint32(0, head.length); plain.set(head, 4);
+    const P = {name:"ECDH", namedCurve:"P-256"}, pub = await crypto.subtle.importKey("raw", unb(c.pub), P, false, []), eph = await crypto.subtle.generateKey(P, true, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({name:"ECDH", public:pub}, eph.privateKey, {name:"AES-GCM", length:256}, false, ["encrypt"]);
+    const iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, plain)), epk = new Uint8Array(await crypto.subtle.exportKey("raw", eph.publicKey));
+    const body = new Uint8Array(78 + ct.length); body[0] = 1; body.set(epk, 1); body.set(iv, 66); body.set(ct, 78);
+    out(true, "Chiffrement avec la clé publique de cet appareil"); show();
+    const priv = await crypto.subtle.importKey("jwk", c.priv, P, false, ["deriveKey"]);
+    try { const d0 = await cnxOpen(priv, body); out(d0.text === plainTxt, "Clé de lecture de cet appareil : " + (d0.text === plainTxt ? "elle correspond au lien" : "contenu différent")); }
+    catch(e){ out(false, "Clé de lecture de cet appareil : elle NE correspond PAS à la clé du lien (" + (e.message || e) + ")"); show(); return; }
+    show();
+    const r = await fetch(c.srv + "/d/" + c.box, {method:"POST", body, headers:{"Content-Type":"application/octet-stream"}}), j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.id){ out(false, "Dépôt sur le serveur refusé (" + (j.err || r.status) + ")"); show(); return; } out(true, "Dépôt sur ton serveur"); show();
+    let buf = null; for (let i = 0; i < 10 && !buf; i++){ const g = await fetch(c.srv + "/g/" + j.id, {headers:{"X-Tok":c.tok}, cache:"no-store"}); if (g.ok) buf = new Uint8Array(await g.arrayBuffer()); else await new Promise(z => setTimeout(z, 2500)); }
+    if (!buf){ out(false, "Relecture sur le serveur : pas encore visible au bout de 25 s (le stockage Cloudflare peut mettre jusqu'à 1 minute)"); show(); return; }
+    out(buf.length === body.length, "Relecture sur le serveur (" + buf.length + " octets reçus, " + body.length + " envoyés)");
+    try { const d = await cnxOpen(priv, buf); out(d.text === plainTxt, "Déchiffrement après passage par le serveur"); } catch(e){ out(false, "Déchiffrement après passage par le serveur (" + (e.message || e) + ")"); }
+    await fetch(c.srv + "/g/" + j.id, {method:"DELETE", headers:{"X-Tok":c.tok}}).catch(() => {}); out(true, "Envoi de test effacé du serveur");
+    step.push(step.every(x => x.startsWith("✅")) ? "<br><b>Tout marche sur cet appareil.</b> Si une candidature ne s'ouvre pas, c'est qu'elle a été envoyée avec un autre lien (ancien, autre appareil, mode essai ou navigateur Safari à part de l'appli installée) : renvoie le lien affiché ici." : "<br><b>Un point bloque</b> : envoie une capture de cet écran à Claude.");
+  } catch(e){ out(false, "Erreur : " + (e.message || e)); }
+  show();
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act=cnx-selftest]"); if (b) cnxSelfTest(); });
 
 /* ============ Envoyer au locataire : le PDF part par partage, e-mail ou SMS, avec les coordonnées déjà connues ============ */
 let SEND = null, PEND = null, PV = false;
