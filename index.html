@@ -1501,8 +1501,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.79";
+const APP_VERSION = "1.7.80";
 const CHANGELOG = [
+  {v:"1.7.80", date:"2026-11-12", titre:"Modèles vierges de mes logements, modèle de bail vierge, remplissage du bail depuis mes documents", items:["Biens › Documents : nouvelle carte « Modèles vierges de mes logements », juste sous « Modèles vierges à imprimer ». Pour chaque appartement : état des lieux vierge, inventaire vierge (meublé) et bail, avec « prêt » ou « à créer ». « ☆ Créer le modèle vierge » le fait d'un coup à partir du dernier document du logement (sans les états) ; « 📄 PDF vierge » l'imprime ; « ✏️ Modifier » ouvre la liste ; pour le bail, « ➕ Créer le modèle de bail » ou « 👁 Aperçu ».","Modèles vierges de mes logements › Bail : « Créer / Modifier » ouvre le bail en mode modèle : le locataire, ses coordonnées et la date d'effet sont vides et cachés ; seules les infos de l'appartement restent. Un seul bouton « ☆ Enregistrer le modèle vierge » et « 👁 Aperçu ». Les aperçus du modèle n'affichent plus le nom du locataire actuel.","Bail : nouveau bouton « 🔎 Remplir avec mes documents déjà importés » : l'appli relit ton ancien bail gardé et tes pièces (DPE, mesurage loi Boutin, règlement de copropriété) et remplit surface, classe DPE, copropriété, chauffage, loyer… Chaque case remplie est surlignée en jaune avec « lu dans : … ». Zone tendue et loyers encadrés ne sont pas devinés (dépend de la commune)."]},
   {v:"1.7.79", date:"2026-11-12", titre:"Notifications de candidature, page Candidats plus lisible", items:["Réception connectée › « Créer mon serveur » : guide pas à pas en 7 étapes avec les noms exacts des menus Cloudflare, la vérification /ping et les messages d'erreur à reconnaître.","🔔 Notifications : dans Réglages de la réception connectée, « Activer les notifications ». À chaque nouveau candidat ou dossier, le téléphone affiche « 📬 Nouveau candidat ou nouveau dossier pour ta location », même appli fermée et écran verrouillé ; toucher la notification ouvre les candidats. Sur iPhone, l'appli doit être installée sur l'écran d'accueil. Il faut remettre à jour le code du serveur (version 2).","Nouveau bouton « Copier le code du serveur » (plus simple que le téléchargement sur téléphone).","Page Candidats refaite pour être lisible : la liste vient en premier, en grandes cartes (initiale, nom, étape en couleur, revenus comparés au loyer avec ✔ / ⚠ / ✖, barre des pièces reçues, date, et la prochaine étape à faire). Les nouvelles candidatures sont en tête avec la mention « Nouveau ». L'aide et la sauvegarde sont rangées en bas, repliées."]},
   {v:"1.7.78", date:"2026-11-12", titre:"Candidatures connectées (serveur perso) et réponse type Leboncoin", items:["Location › Candidats : nouvelle réception connectée, au choix. Avec ton propre serveur Cloudflare (gratuit), le candidat remplit le formulaire et sa candidature ou son dossier arrive tout seul dans l'appli, avec ses pièces, marqué 🆕. Plus de mail à recopier.","Sécurité : tout est chiffré sur le téléphone du candidat ; seule ton appli a la clé pour lire. Le serveur ne voit rien de lisible, chaque envoi est effacé dès qu'il est récupéré, et au plus tard au bout de 30 jours.","La réception par e-mail reste la méthode par défaut et marche toujours. Réglages de la réception connectée : bouton « Découvrir » ou « Réglages » dans la carte Formulaire de candidature (guide pas à pas et code du serveur à télécharger).","Annonce : boutons « Copier le titre » et « Copier le prix », lien de ton annonce enregistré pour chaque site, et une « Réponse type aux messages » à coller dans la messagerie Leboncoin avec le lien de ton formulaire."]},
   {v:"1.7.77", date:"2026-11-12", titre:"CAF : ton lien vers l'espace bailleur, effacer la fin du bail", items:["Biens › Locataires › CAF : le bouton ouvre maintenant l'espace partenaires de la CAF (partenaires.caf.fr). Tu peux coller ton propre lien (copié depuis ton espace bailleur, par exemple la page du locataire dans ta CAF) : le bouton devient « Ouvrir mon espace CAF de … ». Le lien reste dans tes données et n'est accepté que s'il est sur caf.fr.","Fiche du locataire : « Effacer la date » (fin du bail, etc.) marche vraiment sur iPhone et iPad. Le bouton était dans le libellé du champ : le toucher rouvrait le calendrier qui remettait une date. Il est maintenant sous le champ. En effaçant la fin du bail puis « Enregistrer », le locataire redevient « en cours » (même s'il avait été clôturé par erreur)."]},
@@ -1778,6 +1779,7 @@ const HELP = {
     "Original / Retranscrit : quand la lecture est bonne, « Valider la retranscription » prépare la sortie en attente (même si le locataire ne part pas) ; « Corriger » ouvre le document, « Relire » refait la lecture.",
     "Comparer (Biens › Documents) : « Entrée / Sortie » montre les différences ligne par ligne ; « Original / Retranscrit » vérifie qu'un document importé a été bien lu ; bouton PDF pour garder le comparatif.",
     "Factures du bien : « Scanner / ajouter » (photo ou plusieurs fichiers), vignettes à cocher, puis « Envoyer » pour envoyer plusieurs factures en un seul PDF.",
+    "Modèles vierges de mes logements (Biens › Documents) : pour chaque appartement, son état des lieux, son inventaire et son bail types au même endroit ; « ☆ Créer le modèle vierge » le fait à partir du dernier document du logement.",
     "Modèles vierges à imprimer : bail, état des lieux, inventaire (meublé) et lettres types, sans aucune donnée, à remplir à la main.",
     "Mes modèles : tes propres listes d'état des lieux et d'inventaire, avec le nom de ton choix (ex. « État des lieux vierge T2 »). On les crée depuis un document (« ☆ Enregistrer comme modèle »), on les retrouve ici pour les utiliser, les imprimer vierges, les renommer ou les supprimer ; le modèle d'un logement est proposé d'office à la création.",
     "Pièces à joindre au bail : importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail.",
@@ -4115,6 +4117,7 @@ function viewDocs(){
   <div class="card"><h2>Modèles vierges à imprimer</h2><div class="small muted">Documents types sans aucune donnée, à imprimer et remplir à la main. Pour un document rempli avec un locataire, va dans l'onglet Locataires.</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="blank" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="blank" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="blank" data-v="rappel">Rappel avant état de sortie</button></div></div>
+  ${typeof vlogCard === "function" ? vlogCard(id) : ""}
   ${annexOverview()}
   <div class="card" id="pj-card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. La date d'édition de chaque pièce sert à voir d'un coup d'œil si elle est à jour, bientôt périmée ou à refaire ; ⚙ règle la durée de validité.</div>
     ${annexRows(id)}</div>
@@ -4324,10 +4327,10 @@ function invPdf(e){
 /* ---------- Bail meublé ---------- */
 const endBail = (debut, mois) => { if (!debut) return ""; const x = new Date(debut + "T12:00:00Z"); x.setUTCMonth(x.getUTCMonth() + mois); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); };
 const optSel = (id, label, list, val) => dxS(id, label, list.map(x => [x, x]), val);
-function sheetBail(){
+function sheetBail(mode){
   const id = V.bsel, t = tenantFor(id, todayIso()) || {}, de = bienDesc(id), c = bailleurInfo(), lhc = t.loyer ? r2(N(t.loyer) - N(t.charges)) : "";
   openSheet(`<h2>${bkind(id) === "vide" ? "Bail logement vide" : "Bail meublé"} · ${esc(bienName(id))}</h2><div class="info">Contrat de location ${bkind(id) === "vide" ? "non meublée" : "meublée"}, résidence principale, établi d'après le contrat type du décret n° 2015-587. Relis chaque champ avant de le faire signer.</div>
-    <div class="btns"><label class="btn ghost" style="flex:1;cursor:pointer;text-align:center">📥 Lire un bail existant (scan, PDF, photo)<input type="file" id="bk-file" accept="application/pdf,image/*" hidden></label></div><div class="small muted" id="bk-note">Reprend les champs d'un ancien bail pour le refaire au format de l'appli. L'original est gardé pour comparer (Documents › Comparer › Original / Retranscrit › Bail).</div>${bailModel(id) ? `<div class="info" style="margin-top:6px">☆ Champs du logement repris de ton <b>modèle de bail</b> (enregistré le ${frDate(bailModel(id).date)}). Le locataire, la date d'effet et ses coordonnées restent à remplir.</div>` : ""}
+    <div class="btns"><label class="btn ghost" style="flex:1;cursor:pointer;text-align:center">📥 Lire un bail existant (scan, PDF, photo)<input type="file" id="bk-file" accept="application/pdf,image/*" hidden></label></div><div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-auto">🔎 Remplir avec mes documents déjà importés (ancien bail, DPE, mesurage…)</button></div><div class="small muted" id="bk-note">Reprend les champs d'un ancien bail pour le refaire au format de l'appli. L'original est gardé pour comparer (Documents › Comparer › Original / Retranscrit › Bail).</div>${bailModel(id) ? `<div class="info" style="margin-top:6px">☆ Champs du logement repris de ton <b>modèle de bail</b> (enregistré le ${frDate(bailModel(id).date)}). Le locataire, la date d'effet et ses coordonnées restent à remplir.</div>` : ""}
     ${dxF("bl-bail", "Bailleur (nom, prénom)", c.nom)}${dxF("bl-badr", "Adresse du bailleur", c.adr)}${dxF("bl-loc", "Locataire (nom, prénom)", t.nom || "")}${dxF("bl-adr", "Adresse du logement", bienAdr(id))}
     <div class="grid2">${dxF("bl-type", "Nature du logement", de.type || "Appartement")}${dxF("bl-surf", "Surface habitable (m²)", de.surface || "", 'inputmode="decimal"')}</div>
     <div class="grid2">${dxF("bl-etage", "Étage / lot", de.etage || "")}${dxF("bl-pieces", "Pièces principales", de.pieces || "", 'inputmode="numeric"')}</div>
@@ -4348,14 +4351,22 @@ function sheetBail(){
     ${dxF("bl-ville", "Fait à", (S.cfg && S.cfg.ville) || "")}
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-model">☆ ${bailModel(id) ? "Mettre à jour" : "Enregistrer"} le modèle de bail de ce logement</button></div><div class="small muted">Le modèle garde tout sauf le locataire, la date d’effet et ses coordonnées : le prochain bail de ce logement sera prérempli pareil.</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-rel">PDF de relecture</button><button class="btn ghost" style="flex:1" data-act="bail-pre">Envoyer en pré-lecture au locataire</button></div><div class="btns"><button class="btn" style="flex:1" data-act="bail-pdf" data-send="Bail de location">Créer le bail (PDF)</button><button class="btn" style="flex:1" data-act="bail-sign">Faire signer à l'écran</button></div><div class="btns"><button class="btn ghost" style="flex:1" data-act="bail-paper">Signer sur papier (1 page à imprimer)</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>${jjBailBox(id)}<div class="small muted">Signature à l'écran : simple et sans imprimante, preuve moins forte. Papier : tu imprimes seulement la dernière page, tu la fais signer à la main et tu la rescannes ici.</div>`);
-  bailModelFill(id);
+  bailModelFill(id); V.bailMode = mode === "model" ? "model" : ""; if (V.bailMode) bailModelMode(id);
 }
 /* Modèle de bail par logement : tout sauf ce qui dépend du locataire */
-const BAIL_PERSO = ["loc", "debut", "ladr", "lne"];
+const BAIL_PERSO = ["loc", "debut", "ladr", "lne", "lmob"];
 function bailModel(bien){ const b = (S.biens || []).find(x => x.id === bien); return b && b.bailModel && b.bailModel.o ? b.bailModel : null; }
 function bailModelFill(bien){ const M = bailModel(bien); if (!M) return; for (const k in M.o){ if (BAIL_PERSO.includes(k)) continue; const el = document.getElementById("bl-" + k); if (!el) continue; let v = M.o[k]; if (typeof v === "number"){ if (!v) continue; if ((k === "lhc" || k === "chg") && el.value) continue; v = fmtNum(v); } v = String(v ?? ""); if (!v) continue; if (el.tagName === "SELECT" && ![...el.options].some(o => o.value === v)) continue; el.value = v; } }
 function bailModelSave(bien){ const o = bailRead(); BAIL_PERSO.forEach(k => delete o[k]); const b = S.biens.find(x => x.id === bien); if (!b) return; b.bailModel = {o, date:todayIso()}; bailApply(Object.assign({}, o, {loc:""}), bien); persist(); }
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act=bail-model]"); if (!b) return; bailModelSave(V.bsel); toast("☆ Modèle de bail enregistré pour " + bienName(V.bsel)); b.textContent = "☆ Mettre à jour le modèle de bail de ce logement"; });
+/* Mode « modèle » : rien du locataire, tout le logement ; un seul gros bouton pour enregistrer */
+function bailModelMode(bien){
+  const sh = document.getElementById("sheet"); if (!sh) return; const h = sh.querySelector("h2"); if (h) h.textContent = "Modèle de bail · " + bienName(bien);
+  BAIL_PERSO.forEach(k => { const el = document.getElementById("bl-" + k); if (el){ el.value = ""; const l = el.closest("label"); if (l) l.style.display = "none"; } });
+  sh.querySelectorAll('[data-act="bail-rel"],[data-act="bail-pre"],[data-act="bail-pdf"],[data-act="bail-sign"],[data-act="bail-paper"]').forEach(b => { b.style.display = "none"; });
+  const top = sh.querySelector(".info"); if (top) top.insertAdjacentHTML("afterend", `<div class="info" style="border:2px solid #0E6B5C;margin-top:6px"><b>Modèle vierge du logement</b> : seules les infos de l'appartement (adresse, surface, DPE, chauffage, loyer, charges, dépôt…) sont gardées. Le locataire, ses coordonnées et la date d'effet restent vides : ils se remplissent à chaque nouveau bail.</div>`);
+  const mb = sh.querySelector('[data-act="bail-model"]'); if (mb){ mb.classList.remove("ghost"); mb.textContent = "☆ Enregistrer le modèle vierge de " + bienName(bien); mb.closest(".btns").insertAdjacentHTML("beforeend", '<button class="btn ghost" data-act="bm-pdf" data-id="' + bien + '">👁 Aperçu</button>'); }
+}
 function bailRead(){ const o = {}; for (const k of ["bail", "badr", "loc", "adr", "type", "surf", "etage", "pieces", "copro", "dpe", "chauf", "eau", "annex", "duree", "debut", "regchg", "jour", "irl", "enc", "tendue", "encinfo", "ville", "bmob", "lmob", "assclause", "trouble", "servit", "ladr", "lne"]) o[k] = dxV("bl-" + k);
   o.lhc = parseNum(dxV("bl-lhc")) || 0; o.chg = parseNum(dxV("bl-chg")) || 0; o.dep = parseNum(dxV("bl-dep")) || 0; return o; }
 function bailPdf(o, sig){
@@ -5302,8 +5313,8 @@ function sheetDmodSave(){
 function bailModRows(id){ return (S.biens || []).filter(b => !b.del && b.bailModel && b.bailModel.o).sort((a, b) => (a.id === id ? -1 : b.id === id ? 1 : 0)).map(b => `<div class="row" style="flex-wrap:wrap"><div class="main" style="min-width:60%"><div class="t">${b.id === id ? "★ " : ""}Bail · ${esc(b.nom)}</div><div class="s">Bail · modèle du logement enregistré le ${frDate(b.bailModel.date)}${b.bailOrig ? " · ancien bail gardé" : ""}</div></div>
   <div class="btns" style="width:100%;margin:4px 0 0"><button class="mini" data-act="bm-use" data-id="${b.id}">Utiliser (nouveau bail)</button><button class="mini" data-act="bm-pdf" data-id="${b.id}">👁 Aperçu</button><button class="mini" data-act="bm-cmp" data-id="${b.id}">↔ Comparer à l'ancien</button><button class="mini" data-act="bm-del" data-id="${b.id}">×</button></div></div>`).join(""); }
 document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act^=bm-]"); if (!b) return; const a = b.dataset.act, id = b.dataset.id, bn = S.biens.find(x => x.id === id); if (!bn) return;
-  if (a === "bm-use"){ V.bsel = id; V.tab = "bld"; V.bsub = "loc"; V.doc = null; render(); sheetBail(); return; }
-  if (a === "bm-pdf"){ const keep = V.bsel; try { V.bsel = id; const t = tenantFor(id, todayIso()) || {}, bytes = bailPdf(Object.assign({loc:t.nom || "", debut:t.debut || todayIso(), ladr:"", lne:""}, bn.bailModel.o)); V.bsel = keep; await relectOpen("Modele de bail - " + cleanName(bn.nom) + ".pdf", bytes); } catch(e){ V.bsel = keep; toast("Aperçu impossible : " + (e && e.message || e)); } return; }
+  if (a === "bm-use"){ V.bsel = id; V.tab = "bld"; V.bsub = "loc"; V.doc = null; render(); sheetBail(b.dataset.mode || ""); return; }
+  if (a === "bm-pdf"){ const keep = V.bsel; try { V.bsel = id; const t = tenantFor(id, todayIso()) || {}, bytes = bailPdf(Object.assign({}, document.getElementById("bl-lhc") && V.bailMode ? Object.assign({}, bn.bailModel.o, bailRead()) : bn.bailModel.o, {loc:"", debut:todayIso(), ladr:"", lne:"", lmob:""})); V.bsel = keep; await relectOpen("Modele de bail - " + cleanName(bn.nom) + ".pdf", bytes); } catch(e){ V.bsel = keep; toast("Aperçu impossible : " + (e && e.message || e)); } return; }
   if (a === "bm-cmp"){ V.bsel = id; cmpOpen("ot"); if (V.cmp){ V.cmp.kind = "bail"; cmpRender(); } return; }
   if (a === "bm-del"){ openSheet(`<h2>Supprimer le modèle de bail ?</h2><p style="margin:0">Le modèle de bail de « ${esc(bn.nom)} » sera retiré. Les baux déjà faits ne sont pas touchés.</p><div class="btns"><button class="btn danger" style="flex:1" data-act="bm-delok" data-id="${id}">Supprimer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); return; }
   if (a === "bm-delok"){ delete bn.bailModel; bn.upd = Date.now(); persist(); closeSheet(); keepScroll(() => {}); toast("Modèle de bail supprimé"); return; }
@@ -5332,6 +5343,31 @@ document.addEventListener("click", async ev => {
       if (m.kind === "edl") e.pieces = m.pieces.map(p => ({id:uid(), nom:p.nom, items:p.items.map(i => ({id:uid(), nom:i.nom, etat:"", com:"", ph:[]}))})); else e.items = m.items.map(i => ({id:uid(), grp:i.grp, nom:i.nom, qte:i.qte || "1", etat:"", com:""}));
       const bytes = m.kind === "edl" ? await edlPdf(e) : invPdf(e); await saveFile(cleanName(m.nom) + ".pdf", bytes, "application/pdf"); } catch(err){ toast("PDF impossible : " + err.message); } break; }
   }
+});
+
+/* ---------- Modèles vierges par logement : état des lieux, inventaire et bail de chaque appartement, au même endroit ---------- */
+function vlogCard(cur){
+  const ids = bienIds().slice().sort((a, b) => (a === cur ? -1 : b === cur ? 1 : 0));
+  const row = (ic, lab, ok, sub, btns) => `<div class="row" style="flex-wrap:wrap;padding:8px 0"><div class="main" style="min-width:60%"><div class="t">${ic} ${lab} ${ok ? '<span class="chip ok">prêt</span>' : '<span class="chip warn">à créer</span>'}</div><div class="s">${sub}</div></div><div class="btns" style="width:100%;margin:4px 0 0">${btns}</div></div>`;
+  const kindRow = (bien, kind) => { const m = dmods(kind).find(x => x.bien === bien), last = docList(kind).filter(x => x.bien === bien && !x.del).sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0], lab = kind === "edl" ? "État des lieux vierge" : "Inventaire du mobilier vierge";
+    return row(kind === "edl" ? "🏠" : "🛋", lab, !!m, m ? esc(m.nom) + " · " + dmodSize(m) : last ? "Peut être créé d'un coup à partir du dernier " + (kind === "edl" ? "état des lieux" : "inventaire") + " (" + frDate(last.date) + "), sans les états." : "Pas encore de document pour ce logement : crée-en un (ou importe un ancien fichier), puis reviens ici.",
+      m ? `<button class="mini" data-act="dm-pdf" data-id="${m.id}">📄 PDF vierge</button><button class="mini" data-act="vl-edit" data-id="${m.id}">✏️ Modifier</button>${last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">↻ Reprendre le dernier</button>` : ""}<button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button>`
+        : last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">☆ Créer le modèle vierge</button>` : `<button class="mini" data-act="vl-new" data-bien="${bien}" data-k="${kind}">➕ Créer ${kind === "edl" ? "l'état des lieux" : "l'inventaire"}</button>`); };
+  const bailRow = bien => { const M = bailModel(bien); return row("📜", "Bail", !!M, M ? "Modèle enregistré le " + frDate(M.date) + " : le prochain bail est prérempli." : "Ouvre le bail, « 📥 Lire un bail existant » si tu en as un, relis, puis « ☆ Enregistrer le modèle ».",
+    M ? `<button class="mini" data-act="bm-pdf" data-id="${bien}">👁 Aperçu</button><button class="mini" data-act="bm-use" data-mode="model" data-id="${bien}">✏️ Modifier</button>` : `<button class="mini" data-act="bm-use" data-mode="model" data-id="${bien}">➕ Créer le modèle de bail</button>`); };
+  return `<div class="card"><h2>Modèles vierges de mes logements</h2><div class="small muted">Pour chaque appartement, son état des lieux, son inventaire et son bail types, tous rangés ici. Ils servent de point de départ à chaque nouveau locataire et s'impriment vierges.</div>
+    ${ids.map(bien => `<div style="margin-top:12px;padding:10px 12px;border-radius:14px;border:2px solid ${bien === cur ? "var(--accent,#0E6B5C)" : "var(--line)"}"><div style="font-weight:800;font-size:16px">${esc(bienName(bien))}${bkind(bien) === "vide" ? ' <span class="small muted">(logement vide)</span>' : ""}</div>
+      ${kindRow(bien, "edl")}${bkind(bien) === "vide" ? "" : kindRow(bien, "inv")}${bailRow(bien)}</div>`).join("")}</div>`;
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act^=vl-]"); if (!b) return; const a = b.dataset.act, bien = b.dataset.bien, kind = b.dataset.k;
+  if (a === "vl-make"){ const last = docList(kind).filter(x => x.bien === bien && !x.del).sort((x, y) => (y.date || "").localeCompare(x.date || ""))[0]; if (!last) return;
+    S.dmods = S.dmods || []; let m = dmods(kind).find(x => x.bien === bien); if (!m){ m = {id:uid(), kind, nom:dmodLab(kind) + " vierge " + bienName(bien), bien}; S.dmods.push(m); }
+    Object.assign(m, dmodFrom(last, kind), {src:last.id, upd:Date.now()}); persist(); keepScroll(() => {}); toast("☆ " + m.nom + " : prêt (" + dmodSize(m) + ")"); return; }
+  if (a === "vl-new"){ V.bsel = bien; V.bsub = "loc"; V.doc = null; render(); sheetNewDoc(kind, "entree"); toast("Remplis la liste (ou importe un ancien fichier), puis « ☆ Enregistrer comme modèle » en bas"); return; }
+  if (a === "vl-edit"){ const m = (S.dmods || []).find(x => x.id === b.dataset.id); if (!m) return; const src = m.src && docGet(m.kind, m.src);
+    if (src && !src.del){ V.bsel = src.bien; V.bsub = "loc"; V.doc = {kind:m.kind, id:src.id, open:{}}; render(); window.scrollTo(0, 0); toast("Modifie la liste, puis « ☆ Enregistrer comme modèle » › Mettre à jour le modèle"); }
+    else toast("Le document d'origine n'existe plus : ouvre un état des lieux ou un inventaire de ce logement, puis « ☆ Enregistrer comme modèle »"); }
 });
 
 /* ============ Mise en location : annonce par bien + candidatures (sans serveur, échanges par e-mail) ============ */
@@ -6615,7 +6651,7 @@ document.addEventListener("change", async ev => { const t = ev.target; if (!t ||
   await flPut(fid, {name:f.name, type:f.type || mimeOf(f.name), buf:await f.arrayBuffer()});
   if (bn.bailOrig && bn.bailOrig.fid && !bn.bailOrig.doc) await flDel(bn.bailOrig.fid);
   bn.bailOrig = {fid, name:f.name, date:todayIso()}; bn.upd = Date.now(); persist(); toast("Ancien bail placé à gauche"); cmpRender(); });
-async function cmpBailGen(el, bien){ const keep = V.bsel; try { V.bsel = bien; const t = tenantFor(bien, todayIso()) || {}, o = Object.assign({loc:t.nom || "", debut:t.debut || todayIso(), ladr:"", lne:""}, bailModel(bien).o), bytes = bailPdf(o); V.bsel = keep; await cmpPdfPages(el, new Uint8Array(bytes)); } catch(e){ V.bsel = keep; el.textContent = "Document impossible à créer (" + (e && e.message || "erreur") + ")."; } }
+async function cmpBailGen(el, bien){ const keep = V.bsel; try { V.bsel = bien; const t = tenantFor(bien, todayIso()) || {}, o = Object.assign({}, bailModel(bien).o, {loc:"", debut:todayIso(), ladr:"", lne:"", lmob:""}), bytes = bailPdf(o); V.bsel = keep; await cmpPdfPages(el, new Uint8Array(bytes)); } catch(e){ V.bsel = keep; el.textContent = "Document impossible à créer (" + (e && e.message || "erreur") + ")."; } }
 async function cmpOrig(el, fid, name){
   const rec = fid && await flGet(fid); if (!rec){ el.textContent = "Fichier introuvable sur cet appareil."; return; }
   const type = rec.type || mimeOf(name || ""), n = name || rec.name || "";
@@ -8092,6 +8128,38 @@ document.addEventListener("change", async ev => { const t = ev.target; if (!t ||
     try { const bn = S.biens.find(x => x.id === V.bsel), fid = uid(); await flPut(fid, {name:f.name, type:f.type || mimeOf(f.name), buf:await f.arrayBuffer()}); if (bn){ if (bn.bailOrig && bn.bailOrig.fid && !bn.bailOrig.doc) await flDel(bn.bailOrig.fid); bn.bailOrig = {fid, name:f.name, date:todayIso()}; persist(); } } catch(e){}
     note.innerHTML = `<b>${done.length} champ(s) repris du document.</b> Relis-les : l'écriture manuelle n'est pas lue. Puis « ☆ Enregistrer le modèle de bail » (plus bas) pour réutiliser ces infos. L'original est gardé : Documents › Comparer › Original / Retranscrit › Bail.` + (R.warn.length ? `<br>⚠️ ${R.warn.map(esc).join("<br>⚠️ ")}` : "") + (R.info.length ? `<br>${R.info.map(esc).join("<br>")}` : "");
   } catch(e){ note.textContent = "Lecture impossible (" + (e && e.message || "erreur") + ") : saisis les champs à la main."; } });
+/* ---------- « 🔎 Remplir avec mes documents déjà importés » : ancien bail gardé, DPE, mesurage loi Boutin, règlement de copropriété ---------- */
+function bkDocText(T){ return String(T || "").replace(/ /g, " "); }
+/* Lit un diagnostic (DPE, mesurage) : classe énergie, surface habitable, année ou période de construction */
+function bkDiag(T){ const o = {}; T = bkDocText(T);
+  const c = /(?:classe|[ée]tiquette)\s*(?:[ée]nergie|[ée]nerg[ée]tique|DPE|de\s+performance\s+[ée]nerg[ée]tique)?\s*[:\-]?\s*([A-G])\b/i.exec(T) || /logement\s+(?:est\s+)?class[ée]\s*:?\s*([A-G])\b/i.exec(T); if (c) o.dpe = c[1].toUpperCase();
+  const s = /surface\s+habitable[^\d\n]{0,40}(\d+(?:[.,]\d+)?)\s*m/i.exec(T); if (s) o.surf = s[1].replace(",", ".");
+  const y = /ann[ée]e\s+de\s+construction\s*:?\s*((?:avant|apr[èe]s)?\s*\d{4})/i.exec(T) || /p[ée]riode\s+de\s+construction\s*:?\s*([^\n]{3,30})/i.exec(T); if (y) o.constr = bkClean(y[1]);
+  return o; }
+async function bkTextOf(fid, name){ const rec = await flGet(fid); if (!rec) return null; const f = new File([rec.buf], name || rec.name || "document.pdf", {type:rec.type || mimeOf(name || rec.name || "")}); return await bkReadFile(f); }
+async function bailAutoFill(bien){
+  const note = $("#bk-note"), bn = S.biens.find(x => x.id === bien) || {}, done = [], miss = [], skip = new Set(V.bailMode ? BAIL_PERSO : BAIL_PERSO), mark = (k, v, src) => { const el = document.getElementById("bl-" + k); if (!el || v == null || v === "") return false; let x = typeof v === "number" ? fmtNum(v) : String(v); if (el.tagName === "SELECT" && ![...el.options].some(o => o.value === x)) return false; el.value = x; el.style.background = "#FFF6DD"; el.title = "Lu dans : " + src; const l = el.closest("label"); if (l && !l.querySelector(".bk-src")) l.insertAdjacentHTML("beforeend", `<span class="bk-src small" style="display:block;color:#8A5300">↳ lu dans : ${esc(src)}</span>`); return true; };
+  if (note) note.textContent = "Lecture de tes documents (quelques secondes, plus pour un scan)…";
+  const sources = [];
+  if (bn.bailOrig && bn.bailOrig.fid) sources.push({t:"bail", fid:bn.bailOrig.fid, name:bn.bailOrig.name, lab:"ancien bail (" + (bn.bailOrig.name || "") + ")"});
+  for (const d of fileDocs(bien, "autre").filter(d => ["dpe", "boutin", "diag", "copro"].includes(d.sub))) sources.push({t:d.sub, fid:d.id, name:d.fname, lab:(d.sub === "dpe" ? "DPE" : d.sub === "boutin" ? "mesurage loi Boutin" : d.sub === "copro" ? "règlement de copropriété" : "diagnostics") + (d.date ? " du " + frDate(d.date) : "")});
+  if (!sources.length){ if (note) note.innerHTML = "Aucun document à lire pour ce logement. Ajoute ton ancien bail (« 📥 Lire un bail existant ») ou tes diagnostics dans <b>Documents › Pièces à joindre</b> (DPE, mesurage…), puis recommence."; return; }
+  let constr = "";
+  for (const s of sources){
+    if (s.t === "copro"){ if (mark("copro", "Oui", s.lab)) done.push("Copropriété : oui (" + s.lab + ")"); continue; }
+    let T = null; try { T = await bkTextOf(s.fid, s.name); } catch(e){ T = null; } if (!T){ miss.push(s.lab + " : illisible ici"); continue; }
+    if (s.t === "bail"){ const R = bkParse(T); for (const k in R.f){ if (skip.has(k)) continue; if (mark(k, R.f[k], s.lab)) done.push(k); }
+      const cp = bkChk(T, "Copropri[ée]t[ée]"); if (cp === true && mark("copro", "Oui", s.lab)) done.push("copro");
+      const d = bkDiag(T); if (d.dpe && mark("dpe", d.dpe, s.lab)) done.push("dpe"); if (d.constr) constr = constr || d.constr; continue; }
+    const d = bkDiag(T); if (d.dpe && mark("dpe", d.dpe, s.lab)) done.push("Classe DPE " + d.dpe + " (" + s.lab + ")"); if (d.surf && mark("surf", d.surf, s.lab)) done.push("Surface " + d.surf + " m² (" + s.lab + ")"); if (d.constr) constr = constr || d.constr;
+  }
+  const n = done.length;
+  if (note) note.innerHTML = `<b>${n ? n + " case(s) remplie(s)" : "Rien de nouveau trouvé"}</b> à partir de tes documents : elles sont surlignées en jaune, avec la source en dessous. Relis-les.`
+    + (constr ? `<br>Construction : ${esc(constr)} (pour info : utile pour le plomb et l'amiante).` : "")
+    + (miss.length ? `<br>⚠️ ${miss.map(esc).join("<br>⚠️ ")}` : "")
+    + `<br>Zone tendue et loyers encadrés : l'appli ne les devine pas (ça dépend de la commune et la liste change) : vérifie-les sur service-public.fr ou auprès de l'ADIL.`;
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act=bail-auto]"); if (!b) return; bailAutoFill(V.bsel); });
 
 /* Import d'un tableau de loyers (une feuille : années en colonnes, mois, un logement par ligne) */
 const LO_MOIS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
