@@ -229,6 +229,10 @@ body.welcome{padding-bottom:40px}
 .dv{display:grid;grid-template-columns:minmax(100px,1.1fr) 2.2fr minmax(92px,.9fr);gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.dv .dl{font-size:14px}.dv .dn{text-align:right;white-space:nowrap}.db{display:flex;height:16px}.db .half{flex:1;display:flex}.db .half.l{justify-content:flex-end;border-right:2px solid var(--line)}.db i{display:block;height:100%;border-radius:4px}.db i.good{background:var(--ok)}.db i.bad{background:var(--bad)}
 .ot.an td:first-child b{white-space:nowrap}.anw{position:sticky;left:0;width:min(100%,calc(100vw - 100px));box-sizing:border-box}@media(max-width:700px){.anw .grid2{grid-template-columns:1fr}}.ot.an tr.fut td{opacity:.55}.ot.an tr.nx td{background:var(--accent-soft);font-weight:600}.anit{padding:8px 0;border-bottom:1px solid var(--line)}.anit:last-child{border-bottom:0}.anop .small{line-height:1.35}.anx{margin-top:4px}.anx summary{cursor:pointer;color:var(--accent)}.ot.an tr.clk.hot td{background:var(--warn-soft)}.anl{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .ot.an tr.clk{cursor:pointer}.ot.an tr.clk:active{background:var(--accent-soft)}.ot.an tr.hot td{background:var(--warn-soft)}.ot.an tr.tot td{border-top:2px solid var(--line)}.ot.an td.why{font-size:12.5px;color:var(--muted)}@media(max-width:760px){.ot.an th.why,.ot.an td.why{display:none}.kpi .v{font-size:19px}}
+.hswipe{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0}.hswipe::-webkit-scrollbar{display:none}
+.hswipe>.hero{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;min-width:0}
+.hero-rev{background:linear-gradient(145deg,#34406B 0%,#151B33 100%)!important;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 28px -14px #151B33!important}
+.hdots{display:flex;justify-content:center;gap:7px;margin:-4px 0 4px}.hdots i{width:8px;height:8px;border-radius:50%;background:var(--line,#ccc);transition:all .2s}.hdots i.on{width:22px;border-radius:4px;background:var(--accent)}
 .glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:6px 12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bourse{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px -14px #53247A}
 .top .app{font-size:21px}
@@ -720,6 +724,18 @@ function jRow(j, showBien){
 }
 
 /* ---------- Accueil ---------- */
+/* 2e cadre (glisser vers la gauche) : ce que chaque bien a rapporté depuis le début = recettes encaissées (pointées), sans les dépenses */
+function revBien(id){
+  const L = J().filter(j => (id == null || j.bien === id) && j.type === "Recette" && j.pointe === "x" && !HC(j));
+  return {tot:r2(sum(L.map(j => N(j.montant)))), loy:r2(sum(L.filter(j => j.cat === "Loyer").map(j => N(j.montant)))), d0:L.map(j => j.date).filter(Boolean).sort()[0] || ""};
+}
+function heroRev(ids){
+  const all = revBien(null);
+  return `<div class="card hero hero-rev" data-act="go" data-v="chart" role="button" style="cursor:pointer"><div class="lbl">Revenus bruts depuis le début</div><div class="big num">${eur(all.tot)}</div>
+    <div class="glass">${ids.map(id => { const r = revBien(id); return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(r.tot)}</span></div>${r.d0 ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">depuis le ${frDate(r.d0)}${r.loy !== r.tot ? " · dont loyers " + eur(r.loy) : ""}</div>` : ""}`; }).join("")}
+      <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Recettes encaissées (pointées), <b>sans les dépenses</b> : ce que tes biens ont rapporté.</div></div></div>`;
+}
+document.addEventListener("scroll", ev => { const h = ev.target; if (!h || h.id !== "hswipe") return; const i = Math.round(h.scrollLeft / Math.max(1, h.clientWidth)); document.querySelectorAll("#hdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, true);
 function viewHome(){
   const y = now0.getFullYear(), ids = bienIds(), c = counts(y), st = stats(null, y);
   const tot = r2(sum(ids.map(id => soldeBien(id))));
@@ -727,10 +743,11 @@ function viewHome(){
   const tileLate = n => { const l = J().filter(j => statut(j) === "En retard" && j.cat === "Loyer").sort((a, b) => a.date.localeCompare(b.date))[0]; return `<button class="tile ${n ? "bad" : ""}" data-act="go" data-v="bld" data-sub="loyers" data-bien="${l ? esc(l.bien) : ""}"><span class="n">${n}</span><span class="l">loyer(s) en retard</span></button>`; };
   const tile = (n, l, cl, to, f) => `<button class="tile ${n ? cl : ""}" data-act="go" data-v="${to}" data-f="${f || ""}"><span class="n">${n}</span><span class="l">${l}</span></button>`;
   return topbar("Gestion Locative Facile") + `
-  <div class="card hero" data-act="cb-open" data-sub="rapp" role="button" style="cursor:pointer"><div class="lbl">Solde de mes comptes appartements</div><div class="big num">${eur(tot)}</div>
+  <div class="hswipe" id="hswipe" aria-label="Glisse vers la gauche pour voir ce que chaque bien a rapporté"><div class="card hero" data-act="cb-open" data-sub="rapp" role="button" style="cursor:pointer"><div class="lbl">Solde de mes comptes appartements</div><div class="big num">${eur(tot)}</div>
     <div class="glass">${ids.map(id => { const p = placeOf(id), on = bourseOn(), parts = on ? PLACE_CATS.filter(c => p.by[c]).map(c => (c === "Bourse" ? "bourse" : c) + " " + eur(p.by[c])).concat(p.interets ? ["intérêts " + eur(p.interets)] : []) : [];
       return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(soldeBien(id))}</span></div>` + (parts.length ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">(${parts.join(" + ")}) · total ${eur(r2(soldeBien(id) + p.total))}</div>` : ""); }).join("")}
-      <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
+      <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>${heroRev(ids)}</div>
+  <div class="hdots" id="hdots" aria-hidden="true"><i class="on"></i><i></i></div>
   ${departHome()}${cafHome()}${matelasHome()}${bourseCard(true)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
   ${typeof avAlertHome === "function" ? avAlertHome() : ""}
@@ -1508,8 +1525,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.89";
+const APP_VERSION = "1.7.90";
 const CHANGELOG = [
+  {v:"1.7.90", date:"2026-11-12", titre:"Revenus bruts sur l'accueil, plomb et amiante plus clairs, meilleure lecture des dates", items:["Accueil : glisse le grand cadre vers la gauche pour voir un 2e cadre, bleu nuit, « Revenus bruts depuis le début ». Il montre, bien par bien, les recettes encaissées (pointées) sans les dépenses, avec la date de la première recette et la part des loyers. Les petits points en dessous montrent quel cadre est affiché.", "Plomb (CREP) et amiante : la durée est affichée en entier : « 6 ans si présence de plomb · illimité si néant » et « 3 ans si présence d'amiante · illimité si néant ». Deux boutons clairs, « Présence de plomb / Néant, sans plomb » et « Présence d'amiante / Néant, sans amiante », remplacent l'ancien bouton « Résultat ? ».", "Lecture des diagnostics : la date d'édition est choisie d'après son libellé (« Date du rapport », « Date du constat », « Fait à …, le », « Établi le »…). Les dates parasites sont écartées : chargement de la source de l'appareil, certification du diagnostiqueur, lois, construction. Avant, un constat plomb pouvait prendre la date de chargement de l'appareil (2018) au lieu de la date du rapport. Pour un document déjà importé, appuie sur ↻ pour relire la date et le résultat.", "Plomb : « Date limite de validité : Aucune » sur le constat = néant (sans limite) ; une vraie date limite = présence.", "Le résultat est lu automatiquement sur le rapport : à l'import, au découpage d'un dossier de diagnostics et avec ↻. Si la phrase n'est pas nette, l'appli ne devine pas et te laisse choisir."]},
   {v:"1.7.89", date:"2026-11-12", titre:"Fiche candidat : étape, visites et décision en haut ; le bon lien dans les courriers", items:["Fiche candidat : nouveau cadre « 📍 Où en est … ? » tout en haut. Les étapes (Demande reçue, Visite, Dossier à vérifier, Retenu, Refusé) s'enregistrent en un appui. Tu y trouves la 1re visite et une 2e visite si besoin, chacune avec « 📅 → agenda », ainsi que « ✅ Retenir ce candidat » et « ❌ Refuser » (qui prépare la réponse négative). La prochaine visite (1re ou 2e) apparaît dans les listes.", "L'envoi du « 🧪 Test complet » ne crée plus de fiche « Test Appli ».", "Correction : pour un candidat arrivé par la réception connectée, ou une fiche créée à la main puis complétée par le formulaire, « Écrire à » proposait « Réponse à une demande », qui contient le lien du 1er formulaire. Il propose maintenant « Demande du dossier », avec le lien du 2e formulaire (dossier).", "Sous le choix du courrier, l'appli indique quel lien part avec : 1er formulaire (candidature) ou 2e formulaire (dossier). Un avertissement orange s'affiche si tu renvoies le 1er formulaire à quelqu'un qui l'a déjà rempli."]},
   {v:"1.7.88", date:"2026-11-12", titre:"Réception connectée : correction du test complet et des envois en attente", items:["Correction : l'appli gardait en mémoire les réponses de ton serveur de candidatures. Sur iPad, le test complet s'arrêtait sur « Load failed », et un envoi pas encore arrivé pouvait rester invisible même une fois arrivé. Désormais, tout ce qui va vers ton serveur passe directement par Internet, sans mémoire. Ferme et rouvre l'appli une fois pour que la correction s'applique."]},
   {v:"1.7.87", date:"2026-11-12", titre:"Guide « Créer mon serveur » pas à pas, et Outlook pour écrire au candidat", items:["Candidatures connectées : nouveau guide « Créer mon serveur » sur une page à part, une étape par écran, avec un dessin simplifié de chaque écran de Cloudflare (cadres rouges numérotés = où cliquer), « Ça ne marche pas ? » à chaque étape, la progression gardée, et un bouton « Tester mon serveur » qui dit en clair ce qui manque. L'adresse testée est reprise dans l'appli quand c'est possible. Bouton « Envoyer le guide à mon ordinateur ».", "Fiche candidat › « Écrire au candidat » : nouveau bouton « Ouvrir dans Outlook » (l'adresse, l'objet et le message sont prêts ; l'adresse est aussi copiée), à côté de « Ouvrir dans Mail ». « 📋 Copier son e-mail » copie l'adresse du candidat ; « Copier le message » copie le texte : pratique pour une autre application de mail."]},
@@ -1756,6 +1774,7 @@ const HELP = {
     "Réception connectée (facultative) : avec ton propre serveur Cloudflare gratuit, les candidatures et dossiers arrivent tout seuls dans l'appli (🆕), chiffrés sur le téléphone du candidat ; le serveur ne peut pas les lire et les efface dès réception (30 jours au plus). « Découvrir » dans la carte Formulaire de candidature.",
     "Créer son serveur : Location › Candidats › Formulaire de candidature › Découvrir › « 📘 Ouvrir le guide Créer mon serveur ». Une étape par écran avec un dessin de chaque écran de Cloudflare, puis un test automatique du serveur. Le plus simple : l'ouvrir sur un ordinateur (« Envoyer le guide à mon ordinateur »), puis activer la réception sur le téléphone.",
     "Fiche candidat : le cadre « 📍 Où en est … ? » en haut. Appuie sur l'étape (Visite, Dossier à vérifier pour regarder plus tard…), note la 1re visite (et une 2e si besoin), envoie-la vers l'agenda, puis « ✅ Retenir » ou « ❌ Refuser ». Dans « Écrire au candidat », une ligne indique quel lien part : 1er formulaire (candidature) ou 2e (dossier).",
+    "Accueil : glisse le cadre du solde vers la gauche pour voir les revenus bruts (recettes encaissées, sans les dépenses) de chaque bien depuis le début. Plomb et amiante : choisis « Présence » ou « Néant » sous la ligne du document. Plomb : 6 ans si présence, illimité si néant. Amiante : 3 ans si présence, illimité si néant. Le résultat est lu sur le rapport quand la phrase est claire.",
     "Annonce : « Réponse type aux messages » à copier dans la messagerie Leboncoin / PAP, avec le lien du formulaire ; boutons Copier le titre / le prix et lien de ton annonce par site.",
     "Permis de louer : si ton logement est dans une commune qui l'impose (Istres, centre ancien), active-le dans Réglages › Biens › Permis de louer. Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire.",
     "3. Visite : note la date et l'heure. L'appli te propose aussitôt de l'envoyer vers AgenDam ou vers le calendrier du téléphone, avec le maximum d'infos (bouton « Visite vers un agenda » pour le refaire). « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
@@ -4638,7 +4657,7 @@ document.addEventListener("click", async ev => {
         const buf = await f.arrayBuffer(), fid = uid(), type = f.type || mimeOf(f.name); let date = dxV("im-date") || todayIso(), loc = dxV("im-loc"), R = null;
         await flPut(fid, {name:f.name, type, buf});
         if (/\.pdf$/i.test(f.name) && (v === "edl" || v === "inv")){ toast("Lecture du document…"); try { R = await pdfRead(buf, v); } catch(e){ R = null; } if (R && R.kind !== v) R = null; if (R && R.date && (!dxV("im-date") || dxV("im-date") === todayIso())) date = R.date; }
-        docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now()}); const doSplit = v === "autre" && dxV("im-sub") === "diag" && /\.pdf$/i.test(f.name);
+        docList("docs").push({id:fid, bien:V.bsel, kind:v, nom:dxV("im-nom") || f.name, sub:v === "autre" ? dxV("im-sub") : "", fname:f.name, date, type, size:f.size, upd:Date.now(), ...(v === "autre" && AV_RES[dxV("im-sub")] && V.avRes ? {res:V.avRes} : {})}); V.avRes = ""; const doSplit = v === "autre" && dxV("im-sub") === "diag" && /\.pdf$/i.test(f.name);
         let msg = "Document importé", bulkId = "";
         if (v === "edl"){ let pieces = null;
           if (/\.(xlsx|xls|csv)$/i.test(f.name)){ const it = invFromSheet(buf, f.name); if (it && it.length){ const map = {}; pieces = []; it.forEach(x => { const p = map[x.grp] || (map[x.grp] = {id:uid(), nom:x.grp, items:[]}); if (!map[x.grp].added){ map[x.grp].added = 1; pieces.push(p); } p.items.push({id:uid(), nom:x.nom, etat:x.etat, com:x.com, ph:[]}); }); pieces.forEach(p => delete p.added); } }
@@ -7359,8 +7378,8 @@ function avRow(id, k){
   if (k === "diag") return avDiagRow(id);
   const s = avStat(id, k), a = k;
   if (s.st === "na") return `<div class="row" style="opacity:.55;flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="mini" data-act="im-open" data-v="autre" data-s="${a}">Importer</button><button class="mini" data-act="av-todo" data-k="${k}" data-b="${esc(id)}">📌 À faire faire</button><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
-  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + (s.d.res === "absence" ? "absence" : "présence") : AV_RES[k] ? " · résultat à préciser" : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
-  return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}${AV_WHEN[k] ? `<div class="s" style="font-style:italic">Exigé : ${esc(AV_WHEN[k])}</div>` : ""}${s.c.req && !s.d ? `<div class="s" style="color:#B3261E"><b>À faire faire avant la prochaine location</b></div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "notice" ? `<a class="mini" href="${NOTICE_URL}" target="_blank" rel="noopener" aria-label="Notice officielle sur Légifrance">🔗 Notice officielle</a>` : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && AV_RES[k] ? `<button class="mini" data-act="av-res" data-id="${s.d.id}">${s.d.res === "absence" ? "Absence" : s.d.res === "presence" ? "Présence" : "Résultat ?"}</button>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="fl-open" data-id="${s.d.id}">Voir</button><button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}${!s.d && AV_MOD.includes(k) ? `<button class="mini" data-act="mod-gen" data-k="${k}" data-b="${esc(id)}">📄 Générer</button>` : ""}${!s.d && !AV_REQ.includes(k) ? `<button class="mini" data-act="av-todo" data-k="${k}" data-b="${esc(id)}">${s.c.req ? "✔ À faire faire (retirer)" : "📌 À faire faire"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button>${s.d ? `<button class="mini" data-act="fl-del" data-id="${s.d.id}" aria-label="Supprimer ce document">×</button>` : ""}</div></div>`;
+  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + AV_RES_LAB(k, s.d.res).toLowerCase() : ""}` : (s.c.m ? `Durée suivie : ${avDur(s.c.m)}` : "");
+  return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${AV_RES[k] ? `<span class="chip" style="font-weight:600">⏱ ${esc(AV_RES_DUR[k])}</span>` : avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${s.d && AV_RES[k] ? `<div class="s" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px"><span>Résultat du rapport :</span><button class="mini" data-act="av-res" data-v="presence" data-id="${s.d.id}" style="${s.d.res === "presence" ? "background:#B3261E;color:#fff;border-color:transparent;font-weight:700" : ""}">${s.d.res === "presence" ? "● " : ""}${AV_RES_LAB(k, "presence")}</button><button class="mini" data-act="av-res" data-v="absence" data-id="${s.d.id}" style="${s.d.res === "absence" ? "background:#1A7A4C;color:#fff;border-color:transparent;font-weight:700" : ""}">${s.d.res === "absence" ? "● " : ""}${AV_RES_LAB(k, "absence")}</button>${s.d.res ? "" : `<b style="color:#B26A00">à préciser</b>`}</div>` : ""}${sub ? `<div class="s">${esc(sub)}</div>` : ""}${AV_WHEN[k] ? `<div class="s" style="font-style:italic">Exigé : ${esc(AV_WHEN[k])}</div>` : ""}${s.c.req && !s.d ? `<div class="s" style="color:#B3261E"><b>À faire faire avant la prochaine location</b></div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "notice" ? `<a class="mini" href="${NOTICE_URL}" target="_blank" rel="noopener" aria-label="Notice officielle sur Légifrance">🔗 Notice officielle</a>` : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="fl-open" data-id="${s.d.id}">Voir</button><button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}${!s.d && AV_MOD.includes(k) ? `<button class="mini" data-act="mod-gen" data-k="${k}" data-b="${esc(id)}">📄 Générer</button>` : ""}${!s.d && !AV_REQ.includes(k) ? `<button class="mini" data-act="av-todo" data-k="${k}" data-b="${esc(id)}">${s.c.req ? "✔ À faire faire (retirer)" : "📌 À faire faire"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button>${s.d ? `<button class="mini" data-act="fl-del" data-id="${s.d.id}" aria-label="Supprimer ce document">×</button>` : ""}</div></div>`;
 }
 function avSummary(id, keys){
   const S0 = keys.map(k => avStat(id, k)).filter(s => s.st !== "na"), n = st => S0.filter(s => s.st === st).length, late = n("perime") + n("refaire"), soon = n("bientot"), miss = n("manque"), ok = S0.length - late - soon - miss;
@@ -7428,11 +7447,25 @@ function avDates(txt){
   const r2 = /(?<!\d)(\d{1,2})(?:er)?\s+([A-Za-zéûèôàç]{3,9})\.?\s+(\d{4})(?!\d)/g; while ((m = r2.exec(txt))){ const mo = AV_MOIS[m[2].toLowerCase()], d = +m[1], y = +m[3]; if (mo && ok(y, mo, d) && iso(y, mo, d) <= today) out.push({iso:iso(y, mo, d), i:m.index}); }
   return out.sort((a, b) => a.i - b.i);
 }
+/* Date d'édition du document : on note chaque date selon le libellé juste avant elle.
+   « Date du rapport », « date du constat », « date de visite », « édité le »… = la bonne.
+   « dernier chargement de la source », « certification valide jusqu'au », « construit en », « assurance »… = jamais. */
+const AV_DKW = /(date\s+(?:du|de\s+la|de\s+l['’]|de|d['’]|des)?\s*(?:rapport|constat|visite|rep[eé]rage|v[eé]rification|diagnostic|[eé]tablissement|r[eé]alisation|[eé]dition|[eé]mission|mission|intervention|l['’]?[eé]tat|document)|fait\s+(?:à\s+[^,\n]{1,30},?\s*)?le|r[eé]alis[eé]e?s?\s+le|[eé]tabli(?:e)?\s+le|effectu[eé]e?\s+le|[eé]dit[eé]e?\s+le|[eé]mis(?:e)?\s+le|d[eé]livr[eé]e?\s+le|visite\s+(?:du|le)|constat\s+du|rapport\s+du)\s*:?\s*$/i;
+const AV_DNO = /(chargement|source|radionucl|certifi|valide?\s+jusqu|validit[eé]|limite|expir|[eé]ch[eé]ance|assurance|police|naissance|n[eé]e?\s+le|permis\s+de\s+construire|construction|construit|mise\s+en\s+service|installation|ann[eé]e|accr[eé]dit|agr[eé]ment|derni[eè]re?\s+mise\s+[aà]\s+jour|arr[eê]t[eé]|d[eé]cret|loi\s+n|du\s+\d{1,2}\s+\w+\s+\d{4}\s+relatif|abrog)/i;
 function avPickDate(txt){
-  const L = avDates(txt); if (!L.length) return "";
-  const kw = /(date (?:de |d['’])?(?:la )?(?:visite|v[eé]rification|diagnostic|[eé]tablissement|r[eé]alisation|[eé]dition|[eé]mission|constat)|r[eé]alis[eé]e? le|[eé]tabli(?:e)? le|effectu[eé]e? le|[eé]dit[eé]e? le|[eé]mis(?:e)? le|d[eé]livr[eé]e? le|visite du|constat du|rapport du)/ig; let m;
-  while ((m = kw.exec(txt))){ const d = L.find(x => x.i >= m.index && x.i <= m.index + m[0].length + 70); if (d) return d.iso; }
-  return L[0].iso;
+  txt = String(txt || ""); const L = avDates(txt); if (!L.length) return "";
+  const S0 = L.map((x, k) => {
+    /* le libellé de cette date = le texte entre la date précédente et elle (au plus 50 caractères) */
+    const p = k ? L[k - 1] : null, from = Math.max(0, x.i - 50, p ? p.i + 8 : 0), lab = txt.slice(from, x.i).replace(/\s+/g, " ").replace(/\s+$/, "");
+    let sc = 0; if (AV_DKW.test(lab)) sc += 10;
+    if (/(date\s+du\s+rapport|date\s+d['’][eé]dition|[eé]dit[eé]e?\s+le|date\s+du\s+constat)\s*:?\s*$/i.test(lab)) sc += 3;
+    if (AV_DNO.test(lab)) sc -= 20;
+    return {...x, sc}; });
+  const good = S0.filter(x => x.sc > 0).sort((a, b) => b.sc - a.sc || b.iso.localeCompare(a.iso));
+  if (good.length) return good[0].iso;
+  /* aucun libellé reconnu : la date la plus récente qui n'est pas une date « parasite » (chargement, certification, loi…) */
+  const ok = S0.filter(x => x.sc >= 0).sort((a, b) => b.iso.localeCompare(a.iso));
+  return (ok[0] || L[L.length - 1]).iso;
 }
 async function avReadFile(f){
   const type = f.type || mimeOf(f.name); let txt = "";
@@ -7450,10 +7483,11 @@ async function avOcr(cv){ const T = await loadTess(), w = await T.createWorker("
 document.addEventListener("change", async ev => { const t = ev.target; if (!t || (t.id !== "im-file" && t.id !== "im-sub")) return; if (!$("#im-sub")) return;
   const f = $("#im-file") && $("#im-file").files[0], sub = $("#im-sub").value; const note = $("#im-dnote"); if (!f || !note) return;
   note.textContent = "Lecture de la date du document…";
-  try { const txt = (t.id === "im-file" || !V.avTxt) ? await avReadFile(f) : V.avTxt; V.avTxt = txt; if (txt === null){ note.textContent = "Date non lisible automatiquement : saisis la date écrite sur le papier."; return; }
+  V.avRes = ""; try { const txt = (t.id === "im-file" || !V.avTxt) ? await avReadFile(f) : V.avTxt; V.avTxt = txt; if (txt === null){ note.textContent = "Date non lisible automatiquement : saisis la date écrite sur le papier."; return; }
     const d = avPickDate(txt), kw = sub && AV_KW[sub], match = !kw || kw.test(txt);
     if (d){ $("#im-date").value = d; note.innerHTML = "📅 Date lue sur le document : <b>" + esc(frDate(d)) + "</b> (corrige-la si besoin)."; } else note.textContent = "Aucune date trouvée : saisis la date écrite sur le papier.";
     if (!match) note.innerHTML += `<br><b style="color:var(--bad,#b3261e)">⚠️ Ce document ne semble pas parler de « ${esc(avLab(sub))} » : vérifie le type de pièce.</b>`;
+    V.avRes = AV_RES[sub] ? avResOf(sub, txt) : ""; if (AV_RES[sub]) note.innerHTML += V.avRes ? `<br>🔎 Résultat lu : <b>${AV_RES_LAB(sub, V.avRes) + (V.avRes === "absence" ? " (valable sans limite)" : " (valable " + (sub === "amiante" ? "3" : "6") + " ans)")}</b>. Tu pourras le changer dans la liste.` : `<br>🔎 Résultat (présence ou néant) non trouvé : tu le choisiras dans la liste.`;
   } catch(e){ note.textContent = "Lecture automatique impossible (" + (e && e.message || "erreur") + ") : saisis la date écrite sur le papier."; } });
 /* corriger la date d'une pièce déjà importée */
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-date'],[data-act='av-date-ok']"); if (!b) return;
@@ -7466,9 +7500,10 @@ async function avRereadDoc(d){
   const r = await flGet(d.id); if (!r || !r.buf) return {err:"fichier introuvable"};
   const f = new File([r.buf], d.fname || d.nom || "doc", {type:r.type || mimeOf(d.fname || "")});
   const txt = await avReadFile(f); if (txt === null) return {err:"format non lisible"};
-  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt);
-  if (!dt) return {err:"aucune date trouvée"};
-  d.date = dt; d.upd = Date.now(); return {date:dt, match};
+  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt), res = AV_RES[d.sub] ? avResOf(d.sub, txt) : "";
+  if (res) { d.res = res; d.upd = Date.now(); }
+  if (!dt) return res ? {date:d.date, match, res} : {err:"aucune date trouvée"};
+  d.date = dt; d.upd = Date.now(); return {date:dt, match, res};
 }
 document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act='av-reread'],[data-act='av-reread-all']"); if (!b) return;
   const list = b.dataset.act === "av-reread" ? docList("docs").filter(x => x.id === b.dataset.id) : fileDocs(b.dataset.b, "autre").filter(d => AV_KW[d.sub] || d.sub);
@@ -7479,9 +7514,26 @@ document.addEventListener("click", async ev => { const b = ev.target.closest("[d
   const msg = ok + (ok > 1 ? " dates relues" : " date relue") + (warn.length ? " · ⚠️ le document rangé dans « " + warn.join(", ") + " » ne parle pas de ce sujet : vérifie que c'est le bon fichier" : "") + (bad.length ? " · date non lue, à saisir avec 📅 : " + bad.join(", ") : "");
   toast(msg); const n = $("#av-rr-note"); if (n) n.textContent = msg; });
 
-/* plomb / amiante : absence = sans limite, présence = durée réglée */
+/* plomb / amiante : absence = sans limite, présence = durée réglée (plomb 6 ans, amiante 3 ans) */
+const AV_RES_DUR = {plomb:"6 ans si présence de plomb · illimité si néant", amiante:"3 ans si présence d'amiante · illimité si néant"};
+const AV_RES_LAB = (k, r) => r === "presence" ? (k === "amiante" ? "Présence d'amiante" : "Présence de plomb") : r === "absence" ? (k === "amiante" ? "Néant, sans amiante" : "Néant, sans plomb") : "";
+/* Résultat lu sur le rapport. Prudent : si les deux formules apparaissent (ou aucune), on ne décide pas. */
+function avResOf(k, txt){
+  const t = String(txt || "").replace(/\s+/g, " "); let abs = false, pre = false;
+  if (k === "plomb" && /date\s+limite\s+de\s+validit[eé]\s*:?\s*(aucune|illimit|sans\s+limite|n[eé]ant)/i.test(t)) return "absence";
+  if (k === "plomb" && /date\s+limite\s+de\s+validit[eé]\s*:?\s*\d{1,2}\s*[\/.\-]\s*\d{1,2}\s*[\/.\-]\s*\d{4}/i.test(t)) return "presence";
+  if (k === "plomb"){
+    abs = /n.a pas [eé]t[eé] rep[eé]r[eé]e? de rev[eê]tements? contenant du plomb|aucun rev[eê]tement.{0,40}plomb|absence de rev[eê]tements? contenant du plomb|pas de rev[eê]tements? contenant du plomb/i.test(t);
+    pre = /pr[eé]sence de rev[eê]tements? (d[eé]grad[eé]s? )?contenant du plomb|rev[eê]tements? contenant du plomb (ont|a) [eé]t[eé] (rep[eé]r|identifi|mis en [eé]vidence)|il a [eé]t[eé] rep[eé]r[eé] des rev[eê]tements? contenant du plomb/i.test(t);
+  } else if (k === "amiante"){
+    abs = /(il )?n.a pas [eé]t[eé] rep[eé]r[eé] de mat[eé]riaux.{0,40}contenant de l.amiante|absence de mat[eé]riaux.{0,40}amiante|aucun mat[eé]riau.{0,60}amiante|pas de mat[eé]riaux.{0,40}contenant de l.amiante/i.test(t);
+    pre = /il a [eé]t[eé] rep[eé]r[eé].{0,60}mat[eé]riaux.{0,40}contenant de l.amiante|pr[eé]sence d.amiante|mat[eé]riaux.{0,40}contenant de l.amiante (ont|a) [eé]t[eé] rep[eé]r/i.test(t);
+  }
+  return abs && !pre ? "absence" : pre && !abs ? "presence" : "";
+}
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-res']"); if (!b) return; const d = docList("docs").find(x => x.id === b.dataset.id); if (!d) return;
-  d.res = d.res === "absence" ? "presence" : d.res === "presence" ? "" : "absence"; d.upd = Date.now(); persist(); render(); });
+  const v = b.dataset.v; d.res = v === "absence" || v === "presence" ? (d.res === v ? "" : v) : (d.res === "absence" ? "presence" : d.res === "presence" ? "" : "absence"); d.upd = Date.now(); persist(); render();
+  toast(!d.res ? "Résultat à préciser" : AV_RES_LAB(d.sub, d.res) + (d.res === "absence" ? " : valable sans limite de durée" : " : valable " + (d.sub === "amiante" ? "3 ans" : "6 ans"))); });
 
 /* « Voir » de l'alerte : amène sur la liste des pièces, même si on est déjà sur l'onglet Documents */
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-av]"); if (!b) return; setTimeout(() => { const c = document.getElementById("pj-card"); if (c) c.scrollIntoView({behavior:"smooth", block:"start"}); }, 60); });
@@ -7578,7 +7630,7 @@ async function splAnalyse(pdf, prog){
         const pg = await pdf.getPage(s.from), vp = pg.getViewport({scale:2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
         await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; txt = (await (await worker()).recognize(cv)).data.text || ""; }
       s.date = avPickDate(txt) || "";
-      if (s.k === "plomb"){ let all = ""; for (let i = s.from; i <= s.to; i++) all += " " + (texts[i - 1] || ""); s.res = splPlombAbs(all || txt) ? "absence" : ""; }
+      if (s.k === "plomb" || s.k === "amiante"){ let all = ""; for (let i = s.from; i <= s.to; i++) all += " " + (texts[i - 1] || ""); s.res = avResOf(s.k, all || txt); }
     }
     return {n, secs};
   } finally { try { if (w) await w.terminate(); } catch(e){} }
@@ -7602,7 +7654,7 @@ function sheetSplit(){
   const row = (c, i) => `<div class="card" style="padding:10px;gap:6px;margin:6px 0"><label style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" id="sp-on-${i}" ${c.k ? "checked" : ""}> Partie ${i + 1}</label>
     ${dxS("sp-k-" + i, "Type de diagnostic", opts, c.k)}
     <div style="display:flex;gap:8px"><label class="f" style="flex:1">Page de début<input id="sp-a-${i}" inputmode="numeric" value="${c.from}"></label><label class="f" style="flex:1">Page de fin<input id="sp-b-${i}" inputmode="numeric" value="${c.to}"></label></div>
-    ${c.k ? `<label class="f">Date d'édition lue<input id="sp-d-${i}" type="date" value="${esc(c.date || "")}"></label>${c.k === "plomb" || c.k === "amiante" ? `<label class="f">Résultat<select id="sp-r-${i}"><option value="">À préciser</option><option value="absence" ${c.res === "absence" ? "selected" : ""}>Absence</option><option value="presence" ${c.res === "presence" ? "selected" : ""}>Présence</option></select></label>` : ""}` : ""}</div>`;
+    ${c.k ? `<label class="f">Date d'édition lue<input id="sp-d-${i}" type="date" value="${esc(c.date || "")}"></label>${c.k === "plomb" || c.k === "amiante" ? `<label class="f">Résultat<select id="sp-r-${i}"><option value="">À préciser</option><option value="presence" ${c.res === "presence" ? "selected" : ""}>${AV_RES_LAB(c.k, "presence")} (${c.k === "amiante" ? "3" : "6"} ans)</option><option value="absence" ${c.res === "absence" ? "selected" : ""}>${AV_RES_LAB(c.k, "absence")} (illimité)</option></select></label>` : ""}` : ""}</div>`;
   openSheet(`<h2>Découper « ${esc(m ? m.nom : "dossier")} »</h2><div class="info">${s.secs.filter(c => c.k).length} partie(s) reconnue(s) sur ${s.total} pages. Le fichier complet est conservé tel quel (c'est lui qui part avec le bail) : chaque ligne créée ouvre seulement ses pages. Corrige le type ou les pages si besoin, décoche ce que tu ne veux pas.</div>${splDups(m || {}).length ? `<div class="info"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="sp-dup" checked> <span>${splDups(m).length} copie(s) du même fichier sont rangées dans d'autres catégories (${esc([...new Set(splDups(m).map(x => x.sub ? annexLabel(x.sub) : "Autre"))].join(", "))}) : je les retire, les lignes ci-dessous les remplacent.</span></label></div>` : ""}${s.secs.map(row).join("")}
     <div class="btns"><button class="btn" style="flex:1" data-act="spl-ok">Créer les lignes</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
 }
@@ -7635,8 +7687,9 @@ async function splReread(d){
   const L = await loadPdfJs(), pdf = await L.getDocument({data:new Uint8Array(rec.buf.slice(0))}).promise, a = (d.pages || [1, 1])[0], b = Math.min(pdf.numPages, (d.pages || [1, 1])[1]); let txt = "";
   for (let i = a; i <= Math.min(b, a + 2); i++){ const tc = await (await pdf.getPage(i)).getTextContent(); txt += " " + tc.items.map(t => t.str).join(" "); }
   if (txt.replace(/\s/g, "").length < 80){ const pg = await pdf.getPage(a), vp = pg.getViewport({scale:2}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; await pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise; txt = await avOcr(cv); }
-  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt); if (!dt) return {err:"aucune date trouvée"};
-  d.date = dt; d.upd = Date.now(); return {date:dt, match};
+  const dt = avPickDate(txt), kw = AV_KW[d.sub], match = !kw || kw.test(txt), res = AV_RES[d.sub] ? avResOf(d.sub, txt) : ""; if (res) { d.res = res; d.upd = Date.now(); }
+  if (!dt) return res ? {date:d.date, match, res} : {err:"aucune date trouvée"};
+  d.date = dt; d.upd = Date.now(); return {date:dt, match, res};
 }
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act^='spl-']"); if (!b) return; const a = b.dataset.act;
   if (a === "spl-open") splStart(b.dataset.id);
