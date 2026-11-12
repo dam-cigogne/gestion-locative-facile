@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.70";
+const APP_VERSION = "1.7.71";
 const CHANGELOG = [
+  {v:"1.7.71", date:"2026-11-12", titre:"Accord de signature électronique, preuve par e-mail, bilan de sortie et restitution du dépôt", items:["Jour J : la case devient « ✍️ Signature électronique : oui ». Elle ajoute une étape « Accord du locataire pour la signature électronique » en tête du pas à pas (relecture de l'accord, signé à la fin avec les autres documents).","Dans cette étape : « 📧 Prévenir le locataire » prépare l'e-mail à envoyer la veille ou le jour même (liste des documents, possibilité de signer sur papier, réponse attendue « J'accepte la signature électronique »).","« 📎 Ajouter sa réponse » range sa réponse comme preuve : PDF (Mail › Imprimer › Enregistrer dans Fichiers), capture d'écran ou fichier .eml (transformé en PDF lisible, l'original est gardé). Elle est rangée avec le bail et cochée d'office dans le dossier du bail ; à la signature, « J'ai envoyé… » et « J'ai reçu sa confirmation » se cochent seuls.","Sortie : en bas de l'état des lieux et de l'inventaire de sortie, une carte « 🧾 Bilan de sortie » liste ce qui a changé depuis l'entrée (élément plus dégradé, objet manquant) et deux gros boutons : « ✅ Conforme à l'entrée » ou « ⚠️ Écarts constatés ».","« 💶 Calculer la restitution du dépôt » (aussi dans les étapes « Retenues » et « Dépôt restitué » du départ, et à la fin du jour J) : chaque écart et les loyers impayés en retenues possibles, à cocher avec le montant, plus des retenues libres ; total, somme à rendre et date limite (1 mois si conforme, 2 mois sinon, après la remise des clés). « 📄 Lettre de restitution » est préremplie avec le décompte, à envoyer ou faire signer ; le décompte est repris à la clôture du locataire."]},
   {v:"1.7.70", date:"2026-11-12", titre:"Jour J : une seule signature pour tous les documents, accord du locataire", items:["Arrivée / Départ › Jour J : nouvelle case « ✍️ Signer tout à la fin, en une seule fois ». À chaque étape (bail, état des lieux, inventaire, reçu du dépôt), tu remplis, tu relis le PDF (« 👁 Relire le PDF »), puis « ✓ Relu : étape suivante », sans signer.","Dernière étape « Signature de tous les documents » : tu relis et coches les documents, puis le bailleur signe et paraphe une fois, le locataire aussi. La signature et le paraphe sont reportés sur chaque document, avec sa propre page de preuve et sa propre empreinte.","Les PDF signés sont rangés comme d'habitude (bail et reçu avec le bail, états des lieux et inventaires dans la fiche du locataire) ; le bouton « 📦 Dossier d'envoi » les rassemble en un seul PDF. Sans la case, rien ne change : signature document par document.","En tête de la liste à signer : « Accord du locataire pour la signature électronique » (coché d'office). Le locataire y déclare avoir pu signer sur papier, avoir relu chaque document et accepter la signature unique reportée ; il liste chaque document avec sa référence (empreinte). Signé dans la même série, rangé avec le bail et joint au dossier du bail. Chaque page de preuve indique aussi les documents signés ensemble."]},
   {v:"1.7.69", date:"2026-11-12", titre:"Mode essai avec mes données, date de départ en gros", items:["Réglages › Aide › « Essai avec mes données » : l'appli travaille sur une copie de tes vraies données. Tu peux tout essayer (jour J, signatures, saisies, suppressions, documents) ; rien n'est enregistré. « Quitter l'essai » dans le bandeau remet tout exactement comme avant ; fermer l'appli annule aussi l'essai.","Pendant l'essai (comme en démo), les fichiers et photos ajoutés ou supprimés restent en mémoire : tes vrais documents ne sont jamais effacés. À l'entrée, une fiche résume tout ce qu'il faut savoir (ce qui est protégé, ce qui part quand même : PDF enregistré, mail ou SMS envoyé, rendez-vous d'agenda, réglages d'apparence) ; le bouton ℹ️ du bandeau la rouvre.","Date de départ du locataire : un encadré « 🚪 Départ du locataire » en haut de Biens › Arrivée/Départ et dans Biens › Locataires permet de la noter. Elle s'affiche en gros (« jeudi 19 novembre 2026 · dans 7 jours ») et aussi sur l'accueil ; un tap mène au départ pas à pas. L'étape « Date de départ fixée » se coche toute seule, et la date est reprise pour la clôture, la lettre de rappel et la restitution du dépôt."]},
   {v:"1.7.68", date:"2026-11-12", titre:"Jour J à ton ordre, bail et reçu du dépôt, mes modèles", items:["Avant de démarrer le jour J, range les étapes dans l'ordre que tu veux avec les flèches ▲ ▼ (par exemple 1 inventaire, 2 état des lieux, 3 bail…), puis « Démarrer dans cet ordre ». L'appli enchaîne ensuite dans cet ordre.","Arrivée : le bail est maintenant une étape du jour J (« Bail : relire, vérifier et signer »), en premier par défaut. La fenêtre du bail rappelle les trois gestes (relecture ensemble, vérification, signature) ; la signature à l'écran coche l'étape toute seule, et « ✓ Bail signé : passer à l'étape suivante » enchaîne sur la suite (utile après une signature papier).","Après l'état des lieux ou l'inventaire, « Enregistrer et passer à l'étape suivante » ouvre aussi directement le bail si c'est la suite.","Nouveau : reçu du dépôt de garantie, signé à l'écran par toi et le locataire (montant, date, moyen de paiement, rappel des délais de restitution). Il est rangé avec le bail et coché d'office dans le dossier du bail. À l'arrivée, c'est l'étape « Dépôt de garantie » du jour J ; on le trouve aussi dans Biens › Locataires › lettres.","Mes modèles : dans un état des lieux ou un inventaire, « ☆ Enregistrer comme modèle » garde la liste (sans les états) sous le nom que tu choisis, par exemple « État des lieux vierge T2 », et pour le logement de ton choix. Tous tes modèles sont dans Biens › Documents › Mes modèles : Utiliser, PDF vierge, Renommer, Supprimer. Le modèle du logement est proposé d'office quand tu crées un nouveau document. Les anciens modèles ★ sont repris automatiquement."]},
@@ -1728,7 +1729,9 @@ const HELP = {
     "Les fiches, pièces et documents restent sur cet appareil et ne sont pas dans la sauvegarde. Efface les dossiers des candidats non retenus."]},
   "bld-mvt":{t:"Biens › Arrivée/Départ", p:"La démarche complète, étape par étape.", l:[
     "Chaque démarche est en trois temps : Préparatif (cases à cocher), Jour J (étape par étape : un gros bouton ouvre le document ; en bas du document, « Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire et ouvre la suite) et Après.",
-    "Signature groupée : coche « ✍️ Signer tout à la fin, en une seule fois » dans le Jour J. Chaque document est seulement relu (PDF de relecture) ; à la dernière étape, une seule signature et un seul paraphe de chaque partie sont reportés sur tous les documents cochés.",
+    "Bilan de sortie : en bas de l'état des lieux et de l'inventaire de sortie, la liste des différences avec l'entrée et ton constat (conforme / écarts). « 💶 Calculer la restitution du dépôt » propose les retenues (écarts, impayés), calcule la somme à rendre et la date limite, et prépare la lettre de restitution.",
+    "Preuve par e-mail : dans l'étape « Accord », « 📧 Prévenir le locataire » prépare l'e-mail de la veille et « 📎 Ajouter sa réponse » range sa réponse (PDF, capture ou .eml) avec le bail, dans le dossier du bail.",
+    "Signature groupée : coche « ✍️ Signature électronique : oui » dans le Jour J (ajoute l'étape « Accord du locataire »). Chaque document est seulement relu (PDF de relecture) ; à la dernière étape, une seule signature et un seul paraphe de chaque partie sont reportés sur tous les documents cochés.",
     "Jour J dans l'ordre que tu veux : avant de démarrer, range les étapes avec ▲ ▼, puis « Démarrer dans cet ordre » ; « Faire maintenant » permet encore de sauter à une autre étape. À l'arrivée, le bail (relire, vérifier, signer) et le reçu signé du dépôt de garantie sont des étapes du jour J ; le reçu part dans le dossier du bail.",
     "Avant le jour J : dans le Préparatif de l'arrivée, « Gagne du temps » te laisse envoyer le bail en pré-lecture au locataire et préparer l'état des lieux et l'inventaire. Au départ : lettre de rappel, état des lieux et inventaire de sortie préparés d'avance. Le jour J ils sont marqués « attend le jour J ».",
     "Quand le Jour J est terminé, « Dossier d'envoi » assemble bail, annexes, états des lieux et inventaires en un seul PDF : « Relire le PDF » pour le vérifier, puis envoi.",
@@ -4045,7 +4048,7 @@ const etatSel = (cur, attrs) => `<select ${attrs}><option value="">État…</opt
 const chipEtat = s => s ? `<span class="chip ${s === "Mauvais" ? "bad" : s === "Moyen" ? "warn" : "ok"}">${esc(s)}</span>` : "";
 
 function docsDrill(){
-  if (V.doc){ const e = docCur(); if (!e || e.bien !== V.bsel) V.doc = null; else return jjTop(e, V.doc.kind) + (V.doc.kind === "edl" ? viewEdl(e) : viewInv(e)) + jjDocCard(e, V.doc.kind); }
+  if (V.doc){ const e = docCur(); if (!e || e.bien !== V.bsel) V.doc = null; else return jjTop(e, V.doc.kind) + (V.doc.kind === "edl" ? viewEdl(e) : viewInv(e)) + bilanCard(e, V.doc.kind) + jjDocCard(e, V.doc.kind); }
   return null;
 }
 function viewDocsTenant(){
@@ -4727,8 +4730,8 @@ const MVT = {
     ["sig", "Signatures", "Document signé par les deux parties, un exemplaire chacun.", ["docs", "Aller aux documents"]],
     ["cle", "Clés rendues, compteurs relevés, adresse de renvoi notée", "Garde la nouvelle adresse du locataire pour lui envoyer le décompte.", null],
     ["sol", "Loyers et charges à jour", "Vérifie le solde du locataire ; une lettre de loyer impayé est prête si besoin.", ["impaye", "Lettre d'impayé"]],
-    ["ret", "Retenues justifiées", "Devis ou factures, en tenant compte de la vétusté. Rien sans justificatif.", null],
-    ["res", "Dépôt de garantie restitué", "Sous 1 mois si l'état de sortie est conforme à l'entrée, sous 2 mois sinon (à vérifier sur le texte en vigueur).", ["depot", "Lettre de restitution"]],
+    ["ret", "Retenues justifiées", "Le bilan de sortie liste ce qui a changé depuis l'entrée (dégradations, objets manquants) ; tu choisis ce que tu retiens, avec devis ou factures, en tenant compte de la vétusté. Rien sans justificatif.", ["rest", "Bilan et retenues"]],
+    ["res", "Dépôt de garantie restitué", "Sous 1 mois après la remise des clés si l'état de sortie est conforme à l'entrée, sous 2 mois sinon (article 22 de la loi du 6 juillet 1989). La fenêtre calcule la somme à rendre, la date limite et prépare la lettre.", ["rest", "Restitution du dépôt"]],
     ["qui", "Dernière quittance et solde de tout compte", "À remettre une fois tout réglé.", null],
     ["pl", "Permis de louer : prévoir la demande pour le prochain locataire", "Ce logement est soumis au permis de louer : une nouvelle autorisation est à demander avant chaque nouvelle location. Prépare-la dès le départ pour ne pas bloquer la relocation.", ["permis", "Permis de louer"]],
     ["clo", "Locataire clos dans l'appli et dans Excel", "Renseigne la date de fin du bail. Prépare les diagnostics et le bien pour la prochaine location.", ["loc", "Fiche locataire"]]
@@ -4750,15 +4753,26 @@ const MV_PH = {arr:{pre:["dos","pl","diag","bail"], jj:["sig","edl","inv","dep",
 const mvtOk = (bien, k) => !(k === "inv" && bkind(bien) === "vide") && !(k === "pl" && !plOn(bien));
 /* Étapes du jour J, dans l'ordre choisi par l'utilisateur (r.jjOrder) puis l'ordre par défaut */
 function mvtJJ(bien, mv, r){ r = r || docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === mv && !x.del) || {};
-  const def = MV_PH[mv].jj, ord = (r.jjOrder || []).filter(k => def.includes(k)).concat(def.filter(k => !(r.jjOrder || []).includes(k)));
-  const L = ord.map(k => MVT[mv].etapes.find(e => e[0] === k)).filter(e => e && mvtOk(bien, e[0]) && !(r.grp && mv === "dep" && e[0] === "sig"));
+  const def = r.grp ? ["acc"].concat(MV_PH[mv].jj) : MV_PH[mv].jj, ord = (r.jjOrder || []).filter(k => def.includes(k)).concat(def.filter(k => !(r.jjOrder || []).includes(k)));
+  const L = ord.map(k => k === "acc" ? ACC : MVT[mv].etapes.find(e => e[0] === k)).filter(e => e && mvtOk(bien, e[0]) && !(r.grp && mv === "dep" && e[0] === "sig"));
   return r.grp ? L.concat([GSIG]) : L; }
 /* Signature groupée : une étape finale qui signe tous les documents en une fois */
+const ACC = ["acc", "Accord du locataire pour la signature électronique", "Explique au locataire que tout sera signé à l'écran, en une fois, à la fin. Relis l'accord avec lui ; il le signera avec les autres documents. Tu peux aussi le prévenir par e-mail et ranger sa réponse.", ["acc", "Ouvrir l'accord"]];
 const GSIG = ["gsig", "✍️ Signature de tous les documents, en une fois", "Bailleur puis locataire signent et paraphent une seule fois : la signature et le paraphe sont reportés sur chaque document coché (bail, état des lieux, inventaire, reçu du dépôt). Relis chaque PDF avant.", ["gsig", "Signer tout en une fois"]];
-const grpBox = (mv, r) => `<label style="display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:10px 12px;border-radius:12px;background:rgba(14,107,92,.08)"><input type="checkbox" data-jjgrp="${mv}" ${r.grp ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span><b>✍️ Signer tout à la fin, en une seule fois</b> (signature électronique)<br><span class="small muted">À chaque étape : tu remplis, tu relis le PDF, puis étape suivante. À la fin, une seule signature et un seul paraphe pour tous les documents, reportés sur chacun.</span></span></label>`;
+const grpBox = (mv, r) => `<label style="display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:10px 12px;border-radius:12px;background:rgba(14,107,92,.08)"><input type="checkbox" data-jjgrp="${mv}" ${r.grp ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span><b>✍️ Signature électronique : oui</b><br><span class="small muted">Ajoute l'étape « Accord du locataire pour la signature électronique ». À chaque étape : tu remplis, tu relis le PDF, puis étape suivante, sans signer. À la fin, une seule signature et un seul paraphe pour tous les documents (accord compris), reportés sur chacun.</span></span></label>`;
+/* Étape « Accord » : relecture de l'accord + preuve par e-mail */
+function sheetAcc(mv){
+  const bien = V.bsel, r = mvtRec(bien, mv);
+  openSheet(`<h2>Accord pour la signature électronique</h2><div class="small muted">Le locataire choisit de signer à l'écran plutôt que sur papier. Cet accord liste les documents ; il sera <b>signé à la fin avec eux</b>, avec leur référence.</div>
+    <ul style="margin:8px 0 8px 18px;padding:0;font-size:14px">${mpDocs(bien, mv).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="acc-rel" data-mv="${mv}">👁 Relire l'accord</button></div>
+    ${mpBox(bien, mv, r)}
+    <div class="btns"><button class="btn" style="flex:1" data-act="acc-ok" data-mv="${mv}">✓ Relu : étape suivante</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+}
 /* Après une étape : ouvre directement la suivante si c'est un document (état des lieux, inventaire, bail), sinon retour au pas à pas */
 function jjGoNext(bien, mv, r, warn){
   const nx = mvtCur(bien, mv, r), act = nx && nx[3] && nx[3][0], m = act && /^(edl|inv)-(e|s)$/.exec(act); r.upd = Date.now();
+  if (act === "acc"){ r.jjCur = "acc"; persist(); V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); sheetAcc(mv); return; }
   if (act === "gsig"){ r.jjCur = "gsig"; persist(); closeSheet(); V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); sheetGsig(mv); return; }
   if (m || act === "bail" || act === "recu"){ r.jjCur = nx[0]; persist(); toast("Étape suivante : " + nx[1] + (warn || ""));
     if (m) mvtOpenDoc(m[1], m[2] === "e" ? "entree" : "sortie"); else { V.doc = null; V.bsub = "loc"; render(); if (act === "bail") sheetBail(); else sheetLettre("recu"); } return; }
@@ -4835,7 +4849,7 @@ function viewMvt(){
     const jjHtml = !started ? intro : jj.map(e => { if (e !== cur) return row(e, !r.done[e[0]], true); const [k, ti, hint, act] = e;
       return `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div class="small muted">Étape ${idx} sur ${jj.length} · en cours</div><div style="font-size:16px;font-weight:700;margin:2px 0 4px">${esc(ti)}${chipOf(k)}</div><div class="small muted" style="margin-bottom:10px">${esc(hint)}</div>
         <div class="btns">${act ? `<button class="btn" style="flex:1" data-act="mv-go" data-v="${act[0]}">▶ ${act[1]}</button>` : ""}${k === "gsig" ? "" : `<button class="btn ${act ? "ghost" : ""}" style="flex:1" data-act="mv-next" data-mv="${mv}" data-k="${k}">✓ Fait, étape suivante</button>`}</div></div>`; }).join("");
-    const fin = cur ? "" : `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700">✅ Jour J terminé</div><div class="small muted" style="margin:4px 0 10px">Dernière étape : le dossier d'envoi. Tu relis, tu coches les pièces à joindre (bail, ERP et diagnostics, permis, états des lieux, inventaires) et tout part dans un seul PDF.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier d'envoi</button></div></div>`;
+    const fin = cur ? "" : `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700">✅ Jour J terminé</div><div class="small muted" style="margin:4px 0 10px">Dernière étape : le dossier d'envoi. Tu relis, tu coches les pièces à joindre (bail, ERP et diagnostics, permis, états des lieux, inventaires) et tout part dans un seul PDF.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier d'envoi</button>${mv === "dep" ? '<button class="btn ghost" style="flex:1" data-act="rest-open">💶 Restitution du dépôt</button>' : ""}</div></div>`;
     return `<div class="card"><div class="top"><h2>${M.titre}</h2><span class="chip ${n === vis.length ? "ok" : "warn"}">${n}/${vis.length}</span></div>
       ${head("1 · Préparatif (avant le jour J)", cnt(pre), pre.length)}${pre.map(e => row(e)).join("")}${adv}
       ${head("2 · Jour J, pas à pas", cnt(jj), jj.length)}${r.done.gsig ? "" : grpBox(mv, r)}${jjHtml}${started ? fin : ""}
@@ -4874,6 +4888,8 @@ document.addEventListener("click", async ev => {
       if (v === "docs" || v === "loc"){ V.bsub = v; render(); break; }
       if (v === "bail"){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "arr" && !x.del); if (r && r.jjStart && !r.done.sig){ r.jjCur = "sig"; persist(); }
         V.bsub = "loc"; render(); sheetBail(); break; }
+      if (v === "rest"){ sheetRest(V.bsel); break; }
+      if (v === "acc"){ const mvA = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "dep" && x.grp && x.jjStart && !x.done.acc) ? "dep" : "arr"; sheetAcc(mvA); break; }
       if (v === "gsig"){ sheetGsig(docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "dep" && x.grp && x.jjStart && !x.done.gsig) ? "dep" : "arr"); break; }
       if (v === "recu"){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "arr" && !x.del); if (r && r.jjStart && !r.done.dep){ r.jjCur = "dep"; persist(); } V.bsub = "loc"; render(); sheetLettre("recu"); break; }
       if (v === "impaye" || v === "depot" || v === "rappel"){ V.bsub = "loc"; render(); sheetLettre(v); break; }
@@ -4895,6 +4911,8 @@ document.addEventListener("click", async ev => {
         const bytes = it.e ? await pdfRelect(() => it.k === "edl" ? edlPdf(it.e) : invPdf(it.e), it.e) : it.k === "bail" ? await pdfRelect(async () => bailPdf(it.o)) : letterPdf("recu", it.o);
         await relectOpen("RELECTURE-" + cleanName(it.titre) + ".pdf", bytes); } catch(err){ toast("PDF impossible : " + err.message); } break; }
     case "gs-go": await gsGo(); break;
+    case "acc-rel": { const mv = b.dataset.mv; await relectOpen("RELECTURE-accord-signature-electronique.pdf", letterPdf("consent", consentO(V.bsel, mv, mpDocs(V.bsel, mv).map(x => [x, ""])))); break; }
+    case "acc-ok": { const mv = b.dataset.mv, r = mvtRec(V.bsel, mv); r.done.acc = todayIso(); r.pendSig = r.pendSig || {}; r.pendSig.acc = 1; delete r.jjCur; closeSheet(); jjGoNext(V.bsel, mv, r, ""); break; }
     case "jj-step": { const r = mvtRec(V.bsel, "arr"); r.done[b.dataset.k] = todayIso(); delete r.jjCur; closeSheet(); jjGoNext(V.bsel, "arr", r, ""); break; }
     case "mv-cur": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjCur = b.dataset.k; r.upd = Date.now(); persist(); render(); break; }
     case "mv-next": { const r = mvtRec(V.bsel, b.dataset.mv); r.done[b.dataset.k] = todayIso(); delete r.jjCur; r.upd = Date.now(); persist(); render(); window.scrollTo(0, 0); break; }
@@ -4940,6 +4958,7 @@ function departCard(bien){
   const d = t.depart, col = d ? (d < todayIso() ? "#5C6B66" : "#C77D00") : "var(--line)";
   return `<div class="card" style="border:2px solid ${col}"><div class="small muted">🚪 Départ du locataire · ${esc(t.nom)}</div>
     ${d ? `<div style="font-size:24px;font-weight:800;line-height:1.2;margin:4px 0">${esc(frDateLong(d))}</div><div style="font-size:16px;font-weight:600;color:${col}">${departIn(d)}</div>` : `<div style="font-size:16px;font-weight:600;margin:4px 0">Pas encore de date de départ</div><div class="small muted">Note-la dès que le locataire te donne son congé : elle s'affiche en gros ici, sur l'accueil et dans Arrivée/Départ.</div>`}
+    ${t.restit ? `<div class="small" style="margin-top:6px;font-weight:600">💶 Dépôt : ${t.restit.net >= 0 ? eur(t.restit.net) + " à rendre" : "le locataire doit " + eur(-t.restit.net)}${t.restit.paid ? " · rendu ✓" : " avant le " + frDate(t.restit.due)}</div>` : ""}
     <label class="f" style="margin-top:6px">Date de départ prévue<input type="date" data-dep-date="${t.id}" value="${esc(d || "")}"></label>
     ${d ? `<div class="btns"><button class="btn sm ghost" data-act="dep-clear" data-id="${t.id}">Effacer la date</button><button class="btn sm ghost" data-act="mv-open" data-v="dep">Voir le départ pas à pas</button></div>` : ""}</div>`;
 }
@@ -5020,7 +5039,7 @@ async function gsGo(){
 document.addEventListener("change", ev => {
   const el = ev.target; if (!el || !el.dataset || !el.dataset.jjgrp) return;
   const r = mvtRec(V.bsel, el.dataset.jjgrp); r.grp = el.checked; if (!el.checked) delete r.jjCur; r.upd = Date.now(); persist(); keepScroll(() => {});
-  toast(el.checked ? "Signature à la fin : relis chaque document, tout sera signé en une fois à la dernière étape" : "Signature document par document");
+  toast(el.checked ? "Signature électronique : étape « Accord » ajoutée ; tout sera signé en une fois à la dernière étape" : "Signature document par document");
 });
 
 /* ============ Reprendre une liste depuis un PDF ou un texte collé (inventaire, état des lieux) ============ */
@@ -5686,8 +5705,8 @@ function sheetClot(tid){
     <div class="small muted">À faire quand le locataire est parti (ou part). Cela : 1) enregistre la date de fin du bail, 2) coche les étapes « Retenues », « Dépôt restitué » et « Locataire clos » du départ (Biens › Arrivée/Départ), 3) calcule le dépôt à rendre. Tu peux annuler en rouvrant la fiche : rien n'est supprimé sans ta case cochée.</div>
     <label class="f">Date de fin du bail (départ)<input id="tc-fin" type="date" value="${esc(t.fin || t.depart || todayIso())}"></label>
     <div class="kv"><span>Dépôt de garantie versé</span><b>${eur(t.depot || 0)}</b></div>
-    <label class="f">Retenues justifiées (€) — dégradations, loyers impayés… avec devis ou factures<input id="tc-ret" inputmode="decimal" value="0"></label>
-    <div class="kv"><span>Dépôt à restituer</span><b id="tc-rest" data-dep="${t.depot || 0}">${eur(t.depot || 0)}</b></div>
+    <label class="f">Retenues justifiées (€) — dégradations, loyers impayés… avec devis ou factures<input id="tc-ret" inputmode="decimal" value="${t.restit ? fmtNum(t.restit.tot || 0) : "0"}"></label>
+    <div class="kv"><span>Dépôt à restituer</span><b id="tc-rest" data-dep="${t.depot || 0}">${eur(Math.max(0, (t.depot || 0) - (t.restit ? t.restit.tot || 0 : 0)))}</b></div>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" id="tc-res"> Le dépôt a déjà été rendu (coche l'étape « Dépôt restitué »)</label>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" id="tc-op"> Préparer l'opération de remboursement dans le journal (tu vérifies la catégorie et tu enregistres : rien n'est écrit tout seul)</label>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" id="tc-erase"> Effacer le dossier de candidature et les documents de ce locataire (${nf + nd} fichier(s), définitif, de cet appareil seulement)</label>
@@ -6025,6 +6044,7 @@ async function dkList(tid){
 /* classement des pièces selon le moment : entrée (nouveau bail) ou sortie (fin de bail) */
 function dkInfo(f, mode){
   const sortie = /sortie/i.test(f.nom), d = f.dir.replace(/^\d+ /, ""), n = f.nom;
+  if (/^01/.test(f.dir) && /reponse e-mail/i.test(n)) return {on:true, lvl:"con", tag:"Conseillé", why:"réponse écrite du locataire par e-mail : preuve extérieure à l'appli"};
   if (/^01/.test(f.dir) && /accord/i.test(n)) return {on:true, lvl:"con", tag:"Conseillé", why:"accord signé du locataire pour la signature électronique : renforce la preuve"};
   if (/^01/.test(f.dir) && /re[çc]u/i.test(n)) return {on:true, lvl:"con", tag:"Conseillé", why:mode === "sortie" ? "reçu signé du dépôt : montant à restituer" : "reçu signé du dépôt de garantie : preuve du versement"};
   if (/^01/.test(f.dir)) return {on:true, lvl:"obl", tag:"Obligatoire", why:mode === "sortie" ? "le contrat de référence pour solder le dossier" : "le contrat lui-même"};
@@ -7113,6 +7133,188 @@ async function modStore(k, bien){
 document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act='mod-gen']"); if (!b) return;
   try { await modStore(b.dataset.k, b.dataset.b || V.bsel); } catch(e){ toast("Génération impossible : " + (e && e.message || e)); } });
 
+/* ============ Preuves par e-mail : prévenir le locataire avant la signature, et ranger sa réponse dans le dossier ============ */
+/* Documents prévus pour la signature du jour J */
+function mpDocs(bien, mv){
+  const L = mv === "arr" ? ["Bail de location", "État des lieux d'entrée"] : ["État des lieux de sortie"];
+  if (bkind(bien) !== "vide") L.push(mv === "arr" ? "Inventaire du mobilier d'entrée" : "Inventaire du mobilier de sortie");
+  if (mv === "arr") L.push("Reçu du dépôt de garantie");
+  return L;
+}
+/* Destinataire : locataire actuel, sinon candidat retenu, sinon bail en préparation */
+function mpTenant(bien, mv){
+  const t = sendTenant(bien), r = mvtRec(bien, mv), bo = (r.drafts && r.drafts.bail) || {};
+  if (mv === "dep" && t) return {nom:t.nom || "", email:t.email || ""};
+  const c = (typeof candList === "function" ? candList() : []).filter(x => !x.del && x.bien === bien && /retenu/i.test(x.statut || "")).pop();
+  return {nom:(c && c.nom) || bo.loc || (t && t.nom) || "", email:(c && c.email) || (t && t.email) || ""};
+}
+const mpProofs = bien => docList("docs").filter(d => !d.del && d.bien === bien && d.kind === "bail" && d.sub === "mailproof");
+function mpText(bien, mv){
+  const p = mpTenant(bien, mv), t = sendTenant(bien), r = mvtRec(bien, mv), bo = (r.drafts && r.drafts.bail) || {};
+  const quand = mv === "dep" ? (t && t.depart) : (bo.debut || (t && t.debut));
+  const sj = "Signature électronique des documents – " + bienName(bien) + (quand ? " – " + frDate(quand) : "");
+  const body = "Bonjour" + (p.nom ? " " + p.nom.split(" ")[0] : "") + ",\n\n" +
+    (mv === "dep" ? "Pour l'état des lieux de sortie" : "Pour votre entrée dans le logement") + (quand ? " du " + frDate(quand) : "") + " (" + bienAdr(bien) + "), je vous propose de signer les documents électroniquement, sur mon téléphone ou ma tablette, en une seule fois :\n" +
+    mpDocs(bien, mv).map(x => "- " + x).join("\n") + "\n\n" +
+    "Vous pourrez relire chaque document avant de signer, et vous recevrez ensuite une copie de chacun par e-mail. Si vous préférez signer sur papier, dites-le-moi simplement.\n\n" +
+    "Merci de me répondre « J'accepte la signature électronique » pour confirmer.\n\nCordialement,\n" + ((S.cfg && S.cfg.bailleur) || bailleurInfo().nom || "");
+  return {sj, body, email:p.email, nom:p.nom};
+}
+function sheetMpPre(mv){
+  const bien = V.bsel, m = mpText(bien, mv);
+  openSheet(`<h2>📧 Prévenir le locataire avant la signature</h2><div class="small muted">À envoyer la veille ou le jour même. Sa réponse écrite (« J'accepte la signature électronique ») est une trace qui ne vient pas de l'appli : range-la ensuite avec « 📎 Ajouter sa réponse », elle part dans le dossier du bail.</div>
+    <label class="f">E-mail du locataire<input id="mp-mail" type="email" inputmode="email" value="${esc(m.email)}" autocomplete="off"></label>
+    <label class="f">Objet<input id="mp-sj" value="${esc(m.sj)}"></label>
+    <label class="f">Message<textarea id="mp-body" style="min-height:220px">${esc(m.body)}</textarea></label>
+    <div class="btns"><button class="btn" style="flex:1" data-act="mp-send" data-mv="${mv}">Ouvrir dans Mail</button><button class="btn ghost" data-act="mp-copy">Copier le texte</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+}
+/* ---------- Lecture d'un e-mail enregistré (.eml) → PDF lisible ---------- */
+function mpDecWords(s){ return String(s || "").replace(/=\?([^?]+)\?([BbQq])\?([^?]*)\?=/g, (_, cs, enc, txt) => { try { const b = enc.toUpperCase() === "B" ? Uint8Array.from(atob(txt), c => c.charCodeAt(0)) : mpQP(txt.replace(/_/g, " ")); return new TextDecoder(cs).decode(b); } catch(e){ return txt; } }); }
+function mpQP(s){ const out = []; s = s.replace(/=\r?\n/g, ""); for (let i = 0; i < s.length; i++){ if (s[i] === "=" && /^[0-9A-F]{2}$/i.test(s.substr(i + 1, 2))){ out.push(parseInt(s.substr(i + 1, 2), 16)); i += 2; } else out.push(s.charCodeAt(i) & 255); } return new Uint8Array(out); }
+function mpPart(raw){
+  const k = raw.search(/\r?\n\r?\n/), head = (k < 0 ? raw : raw.slice(0, k)).replace(/\r?\n[ \t]+/g, " "), body = k < 0 ? "" : raw.slice(k).replace(/^\r?\n\r?\n/, "");
+  const H = {}; head.split(/\r?\n/).forEach(l => { const i = l.indexOf(":"); if (i > 0) H[l.slice(0, i).trim().toLowerCase()] = l.slice(i + 1).trim(); });
+  return {H, body};
+}
+function mpBodyText(p){
+  const ct = p.H["content-type"] || "text/plain", bd = /boundary="?([^";]+)"?/i.exec(ct);
+  if (/multipart/i.test(ct) && bd){ const parts = p.body.split("--" + bd[1]).slice(1).map(x => mpPart(x.replace(/^\r?\n/, ""))).filter(x => x.H["content-type"] || x.body.trim());
+    const pl = parts.map(mpBodyText).filter(Boolean); const plain = parts.find(x => /text\/plain/i.test(x.H["content-type"] || "")); return plain ? mpBodyText(plain) : (pl[0] || ""); }
+  const te = (p.H["content-transfer-encoding"] || "").toLowerCase(), cs = (/charset="?([^";]+)"?/i.exec(ct) || [0, "utf-8"])[1];
+  let bytes; try { bytes = te === "base64" ? Uint8Array.from(atob(p.body.replace(/\s+/g, "")), c => c.charCodeAt(0)) : te === "quoted-printable" ? mpQP(p.body) : Uint8Array.from(p.body, c => c.charCodeAt(0) & 255); } catch(e){ bytes = new TextEncoder().encode(p.body); }
+  let txt; try { txt = new TextDecoder(cs).decode(bytes); } catch(e){ txt = new TextDecoder().decode(bytes); }
+  if (/text\/html/i.test(ct)) txt = txt.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+  return /^(text|multipart)/i.test(ct) || !p.H["content-type"] ? txt : "";
+}
+function mpEmlPdf(raw){
+  const p = mpPart(raw), d = new PdfDoc("E-mail du locataire"), M = d.M;
+  d.text(M, d.y, "E-MAIL REÇU (copie conservée comme preuve)", {size:14, bold:true, color:"#0E6B5C"}); d.y -= 24;
+  dTable(d, [{h:"Champ", w:110}, {h:"Valeur", w:401}], [["De", mpDecWords(p.H.from)], ["À", mpDecWords(p.H.to)], ["Date", p.H.date || ""], ["Objet", mpDecWords(p.H.subject)]].map(r => [r[0], String(r[1] || "").slice(0, 90)]));
+  d.y -= 6; const txt = mpBodyText(p).replace(/\r/g, "").replace(/[^\n\t\x20-\xFF€œŒ’‘“”…–—«»]/g, "").split("\n").slice(0, 260);
+  for (const l of txt) d.para(l || " ", 10, 13.5);
+  d.y -= 8; d.para("Copie lisible du fichier .eml d'origine, rangée par l'appli. Le fichier d'origine est conservé avec : il contient les en-têtes techniques de la messagerie.", 8.5, 12);
+  return d.finish("E-mail du locataire");
+}
+/* ---------- Ajout de la réponse du locataire ---------- */
+function sheetMpAdd(){
+  openSheet(`<h2>📎 Ajouter la réponse du locataire</h2><div class="small muted">Sa réponse par e-mail (« J'accepte la signature électronique » ou « Lu et approuvé ») est rangée avec le bail et cochée d'office dans le dossier du bail.</div>
+    <div class="info" style="margin-top:8px"><b>Sur iPhone / iPad (Mail)</b> : ouvre sa réponse › bouton Répondre ↩ › <b>Imprimer</b> › bouton Partager › <b>Enregistrer dans Fichiers</b> (ça fait un PDF). Ou fais simplement une <b>capture d'écran</b>.<br><b>Sur Mac</b> : Fichier › Exporter au format PDF, ou glisse le mail sur le bureau (fichier .eml).<br><b>Outlook / Gmail</b> : Imprimer › Enregistrer en PDF.</div>
+    <label class="f">Fichier (PDF, photo ou .eml)<input id="mp-file" type="file" accept=".pdf,.eml,image/*,message/rfc822"></label>
+    <label class="f">Date de la réponse<input id="mp-date" type="date" value="${todayIso()}"></label>
+    <div class="btns"><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+}
+document.addEventListener("change", async ev => {
+  const f = ev.target && ev.target.id === "mp-file" && ev.target.files[0]; if (!f) return;
+  const bien = V.bsel, date = ($("#mp-date") || {}).value || todayIso();
+  try {
+    let buf = await f.arrayBuffer(), name = f.name, type = f.type || "application/octet-stream";
+    if (/\.eml$/i.test(f.name) || type === "message/rfc822"){ const raw = new TextDecoder("latin1").decode(new Uint8Array(buf));
+      const ofid = uid(); await flPut(ofid, {name:f.name, type:"message/rfc822", buf}); docList("docs").push({id:ofid, bien, kind:"autre", sub:"mailorig", nom:"E-mail d'origine (.eml) du locataire", fname:f.name, date, type:"message/rfc822", size:f.size, upd:Date.now()});
+      const pdf = mpEmlPdf(raw); buf = pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength); name = f.name.replace(/\.eml$/i, "") + ".pdf"; type = "application/pdf"; }
+    const fid = uid(), ext = (name.match(/\.[a-z0-9]+$/i) || [".pdf"])[0]; name = "Reponse e-mail du locataire " + date + ext; await flPut(fid, {name, type, buf});
+    docList("docs").push({id:fid, bien, kind:"bail", sub:"mailproof", nom:"Réponse e-mail du locataire (reçue le " + frDate(date) + ")", fname:name, date, type, size:buf.byteLength, upd:Date.now()});
+    for (const mv of ["arr", "dep"]){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === mv && !x.del); if (r && r.jjStart){ r.mailRep = date; r.upd = Date.now(); } }
+    persist(); closeSheet(); render(); toast("Réponse du locataire rangée avec le bail : elle part dans le dossier du bail");
+  } catch(e){ toast("Fichier non enregistré : " + (e && e.message || e)); }
+});
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
+  if (a === "mp-pre") return sheetMpPre(b.dataset.mv);
+  if (a === "mp-add") return sheetMpAdd();
+  if (a === "mp-copy"){ try { await navigator.clipboard.writeText($("#mp-sj").value + "\n\n" + $("#mp-body").value); toast("Texte copié"); } catch(e){ toast("Copie impossible"); } return; }
+  if (a === "mp-send"){ const em = $("#mp-mail").value.trim(); if (!em) return toast("Indique l'e-mail du locataire");
+    const r = mvtRec(V.bsel, b.dataset.mv); r.preMail = todayIso(); r.upd = Date.now(); persist();
+    location.href = "mailto:" + encodeURIComponent(em).replace(/%40/g, "@") + "?subject=" + encodeURIComponent($("#mp-sj").value) + "&body=" + encodeURIComponent($("#mp-body").value); return; }
+});
+/* Encadré dans le jour J (mode signature groupée) */
+function mpBox(bien, mv, r){
+  const n = mpProofs(bien).length;
+  return `<div style="margin:0 0 8px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)"><div style="font-weight:700">📧 Preuve par e-mail (conseillé)</div>
+    <div class="small muted">La veille ou le jour même, préviens le locataire par e-mail ; sa réponse écrite rejoint le dossier.${r.preMail ? " E-mail préparé le " + frDate(r.preMail) + "." : ""}${n ? " <b>" + n + " réponse(s) rangée(s)</b>." : ""}</div>
+    <div class="btns"><button class="btn sm ghost" data-act="mp-pre" data-mv="${mv}">📧 Prévenir le locataire</button><button class="btn sm ghost" data-act="mp-add">📎 Ajouter sa réponse</button></div></div>`;
+}
+
+/* ============ Sortie : bilan entrée / sortie et restitution du dépôt de garantie ============ */
+/* Écarts entre l'entrée et la sortie (état des lieux et inventaire de sortie du locataire actuel) */
+function sortieEcarts(bien){
+  const edl = mvtDoc(bien, "edl", "sortie"), inv = mvtOk(bien, "inv") ? mvtDoc(bien, "inv", "sortie") : null, E = [];
+  if (edl) for (const p of edl.pieces || []) for (const i of p.items || []){
+    if (i.etat && i.e0 && RANK[i.etat] > RANK[i.e0]) E.push({src:"edl", id:i.id, lib:p.nom + " › " + i.nom, txt:"entrée " + i.e0 + " → sortie " + i.etat + (i.com ? " · " + i.com : "")});
+    else if (i.etat === "Mauvais" && !i.e0) E.push({src:"edl", id:i.id, lib:p.nom + " › " + i.nom, txt:"sortie Mauvais (pas d'état d'entrée relié)" + (i.com ? " · " + i.com : "")}); }
+  if (inv) for (const i of inv.items || []){
+    const q0 = parseNum(i.q0), q = parseNum(i.qte), manque = i.q0 && q0 > 0 && !isNaN(q) && q < q0;
+    if (manque) E.push({src:"inv", id:i.id, lib:(i.grp || "Mobilier") + " › " + i.nom, txt:"manque " + (q0 - q) + " sur " + q0 + (i.com ? " · " + i.com : "")});
+    else if (i.etat && i.e0 && RANK[i.etat] > RANK[i.e0]) E.push({src:"inv", id:i.id, lib:(i.grp || "Mobilier") + " › " + i.nom, txt:"entrée " + i.e0 + " → sortie " + i.etat + (i.com ? " · " + i.com : "")}); }
+  return {edl, inv, E};
+}
+/* Carte en bas de l'état des lieux / inventaire de sortie : à cocher en gros */
+function bilanCard(e, kind){
+  if (!e || e.type !== "sortie") return ""; const X = sortieEcarts(e.bien); if ((kind === "edl" ? X.edl : X.inv) !== e) return "";
+  const L = X.E.filter(x => x.src === kind), bad = e.bilan === "ecart", ok = e.bilan === "ok";
+  const big = (v, lab, col, on) => `<button type="button" data-act="bil-set" data-v="${v}" style="flex:1;min-height:64px;padding:10px;border-radius:14px;border:3px solid ${col};background:${on ? col : "transparent"};color:${on ? "#fff" : "inherit"};font:inherit;font-size:16px;font-weight:800;cursor:pointer">${lab}</button>`;
+  return `<div class="card" style="border:3px solid ${bad ? "#B3261E" : ok ? "#1E7B4F" : "#C77D00"}"><h2>🧾 Bilan de sortie · ${kind === "edl" ? "état des lieux" : "inventaire"}</h2>
+    ${L.length ? `<div class="small" style="font-weight:700;color:#B3261E;margin-bottom:4px">${L.length} différence(s) avec l'entrée :</div><div class="rows">${L.map(x => `<div class="row" style="padding:6px 0"><div class="main"><div class="t">⚠️ ${esc(x.lib)}</div><div class="s">${esc(x.txt)}</div></div></div>`).join("")}</div>`
+      : `<div class="small muted">Aucune dégradation ni élément manquant repéré par rapport à l'entrée${(kind === "edl" ? X.edl : X.inv) && !(kind === "edl" ? (X.edl.pieces || []).some(p => p.items.some(i => i.e0)) : (X.inv.items || []).some(i => i.e0 || i.q0)) ? " (attention : pas d'état d'entrée relié, compare à la main)" : ""}.</div>`}
+    <div class="small muted" style="margin:8px 0 6px">Ton constat, à cocher (il sert au calcul du dépôt à rendre) :</div>
+    <div class="btns" style="gap:8px">${big("ok", "✅ Conforme à l'entrée", "#1E7B4F", ok)}${big("ecart", "⚠️ Écarts constatés", "#B3261E", bad)}</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="rest-open">💶 Calculer la restitution du dépôt</button></div></div>`;
+}
+/* ---------- Restitution du dépôt de garantie ---------- */
+const addMonthsIso = (iso, n) => { const d = new Date((iso || todayIso()) + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
+function restLines(bien){
+  const t = sendTenant(bien) || {}, X = sortieEcarts(bien), old = (t.restit && t.restit.lines) || [], s = soldeLoc(bien), du = r2(sum((s.retard || []).map(j => j.montant)));
+  const L = X.E.map(x => { const o = old.find(y => y.id === x.id) || {}; return {id:x.id, lib:x.lib, txt:x.txt, on:!!o.on, mt:o.mt || 0}; });
+  if (du > 0){ const o = old.find(y => y.id === "impayes") || {on:true, mt:du}; L.push({id:"impayes", lib:"Loyers et charges impayés", txt:(s.retard || []).map(j => MOIS[mo(j)].toLowerCase() + " " + yr(j)).join(", "), on:o.on, mt:o.mt || du}); }
+  return {t, X, L, extra:(t.restit && t.restit.extra) || ""};
+}
+function sheetRest(bien){
+  const {t, X, L, extra} = restLines(bien); if (!t.id) return toast("Aucun locataire pour ce logement");
+  const remise = t.fin || t.depart || todayIso(), allOk = [X.edl, X.inv].filter(Boolean).every(e => e.bilan === "ok") && !L.some(l => l.on && l.id !== "impayes");
+  const conf = (t.restit && t.restit.conf) || (allOk && !X.E.length ? "conforme" : "ecart");
+  V.rest = {bien, L};
+  openSheet(`<h2>💶 Restitution du dépôt de garantie</h2><div class="small muted">${esc(t.nom)} · ${esc(bienName(bien))}</div>
+    <div class="kv"><span>Dépôt de garantie versé</span><b>${eur(t.depot || 0)}</b></div>
+    <label class="f">Remise des clés<input type="date" id="rs-cles" value="${esc(remise)}"></label>
+    ${dxS("rs-conf", "État des lieux de sortie", [["conforme", "Conforme à l'entrée : à rendre sous 1 mois"], ["ecart", "Écarts constatés : à rendre sous 2 mois"]], conf)}
+    <div style="font-weight:700;margin:10px 0 4px">Retenues possibles</div>
+    ${L.length ? L.map((l, i) => `<div style="padding:8px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" data-rs-on="${i}" ${l.on ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span><b>${esc(l.lib)}</b><br><span class="small muted">${esc(l.txt)}</span></span></label>
+      <div class="grid2" style="margin:4px 0 0 32px"><input data-rs-mt="${i}" inputmode="decimal" placeholder="Montant retenu (€)" value="${l.mt ? fmtNum(l.mt) : ""}"></div></div>`).join("") : '<div class="small muted">Aucun écart repéré entre l\'entrée et la sortie, et aucun impayé.</div>'}
+    <label class="f">Autres retenues (une par ligne : libellé ; montant)<textarea id="rs-extra" placeholder="Ménage non fait ; 80">${esc(extra)}</textarea></label>
+    <div class="info" style="margin-top:6px">Une retenue doit être <b>justifiée</b> (devis, facture, photos de l'état des lieux) et tenir compte de la <b>vétusté</b> (usure normale). Rien n'est retenu sans justificatif.</div>
+    <div class="kv"><span>Total des retenues</span><b id="rs-tot">—</b></div>
+    <div class="kv" style="font-size:18px"><span>À rendre au locataire</span><b id="rs-net">—</b></div>
+    <div class="small muted" id="rs-due"></div>
+    <label style="display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:14px"><input type="checkbox" id="rs-paid" ${t.restit && t.restit.paid ? "checked" : ""}> Le dépôt est rendu (virement fait)</label>
+    <div class="btns"><button class="btn" style="flex:1" data-act="rest-letter">📄 Lettre de restitution (à envoyer ou signer)</button></div>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="rest-save">💾 Enregistrer le décompte</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
+    <div class="small muted">Délais de l'article 22 de la loi du 6 juillet 1989 : 1 mois après la remise des clés si l'état de sortie est conforme, 2 mois sinon. En cas de retard, la loi prévoit une majoration de 10 % du loyer mensuel hors charges par mois de retard commencé. Je ne suis pas juriste : en cas de doute, ADIL.</div>`);
+  restCalc();
+}
+function restRead(){
+  const R = V.rest; if (!R) return null; const L = R.L.map((l, i) => Object.assign({}, l, {on:!!($(`[data-rs-on="${i}"]`) || {}).checked, mt:parseNum(($(`[data-rs-mt="${i}"]`) || {}).value) || 0}));
+  const extra = ($("#rs-extra") || {}).value || "", ex = extra.split("\n").map(l => { const k = l.lastIndexOf(";"); return k < 0 ? null : [l.slice(0, k).trim(), parseNum(l.slice(k + 1)) || 0]; }).filter(x => x && x[0] && x[1] > 0);
+  const ret = L.filter(l => l.on && l.mt > 0).map(l => [l.lib, l.mt]).concat(ex), t = sendTenant(R.bien) || {}, tot = r2(sum(ret.map(r => r[1]))), conf = ($("#rs-conf") || {}).value || "ecart", cles = ($("#rs-cles") || {}).value || todayIso();
+  return {L, extra, ret, tot, net:r2((t.depot || 0) - tot), conf, cles, due:addMonthsIso(cles, conf === "conforme" ? 1 : 2), paid:!!($("#rs-paid") || {}).checked};
+}
+function restCalc(){ const o = restRead(); if (!o) return; const set = (id, v) => { const e = document.getElementById(id); if (e) e.innerHTML = v; };
+  set("rs-tot", eur(o.tot)); set("rs-net", o.net >= 0 ? eur(o.net) : "le locataire doit encore " + eur(-o.net)); set("rs-due", "À rendre au plus tard le <b>" + frDate(o.due) + "</b> (" + (o.conf === "conforme" ? "1 mois" : "2 mois") + " après la remise des clés)."); }
+function restSave(){
+  const o = restRead(), R = V.rest; if (!o || !R) return null; const t = sendTenant(R.bien); if (!t) return null;
+  t.restit = {date:todayIso(), conf:o.conf, cles:o.cles, due:o.due, lines:o.L.map(l => ({id:l.id, on:l.on, mt:l.mt})), extra:o.extra, ret:o.ret, tot:o.tot, net:o.net, paid:o.paid ? (t.restit && t.restit.paid) || todayIso() : ""}; t.upd = Date.now();
+  const r = mvtRec(R.bien, "dep"); r.done.ret = r.done.ret || todayIso(); if (o.paid) r.done.res = r.done.res || todayIso(); else delete r.done.res; r.upd = Date.now(); persist(); return o;
+}
+document.addEventListener("input", ev => { if (ev.target && ev.target.closest && ev.target.closest("#sheet") && V.rest && (ev.target.dataset.rsMt !== undefined || ev.target.id === "rs-extra")) restCalc(); });
+document.addEventListener("change", ev => { if (ev.target && V.rest && (ev.target.dataset.rsOn !== undefined || ev.target.id === "rs-conf" || ev.target.id === "rs-cles")) restCalc(); });
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act;
+  if (a === "bil-set"){ const e = V.doc && docCur(); if (!e) return; e.bilan = e.bilan === b.dataset.v ? "" : b.dataset.v; e.upd = Date.now(); persist(); keepScroll(() => {}); return; }
+  if (a === "rest-open"){ sheetRest(V.bsel); return; }
+  if (a === "rest-save"){ const o = restSave(); if (!o) return; closeSheet(); render(); toast("Décompte enregistré : " + (o.net >= 0 ? eur(o.net) + " à rendre avant le " + frDate(o.due) : "le locataire doit " + eur(-o.net))); return; }
+  if (a === "rest-letter"){ const o = restSave(); if (!o) return; sheetLettre("depot");
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    set("lt-dep", fmtNum((sendTenant(V.bsel) || {}).depot || 0)); set("lt-sortie", o.cles); set("lt-conf", o.conf); set("lt-ret", o.ret.map(r => r[0] + " ; " + fmtNum(r[1])).join("\n")); return; }
+});
+
 /* Lecture d'un bail existant (scan, PDF, photo) : remplit le formulaire de bail */
 const BK_MOIS = {janvier:1, fevrier:2, février:2, mars:3, avril:4, mai:5, juin:6, juillet:7, aout:8, août:8, septembre:9, octobre:10, novembre:11, decembre:12, décembre:12};
 const BK_CH = /^[X×x%&®@☒✗✘Kk\\\/]$/, BK_UN = /^[OoQ0CcGgD□❑\[\]()|]$/;
@@ -7340,8 +7542,8 @@ function proofStep(res, f){
     <label class="f">E-mail du locataire<input id="pf-mail" type="email" inputmode="email" value="${esc((t && t.email) || "")}" autocomplete="off"></label>
     <label class="ck"><input type="checkbox" id="pf-idl" ${tenantHasId(t) ? "checked" : ""}> Pièce d'identité du locataire jointe au dossier (fiche locataire › Documents)</label>
     <label class="ck"><input type="checkbox" id="pf-idb" ${idbDoc() ? "checked" : ""}> Ma pièce d'identité de bailleur jointe au dossier ${idbDoc() ? "(rangée dans Réglages › Bailleur)" : "(à ranger dans Réglages › Bailleur)"}</label>
-    <label class="ck"><input type="checkbox" id="pf-ms"> J'ai envoyé au locataire un e-mail pour qu'il confirme « lu et approuvé »</label>
-    <label class="ck"><input type="checkbox" id="pf-mr"> J'ai reçu sa confirmation par e-mail (je la conserve)</label>
+    <label class="ck"><input type="checkbox" id="pf-ms" ${V.bsel && docList("docs").some(x => x.kind === "chk" && x.bien === V.bsel && x.preMail && !x.del) ? "checked" : ""}> J'ai envoyé au locataire un e-mail pour qu'il confirme « lu et approuvé »</label>
+    <label class="ck"><input type="checkbox" id="pf-mr" ${V.bsel && typeof mpProofs === "function" && mpProofs(V.bsel).some(d => d.date >= new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10)) ? "checked" : ""}> J'ai reçu sa confirmation par e-mail (je la conserve)</label>
     <div class="btns"><button class="btn ghost" data-act="pf-mail">Écrire l'e-mail de confirmation</button></div>
     <div class="small muted">Réf. du document : ${esc(ref)}. Le locataire répond simplement « Lu et approuvé » à l'e-mail.</div>
     <div class="btns"><button class="btn" style="flex:1" data-act="pf-ok">Continuer</button><button class="btn ghost" data-act="pf-skip">Passer</button></div>`);
