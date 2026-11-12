@@ -1508,8 +1508,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.88";
+const APP_VERSION = "1.7.89";
 const CHANGELOG = [
+  {v:"1.7.89", date:"2026-11-12", titre:"Fiche candidat : étape, visites et décision en haut ; le bon lien dans les courriers", items:["Fiche candidat : nouveau cadre « 📍 Où en est … ? » tout en haut. Les étapes (Demande reçue, Visite, Dossier à vérifier, Retenu, Refusé) s'enregistrent en un appui. Tu y trouves la 1re visite et une 2e visite si besoin, chacune avec « 📅 → agenda », ainsi que « ✅ Retenir ce candidat » et « ❌ Refuser » (qui prépare la réponse négative). La prochaine visite (1re ou 2e) apparaît dans les listes.", "L'envoi du « 🧪 Test complet » ne crée plus de fiche « Test Appli ».", "Correction : pour un candidat arrivé par la réception connectée, ou une fiche créée à la main puis complétée par le formulaire, « Écrire à » proposait « Réponse à une demande », qui contient le lien du 1er formulaire. Il propose maintenant « Demande du dossier », avec le lien du 2e formulaire (dossier).", "Sous le choix du courrier, l'appli indique quel lien part avec : 1er formulaire (candidature) ou 2e formulaire (dossier). Un avertissement orange s'affiche si tu renvoies le 1er formulaire à quelqu'un qui l'a déjà rempli."]},
   {v:"1.7.88", date:"2026-11-12", titre:"Réception connectée : correction du test complet et des envois en attente", items:["Correction : l'appli gardait en mémoire les réponses de ton serveur de candidatures. Sur iPad, le test complet s'arrêtait sur « Load failed », et un envoi pas encore arrivé pouvait rester invisible même une fois arrivé. Désormais, tout ce qui va vers ton serveur passe directement par Internet, sans mémoire. Ferme et rouvre l'appli une fois pour que la correction s'applique."]},
   {v:"1.7.87", date:"2026-11-12", titre:"Guide « Créer mon serveur » pas à pas, et Outlook pour écrire au candidat", items:["Candidatures connectées : nouveau guide « Créer mon serveur » sur une page à part, une étape par écran, avec un dessin simplifié de chaque écran de Cloudflare (cadres rouges numérotés = où cliquer), « Ça ne marche pas ? » à chaque étape, la progression gardée, et un bouton « Tester mon serveur » qui dit en clair ce qui manque. L'adresse testée est reprise dans l'appli quand c'est possible. Bouton « Envoyer le guide à mon ordinateur ».", "Fiche candidat › « Écrire au candidat » : nouveau bouton « Ouvrir dans Outlook » (l'adresse, l'objet et le message sont prêts ; l'adresse est aussi copiée), à côté de « Ouvrir dans Mail ». « 📋 Copier son e-mail » copie l'adresse du candidat ; « Copier le message » copie le texte : pratique pour une autre application de mail."]},
   {v:"1.7.86", date:"2026-11-12", titre:"iPhone : barre du bas qui ne remonte plus ; « Mettre à jour la fiche » quand un candidat renvoie le formulaire", items:["iPhone : en tirant la page vers le bas tout en haut (ou vers le haut tout en bas), la page « rebondissait » avec un grand vide et la barre d'onglets du bas remontait au milieu de l'écran. Le rebond est désactivé et la barre ne bouge plus que quand le clavier est ouvert.","Candidat qui renvoie le formulaire (même nom ou même e-mail) : au lieu d'un texte dans les remarques, un encadré orange s'affiche en haut de sa fiche : « 📨 Nouvel envoi reçu le … » avec chaque changement (ancien barré → nouveau), à cocher, et « ✓ Mettre à jour la fiche » ou « Garder l'ancien ». Les cases qui étaient vides sont remplies tout de suite ; son message est ajouté aux remarques une fois l'encadré validé."]},
@@ -1754,6 +1755,7 @@ const HELP = {
     "Réception connectée sur un autre appareil : elle ne marche que sur un appareil à la fois (celui qui a la clé). Pour passer de l'iPhone à l'iPad : sur l'iPhone, Réglages de la réception › « 📲 Transférer sur un autre appareil » (paquet + code) ; sur l'iPad, « 📥 Reprendre la réception d'un autre appareil » ; puis sur l'iPhone « couper ici ». N'active pas une deuxième fois sur l'iPad : les candidats ayant le lien de l'iPhone n'arriveraient pas sur l'iPad.",
     "Réception connectée (facultative) : avec ton propre serveur Cloudflare gratuit, les candidatures et dossiers arrivent tout seuls dans l'appli (🆕), chiffrés sur le téléphone du candidat ; le serveur ne peut pas les lire et les efface dès réception (30 jours au plus). « Découvrir » dans la carte Formulaire de candidature.",
     "Créer son serveur : Location › Candidats › Formulaire de candidature › Découvrir › « 📘 Ouvrir le guide Créer mon serveur ». Une étape par écran avec un dessin de chaque écran de Cloudflare, puis un test automatique du serveur. Le plus simple : l'ouvrir sur un ordinateur (« Envoyer le guide à mon ordinateur »), puis activer la réception sur le téléphone.",
+    "Fiche candidat : le cadre « 📍 Où en est … ? » en haut. Appuie sur l'étape (Visite, Dossier à vérifier pour regarder plus tard…), note la 1re visite (et une 2e si besoin), envoie-la vers l'agenda, puis « ✅ Retenir » ou « ❌ Refuser ». Dans « Écrire au candidat », une ligne indique quel lien part : 1er formulaire (candidature) ou 2e (dossier).",
     "Annonce : « Réponse type aux messages » à copier dans la messagerie Leboncoin / PAP, avec le lien du formulaire ; boutons Copier le titre / le prix et lien de ton annonce par site.",
     "Permis de louer : si ton logement est dans une commune qui l'impose (Istres, centre ancien), active-le dans Réglages › Biens › Permis de louer. Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire.",
     "3. Visite : note la date et l'heure. L'appli te propose aussitôt de l'envoyer vers AgenDam ou vers le calendrier du téléphone, avec le maximum d'infos (bouton « Visite vers un agenda » pour le refaire). « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
@@ -3527,15 +3529,15 @@ function agCode(c){
   const u = new TextEncoder().encode(JSON.stringify(o)); let s = ""; u.forEach(x => s += String.fromCharCode(x));
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-function sheetVisite(id){
-  const c = candGet(id); if (!c || !c.visite) return toast("Pas de date de visite"); const v = visitInfo(c), ag = agendaCfg(), au = agUrl(ag.url), code = agCode(c);
-  openSheet(`<h2>Visite programmée</h2>
+function sheetVisite(id, n){
+  n = String(n) === "2" ? 2 : 1; const c = candGetV(id, n); if (!c || !c.visite) return toast("Pas de date de visite"); const v = visitInfo(c), ag = agendaCfg(), au = agUrl(ag.url), code = agCode(c);
+  openSheet(`<h2>${n === 2 ? "2e visite" : "Visite"} programmée</h2>
     <div class="info"><b>${esc(fmtVisite(c.visite))}</b> · ${esc(c.nom || "")}<br>${esc(bienName(c.bien))}${v.place ? "<br>" + esc(v.place) : ""}</div>
     <div class="small muted">Tu peux garder cette visite dans un agenda pour ne pas l'oublier. Tout ceci est ajouté à l'événement :</div>
     <div class="small" style="white-space:pre-line;padding:8px;border-radius:10px;background:var(--bg)">${esc(v.note)}</div>
-    ${au ? `<div class="btns"><button class="btn" style="flex:1" data-act="ag-copy" data-id="${esc(id)}">Copier pour ${esc(ag.nom || "mon agenda")}</button><a class="btn ghost" href="${esc(au)}#cv=${code}" target="_blank" rel="noopener">Ouvrir ${esc(ag.nom || "l'agenda")}</a></div>
+    ${au ? `<div class="btns"><button class="btn" style="flex:1" data-act="ag-copy" data-id="${esc(id)}" data-n="${n}">Copier pour ${esc(ag.nom || "mon agenda")}</button><a class="btn ghost" href="${esc(au)}#cv=${code}" target="_blank" rel="noopener">Ouvrir ${esc(ag.nom || "l'agenda")}</a></div>
       <div class="small muted">« Copier » met le code dans le presse-papiers : ouvre ${esc(ag.nom || "ton agenda")} et utilise « Coller depuis CV en poche ». « Ouvrir » envoie la visite par lien (dans le navigateur).</div>` : ""}
-    <div class="btns"><button class="btn ghost" data-act="cd-ics" data-id="${esc(id)}">Calendrier du téléphone (.ics)</button><button class="btn ghost" data-act="sheetclose">Plus tard</button></div>
+    <div class="btns"><button class="btn ghost" data-act="cd-ics" data-id="${esc(id)}" data-n="${n}">Calendrier du téléphone (.ics)</button><button class="btn ghost" data-act="cd-open" data-id="${esc(id)}">‹ Retour à la fiche</button></div>
     <details><summary class="small muted">Voir le code à copier à la main</summary><textarea readonly rows="3" style="width:100%;font-size:11px" onclick="this.select()">CVPOCHE:${code}</textarea></details>`);
 }
 function agendaCard(){
@@ -3548,7 +3550,7 @@ document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
   switch (a){
     case "cd-agenda": sheetVisite(id); break;
-    case "ag-copy": { const c = candGet(id); if (!c) break; const t = "CVPOCHE:" + agCode(c); let ok = false; try { await navigator.clipboard.writeText(t); ok = true; } catch(e){}
+    case "ag-copy": { const c = candGetV(id, b.dataset.n); if (!c) break; const t = "CVPOCHE:" + agCode(c); let ok = false; try { await navigator.clipboard.writeText(t); ok = true; } catch(e){}
       toast(ok ? "Code copié : colle-le dans " + (agendaCfg().nom || "ton agenda") : "Copie impossible : ouvre « Voir le code » et copie-le à la main"); break; }
     case "ag-edit": { const a0 = agendaCfg(); openSheet(`<h2>Agenda pour les visites</h2><div class="small muted">Nom et adresse de l'application agenda où envoyer les visites (facultatif).</div><label class="f">Nom<input id="ag-n" value="${esc(a0.nom || "")}"></label><label class="f">Adresse<input id="ag-u" type="url" inputmode="url" autocapitalize="off" placeholder="https://" value="${esc(a0.url || "")}"></label><div class="btns"><button class="btn" style="flex:1" data-act="ag-ok">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); break; }
     case "ag-ok": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.agenda = {nom:$("#ag-n").value.trim(), url:agUrl($("#ag-u").value)}; persist(); closeSheet(); render(); break;
@@ -5499,7 +5501,7 @@ function viewCands(bien){
   const chips = `<div class="seg" style="flex-wrap:wrap">${[["all", "Tous"]].concat(CAND_ST).map(([k, l]) => `<button class="${flt === k ? "on" : ""}" data-act="lflt" data-v="${k}" style="font-size:14px;padding:8px 10px">${l} <b>${k === "all" ? all.length : cnt(k)}</b></button>`).join("")}</div>`;
   const ord = k => CAND_ST.findIndex(x => x[0] === k);
   const list = all.filter(c => flt === "all" || c.statut === flt).sort((a, b) => (b.nouv ? 1 : 0) - (a.nouv ? 1 : 0) || ord(a.statut) - ord(b.statut) || (b.dateDem || "").localeCompare(a.dateDem || ""));
-  const next = all.filter(c => c.visite && c.visite >= todayIso() && c.statut !== "ref" && c.statut !== "ret").sort((a, b) => a.visite.localeCompare(b.visite));
+  const next = all.filter(c => candVis(c) && candVis(c) >= todayIso() && c.statut !== "ref" && c.statut !== "ret").sort((a, b) => candVis(a).localeCompare(candVis(b)));
   const nouv = all.filter(c => c.nouv).length, cc = loyerCC(bien);
   const scoreTxt = s => s.lvl === "ok" ? "✔ " + s.txt : s.lvl === "warn" ? "⚠ " + s.txt : "✖ " + s.txt + " (conseillé : 3 fois)";
   const row = c => { const s = candScore(c), p = candPieces(c), col = CD_COL[c.statut] || "#5C6B66", pc = p.m ? Math.round(p.n / p.m * 100) : 0;
@@ -5510,7 +5512,7 @@ function viewCands(bien){
       ${s ? `<div style="margin-top:10px;font-size:15px;font-weight:600;padding:6px 10px;border-radius:10px;background:${s.lvl === "ok" ? "rgba(30,123,75,.12)" : s.lvl === "warn" ? "rgba(242,184,75,.22)" : "rgba(179,38,30,.10)"};color:${s.lvl === "ok" ? "#1E7B4B" : s.lvl === "warn" ? "#8A5A00" : "#B3261E"}">${esc(scoreTxt(s))}</div>` : `<div style="margin-top:10px;font-size:14px" class="muted">Revenus non renseignés</div>`}
       <div style="margin-top:10px;font-size:15px"><b>Pièces : ${p.n} sur ${p.m}</b></div>
       <div style="height:8px;border-radius:6px;background:var(--line,#d9e0dd);overflow:hidden;margin-top:4px"><div style="height:100%;width:${pc}%;background:${pc === 100 ? "#1E7B4B" : "#C77D00"}"></div></div>
-      <div style="margin-top:8px;font-size:14px" class="muted">${c.visite ? "📅 Visite " + fmtVisite(c.visite) : c.dateDem ? "Demande reçue le " + frDate(c.dateDem) : ""}</div>
+      <div style="margin-top:8px;font-size:14px" class="muted">${candVis(c) ? "📅 Visite " + fmtVisite(candVis(c)) : c.dateDem ? "Demande reçue le " + frDate(c.dateDem) : ""}</div>
       <div style="margin-top:4px;font-size:14px;font-weight:600">${esc(CD_NEXT[c.statut] || "")}</div></button>`; };
   const refus = all.filter(c => c.statut === "ref").length;
   const cl = candList().filter(c => !c.del), nfi = cl.reduce((n, c) => n + (c.fichiers || []).length, 0);
@@ -5520,7 +5522,7 @@ function viewCands(bien){
     ${chips}
     <div style="font-size:14px;margin-top:8px" class="muted">Loyer charges comprises : <b>${cc ? eur(cc) : "à renseigner dans l'annonce"}</b>. Repère courant : des revenus d'au moins <b>3 fois</b> ce montant, ou un garant. Ce n'est qu'une indication.</div></div>
     ${nouv ? `<div class="card" style="background:rgba(242,184,75,.18);border:1.5px solid #C77D00;font-size:16px"><b>🆕 ${nouv} nouvelle${nouv > 1 ? "s" : ""} candidature${nouv > 1 ? "s" : ""}</b><div style="font-size:14px;margin-top:2px">Ouvre la fiche pour la lire : la mention « Nouveau » disparaît ensuite.</div></div>` : ""}
-    ${next.length ? `<div class="card"><h2>📅 Prochaines visites</h2><div class="rows">${next.map(c => `<div class="row"><div class="main"><div class="t" style="font-size:16px">${fmtVisite(c.visite)}</div><div class="s" style="font-size:14px">${esc(c.nom)}</div></div><button class="mini" data-act="cd-agenda" data-id="${c.id}">Agenda</button></div>`).join("")}</div></div>` : ""}
+    ${next.length ? `<div class="card"><h2>📅 Prochaines visites</h2><div class="rows">${next.map(c => `<div class="row"><div class="main"><div class="t" style="font-size:16px">${fmtVisite(candVis(c))}</div><div class="s" style="font-size:14px">${esc(c.nom)}</div></div><button class="mini" data-act="cd-agenda" data-id="${c.id}">Agenda</button></div>`).join("")}</div></div>` : ""}
     <div>${list.length ? list.map(row).join("") : `<div class="card"><div class="empty" style="font-size:15px">${all.length ? "Aucun candidat dans ce filtre." : "Aucun candidat pour l'instant. Envoie le lien du formulaire (ci-dessous) à chaque personne qui te contacte, ou ajoute-la avec « + Ajouter un candidat »."}</div></div>`}</div>
     ${candCard(bien)}
     ${refus ? `<div class="card"><div style="font-size:15px"><b>${refus} dossier${refus > 1 ? "s" : ""} refusé${refus > 1 ? "s" : ""}</b> : les données d'un candidat non retenu ne doivent pas être gardées. Efface-les une fois la location conclue.</div><div class="btns"><button class="btn sm ghost" data-act="cd-purge">Effacer les ${refus} dossier(s) refusé(s)</button></div></div>` : ""}
@@ -5575,26 +5577,41 @@ function sheetCand(id){
   const garantOn = c.garant === "proche" || c.garant === "autre";
   const pcs = CAND_PIECES.map(([k, l, g]) => `<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0${g ? ";" + (garantOn ? "" : "display:none") : ""}" ${g ? 'class="cd-g"' : ""}><input type="checkbox" id="cd-p-${k}" ${c.pieces && c.pieces[k] ? "checked" : ""} style="margin-top:3px"> <span>${esc(l)}</span></label>`).join("");
   const files = (c.fichiers || []).map(f => `<div class="row">${thumb(f.fid, f.nom)}<div class="main"><div class="t" style="font-size:13.5px">${esc(f.nom)}</div></div><button class="mini" data-act="cf-open" data-id="${c.id}" data-fid="${f.fid}">Ouvrir</button><button class="mini" data-act="cf-del" data-id="${c.id}" data-fid="${f.fid}">Retirer</button></div>`).join("");
-  openSheet(`<h2>${id ? esc(c.nom) : "Nouveau candidat"}</h2>${id ? candMajBox(c) : ""}${!id && typeof permisDue === "function" && permisDue(c.bien) ? `<div class="info" style="border:2px solid #C77D00;margin-bottom:8px">🔑 Rappel : ce logement est soumis au <b>permis de louer</b>. L'autorisation de la mairie est à obtenir avant la signature du bail (pas avant d'enregistrer un candidat). <button class="mini" data-act="cd-permis">Voir le permis de louer</button></div>` : ""}
+  openSheet(`<h2>${id ? esc(c.nom) : "Nouveau candidat"}</h2>${id ? candMajBox(c) : ""}${id ? candStepBox(c) : ""}${!id && typeof permisDue === "function" && permisDue(c.bien) ? `<div class="info" style="border:2px solid #C77D00;margin-bottom:8px">🔑 Rappel : ce logement est soumis au <b>permis de louer</b>. L'autorisation de la mairie est à obtenir avant la signature du bail (pas avant d'enregistrer un candidat). <button class="mini" data-act="cd-permis">Voir le permis de louer</button></div>` : ""}
     ${dxF("cd-nom", "Nom et prénom", c.nom)}
     <div class="tl">${dxF("cd-tel", "Téléphone", c.tel, 'type="tel"')}${dxF("cd-mail", "E-mail", c.email, 'type="email" autocapitalize="off"')}</div>
-    <div class="tl">${dxS("cd-st", "Étape", CAND_ST, c.statut)}${dxF("cd-dem", "Demande du", c.dateDem, 'type="date"')}</div>
+    ${id ? dxF("cd-dem", "Demande du", c.dateDem, 'type="date"') : `<div class="tl">${dxS("cd-st", "Étape", CAND_ST, c.statut)}${dxF("cd-dem", "Demande du", c.dateDem, 'type="date"')}</div>`}
     <div class="tl">${dxS("cd-ct", "Situation", CAND_CONTRAT.map(x => [x, x || "—"]), c.contrat)}${dxF("cd-rev", "Revenus nets / mois", c.rev, 'inputmode="decimal"')}</div>
     <div class="tl">${dxF("cd-occ", "Occupants", c.occ, 'inputmode="numeric"')}${dxF("cd-ent", "Emménagement souhaité", c.entree, 'type="date"')}</div>
     <div class="tl">${dxS("cd-gar", "Garant", CAND_GARANT, c.garant)}${dxF("cd-grev", "Revenus du garant", c.grev, 'inputmode="decimal"')}</div>
-    ${dxF("cd-vis", "Visite (date et heure)", c.visite, 'type="datetime-local"')}
+    ${id ? "" : dxF("cd-vis", "1re visite (date et heure)", c.visite, 'type="datetime-local"')}
     <label class="f">Notes<textarea id="cd-note" style="min-height:80px">${esc(c.note)}</textarea></label>
     <div class="small muted" style="margin-top:8px">Pièces reçues (liste limitative du décret n° 2015-1437 : ne demande rien d'autre)</div>${pcs}
     ${id && dosLink(c) ? `<div class="small muted" style="margin-top:8px">2e formulaire : le candidat y dépose chaque pièce (identité, domicile, contrat, bulletins, avis d'imposition, garant)</div><div class="btns"><button class="btn sm" data-act="cd-dl-copy" data-id="${id}">Copier le lien du dossier</button><button class="btn sm ghost" data-act="cd-dl-share" data-id="${id}">Partager</button></div>` : ""}
     ${id ? `<div class="small muted" style="margin-top:8px">Pièces jointes (restent sur cet appareil ; dans la sauvegarde complète .zip, pas dans le .json)</div><div class="rows">${files}</div>
       <label class="f">Joindre une photo ou un PDF<input id="cd-file" type="file" accept="image/*,.pdf" multiple></label>` : '<div class="small muted">Enregistre la fiche pour pouvoir joindre des pièces.</div>'}
     <div class="btns"><button class="btn" style="flex:1" data-act="cd-save" data-id="${id || ""}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>
-    ${id ? `<div class="btns"><button class="btn sm" data-act="cd-mail" data-id="${id}">Écrire au candidat</button>${c.visite ? `<button class="btn sm ghost" data-act="cd-agenda" data-id="${id}">Visite vers un agenda</button>` : ""}${c.statut !== "ret" ? `<button class="btn sm" style="background:var(--ok,#1f8a5b)" data-act="cd-keep" data-id="${id}">Retenir ce candidat</button>` : ""}<button class="btn sm danger" data-act="cd-del" data-id="${id}">Supprimer</button></div>` : ""}`);
+    ${id ? `<div class="btns"><button class="btn sm" data-act="cd-mail" data-id="${id}">Écrire au candidat</button><button class="btn sm danger" data-act="cd-del" data-id="${id}">Supprimer</button></div>` : ""}`);
+}
+/* La fiche vue avec sa 2e visite à la place de la 1re (pour l'agenda et le .ics) */
+function candGetV(id, n){ const c = candGet(id); return c && String(n) === "2" ? Object.assign({}, c, {visite:c.visite2 || ""}) : c; }
+/* « Où en est ce candidat ? » : étape en un appui, 1re et 2e visite vers l'agenda, retenir ou refuser */
+function candVis(c){ const t = new Date().toISOString().slice(0, 16); return c.visite2 && (!c.visite || c.visite < t) ? c.visite2 : (c.visite || ""); }
+function candStepBox(c){
+  const id = c.id, on = k => c.statut === k;
+  return `<div class="card" style="padding:12px;background:var(--bg);margin:0 0 10px;border:2px solid var(--ac,#0E6B5C)">
+    <div style="font-weight:700;font-size:17px">📍 Où en est ${esc(c.nom || "ce candidat")} ?</div>
+    <input type="hidden" id="cd-st" value="${esc(c.statut || "dem")}">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">${CAND_ST.map(([k, l]) => `<button class="mini" style="padding:8px 12px;font-size:15px;${on(k) ? "background:var(--ac,#0E6B5C);color:#fff;border-color:transparent;font-weight:700" : ""}" data-act="cd-step" data-id="${id}" data-v="${k}">${on(k) ? "● " : ""}${l}</button>`).join("")}</div>
+    ${dxF("cd-vis", "1re visite (date et heure)", c.visite || "", 'type="datetime-local"')}${dxF("cd-vis2", "2e visite, si besoin (date et heure)", c.visite2 || "", 'type="datetime-local"')}
+    <div class="btns"><button class="btn sm ghost" style="flex:1" data-act="cd-ag" data-id="${id}" data-n="1">📅 1re visite → agenda</button><button class="btn sm ghost" style="flex:1" data-act="cd-ag" data-id="${id}" data-n="2">📅 2e visite → agenda</button></div>
+    <div class="btns">${on("ret") ? "" : `<button class="btn sm" style="flex:1;background:var(--ok,#1f8a5b)" data-act="cd-keep" data-id="${id}">✅ Retenir ce candidat</button>`}${on("ref") ? "" : `<button class="btn sm danger" style="flex:1" data-act="cd-refuse" data-id="${id}">❌ Refuser</button>`}</div>
+    <div class="small muted">Un appui sur une étape l'enregistre tout de suite, avec le reste de la fiche. « Dossier à vérifier » : pour mettre de côté les dossiers à regarder plus tard.</div></div>`;
 }
 function cdRead(c){
   const num = id => { const v = parseNum($("#" + id).value); return v == null ? "" : v; };
-  c.nom = dxV("cd-nom"); c.tel = dxV("cd-tel"); c.email = dxV("cd-mail"); c.statut = $("#cd-st").value; c.dateDem = dxV("cd-dem"); c.contrat = $("#cd-ct").value; c.rev = num("cd-rev");
-  c.occ = dxV("cd-occ"); c.entree = dxV("cd-ent"); c.garant = $("#cd-gar").value; c.grev = num("cd-grev"); c.visite = dxV("cd-vis"); c.note = $("#cd-note").value.trim();
+  c.nom = dxV("cd-nom"); c.tel = dxV("cd-tel"); c.email = dxV("cd-mail"); c.statut = $("#cd-st") ? $("#cd-st").value : (c.statut || "dem"); c.dateDem = dxV("cd-dem"); c.contrat = $("#cd-ct").value; c.rev = num("cd-rev");
+  c.occ = dxV("cd-occ"); c.entree = dxV("cd-ent"); c.garant = $("#cd-gar").value; c.grev = num("cd-grev"); c.visite = $("#cd-vis") ? dxV("cd-vis") : (c.visite || ""); c.visite2 = $("#cd-vis2") ? dxV("cd-vis2") : (c.visite2 || ""); c.note = $("#cd-note").value.trim();
   c.pieces = {}; for (const p of CAND_PIECES){ const e = $("#cd-p-" + p[0]); if (e && e.checked) c.pieces[p[0]] = todayIso(); }
   c.upd = Date.now(); return c;
 }
@@ -5619,11 +5636,19 @@ function candMail(k, c){
   return T[k];
 }
 /* Courrier proposé par défaut : la personne a déjà reçu le 1er lien, donc la suite (2e lien) */
-const candDefTpl = c => c.statut === "ret" ? "ret" : c.statut === "ref" ? "ref" : (c.statut === "dem" && c.src !== "formulaire") ? "rep" : "dos";
+/* A-t-il déjà rempli le 1er formulaire (par e-mail collé, réception connectée, ou un envoi qui a complété une fiche créée à la main) ? */
+const candFormDone = c => !!(c && (c.formOk || ["formulaire", "en ligne", "dossier"].includes(c.src) || (c.envois || 0) > 1 || c.maj));
+const candDefTpl = c => c.statut === "ret" ? "ret" : c.statut === "ref" ? "ref" : (c.statut === "dem" && !candFormDone(c)) ? "rep" : "dos";
+/* Quel lien part avec le courrier : dit clairement 1er ou 2e formulaire, et prévient si on renvoie le 1er à quelqu'un qui l'a déjà rempli */
+function candLienInfo(k, c){
+  if (k === "rep") return candFormDone(c) ? `<div class="info" style="border:2px solid #C77D00;background:rgba(242,184,75,.15)">⚠️ Ce courrier contient le lien du <b>1er formulaire</b> (candidature), mais ${esc(c.nom)} l'a <b>déjà rempli</b>. Pour lui demander ses pièces, choisis « <b>Demande du dossier</b> » (2e formulaire).</div>` : `<div class="small muted">🔗 Contient le lien du <b>1er formulaire</b> (candidature).</div>`;
+  if (k === "vis" || k === "dos") return dosLink(c) ? `<div class="small muted">🔗 Contient le lien du <b>2e formulaire</b> (dossier : une case par pièce).</div>` : "";
+  return "";
+}
 function sheetMail(id, k){
   const c = candGet(id); if (!c) return; V.mailFor = id; k = k || candDefTpl(c); const m = candMail(k, c);
   const tpls = ["rep", "vis", "dos", "ret", "ref"].map(x => [x, candMail(x, c).l]);
-  openSheet(`<h2>Écrire à ${esc(c.nom)}</h2>${dxS("cm-tpl", "Courrier", tpls, k)}
+  openSheet(`<h2>Écrire à ${esc(c.nom)}</h2>${dxS("cm-tpl", "Courrier", tpls, k)}<div id="cm-lien">${candLienInfo(k, c)}</div>
     ${dxF("cm-sub", "Objet", m.s)}<label class="f">Message<textarea id="cm-msg" style="min-height:260px">${esc(m.b)}</textarea></label>
     ${c.email ? `<div class="btns"><button class="btn" style="flex:1" data-act="cm-ol" data-id="${id}">Ouvrir dans Outlook</button><button class="btn ghost" style="flex:1" data-act="cm-send" data-id="${id}">Ouvrir dans Mail</button></div>` : ""}
     <div class="btns">${c.email ? `<button class="btn ghost" data-act="cm-copymail" data-id="${id}">📋 Copier son e-mail</button>` : ""}<button class="btn ghost" data-act="cm-copy">Copier le message</button>${c.tel ? `<button class="btn ghost" data-act="cm-sms" data-id="${id}">SMS</button>` : ""}<button class="btn ghost" data-act="cd-open" data-id="${id}">Retour</button></div>
@@ -5683,14 +5708,17 @@ document.addEventListener("click", async ev => {
     case "cd-new": sheetCand(""); break;
     case "cd-permis": sheetPermis(V.lsel, "page"); break;
     case "cd-open": { const cc = candGet(id); if (cc && cc.nouv){ delete cc.nouv; persist(); } sheetCand(id); break; }
-    case "cd-save": { const prev = id ? ((candGet(id) || {}).visite || "") : ""; const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); if (c.visite && c.visite !== prev && c.statut !== "ref" && c.statut !== "ret") setTimeout(() => sheetVisite(c.id), 400); break; }
+    case "cd-save": { const c0 = id ? (candGet(id) || {}) : {}, prev = c0.visite || "", prev2 = c0.visite2 || ""; const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); const go = c.statut !== "ref" && c.statut !== "ret"; if (go && c.visite && c.visite !== prev) setTimeout(() => sheetVisite(c.id, 1), 400); else if (go && c.visite2 && c.visite2 !== prev2) setTimeout(() => sheetVisite(c.id, 2), 400); break; }
     case "cd-mail": { const c = cdSave(id); if (!c) break; sheetMail(id, ""); break; }
     case "cm-send": { const c = candGet(id); if (!c) break; location.href = "mailto:" + encodeURIComponent(c.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent($("#cm-sub").value) + "&body=" + encodeURIComponent($("#cm-msg").value); break; }
     case "cm-sms": { const c = candGet(id); if (!c) break; location.href = "sms:" + c.tel + "?&body=" + encodeURIComponent($("#cm-msg").value); break; }
     case "cm-ol": { const c = candGet(id); if (!c || !c.email) break; const em = c.email; (navigator.clipboard ? navigator.clipboard.writeText(em) : Promise.reject()).catch(() => {}); olCompose(em, $("#cm-sub").value, $("#cm-msg").value); break; }
     case "cm-copymail": { const c = candGet(id); if (!c || !c.email) break; (navigator.clipboard ? navigator.clipboard.writeText(c.email) : Promise.reject()).then(() => toast("E-mail copié : " + c.email)).catch(() => toast("Copie impossible ici : " + c.email)); break; }
     case "cm-copy": { const t = $("#cm-msg").value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Message copié")).catch(() => { $("#cm-msg").select(); toast("Sélectionné : copie-le"); }); break; }
-    case "cd-ics": { const c = candGet(id); const ics = c && candIcs(c); if (!ics) return toast("Pas de date de visite"); saveFile("visite-" + (c.nom || "candidat").replace(/\s+/g, "-") + ".ics", ics, "text/calendar"); break; }
+    case "cd-step": { const v = b.dataset.v, st = $("#cd-st"); if (st) st.value = v; const c = cdSave(id); if (!c) break; render(); sheetCand(id); toast("Étape : " + ((CAND_ST.find(x => x[0] === v) || [])[1] || v)); if (v === "vis" && !c.visite && !c.visite2) setTimeout(() => { const e = $("#cd-vis"); if (e) e.focus(); toast("Indique la date de la 1re visite, puis « 📅 → agenda »"); }, 300); break; }
+    case "cd-ag": { const n = b.dataset.n === "2" ? 2 : 1, c = cdSave(id); if (!c) break; if (!(n === 2 ? c.visite2 : c.visite)) { toast("Indique d'abord la date et l'heure de la " + (n === 2 ? "2e" : "1re") + " visite"); const e = $(n === 2 ? "#cd-vis2" : "#cd-vis"); if (e) e.focus(); break; } if (c.statut === "dem") { c.statut = "vis"; persist(); } render(); sheetVisite(id, n); break; }
+    case "cd-refuse": { const st = $("#cd-st"); if (st) st.value = "ref"; const c = cdSave(id); if (!c) break; render(); sheetMail(id, "ref"); toast("Candidat refusé. Tu peux lui envoyer la réponse ci-dessous, ou fermer."); break; }
+    case "cd-ics": { const c = candGetV(id, b.dataset.n); const ics = c && candIcs(c); if (!ics) return toast("Pas de date de visite"); saveFile("visite-" + (c.nom || "candidat").replace(/\s+/g, "-") + ".ics", ics, "text/calendar"); break; }
     case "cd-keep": { const c = cdSave(id); if (!c) break; if (permisDue(c.bien)) sheetPermis(c.bien, "keep", id); else sheetKeep(id); break; }
     case "cd-keep-ok": { const c = candGet(id); if (!c) break; const num = i => { const x = parseNum($("#" + i).value); return x == null ? 0 : x; };
       const debut = dxV("kp-debut") || todayIso(), loyer = num("kp-loyer"), depot = num("kp-depot");
@@ -5720,7 +5748,7 @@ document.addEventListener("change", async ev => {
   const t = ev.target; if (!t) return;
   if (t.dataset && t.dataset.publink){ const cur = annOf(V.lsel); cur.lien = cur.lien || {}; const v = t.value.trim(); if (v) cur.lien[t.dataset.publink] = v; else delete cur.lien[t.dataset.publink]; cur.upd = Date.now(); S.annonces = S.annonces || {}; S.annonces[V.lsel] = cur; persist(); render(); return; }
   if (t.dataset && t.dataset.pub){ const cur = annOf(V.lsel); cur.pub = cur.pub || {}; if (t.checked) cur.pub[t.dataset.pub] = todayIso(); else delete cur.pub[t.dataset.pub]; if (Object.keys(cur.pub).length && cur.statut === "brouillon") cur.statut = "publiee"; cur.upd = Date.now(); S.annonces = S.annonces || {}; S.annonces[V.lsel] = cur; persist(); render(); return; }
-  if (t.id === "cm-tpl"){ const c = candGet(V.mailFor || ""); if (c){ const m = candMail(t.value, c); $("#cm-sub").value = m.s; $("#cm-msg").value = m.b; } return; }
+  if (t.id === "cm-tpl"){ const c = candGet(V.mailFor || ""); if (c){ const m = candMail(t.value, c); $("#cm-sub").value = m.s; $("#cm-msg").value = m.b; const li = $("#cm-lien"); if (li) li.innerHTML = candLienInfo(t.value, c); } return; }
   if (t.id === "an-doc" && t.files && t.files[0]){
     try { const f = t.files[0], txt = await docTextOf(f); if (!txt.trim()) throw new Error("aucun texte trouvé"); $("#an-perso").value = txt.trim(); toast("Texte importé : relis-le puis enregistre"); }
     catch(e){ toast("Import impossible : " + e.message); } t.value = ""; return; }
@@ -5831,7 +5859,7 @@ async function candImport(txt, files, opt){
     /* Nouvel envoi de la même personne : les cases vides sont complétées tout de suite ; les valeurs qui changent sont PROPOSÉES dans la fiche (« Mettre à jour ») */
     const prop = {};
     for (const k in CAND_LAB){ const nv = c[k], ov = dup[k]; if (nv === "" || nv == null) continue; if (ov === "" || ov == null) dup[k] = nv; else if (String(ov) !== String(nv)) prop[k] = nv; }
-    dup.envois = (dup.envois || 1) + 1;
+    dup.envois = (dup.envois || 1) + 1; if (!isDos) dup.formOk = 1;
     const msg = c.note && c.note !== dup.note && !(dup.note || "").includes(c.note) ? c.note : "";
     dup.maj = {t:new Date().toISOString(), src:opt.src || "", n, kind:isDos ? "dossier" : "candidature", prop:Object.assign({}, (dup.maj && dup.maj.prop) || {}, prop), msg:[(dup.maj && dup.maj.msg) || "", msg].filter(Boolean).join("\n")};
     if (!Object.keys(dup.maj.prop).length && !dup.maj.msg) dup.maj.vu = 1;
@@ -6074,10 +6102,10 @@ function viewCandsAll(){
   const inB = all.filter(c => F.bien === "all" || c.bien === F.bien), cnt = k => inB.filter(c => c.statut === k).length;
   const ratio = c => { const cc = loyerCC(c.bien), r = Number(c.rev) || 0; return cc && r ? r / cc : 0; };
   const sorts = {nouv:(a, b) => (b.nouv ? 1 : 0) - (a.nouv ? 1 : 0) || ord(a.statut) - ord(b.statut) || (b.dateDem || "").localeCompare(a.dateDem || ""),
-    dem:(a, b) => (b.dateDem || "").localeCompare(a.dateDem || ""), vis:(a, b) => (a.visite || "9999").localeCompare(b.visite || "9999"),
+    dem:(a, b) => (b.dateDem || "").localeCompare(a.dateDem || ""), vis:(a, b) => (candVis(a) || "9999").localeCompare(candVis(b) || "9999"),
     nom:(a, b) => (a.nom || "").localeCompare(b.nom || "", "fr"), rev:(a, b) => ratio(b) - ratio(a), st:(a, b) => ord(a.statut) - ord(b.statut) || (b.dateDem || "").localeCompare(a.dateDem || "")};
   const L = inB.filter(c => (F.st === "all" || c.statut === F.st) && (!q || (c.nom || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q) || (c.tel || "").includes(q))).sort(sorts[F.sort] || sorts.nouv);
-  const now = new Date().toISOString().slice(0, 16), next = inB.filter(c => c.visite && c.visite >= now.slice(0, 10) && c.statut !== "ref" && c.statut !== "ret").sort((a, b) => a.visite.localeCompare(b.visite));
+  const now = new Date().toISOString().slice(0, 16), next = inB.filter(c => candVis(c) && candVis(c) >= now.slice(0, 10) && c.statut !== "ref" && c.statut !== "ret").sort((a, b) => candVis(a).localeCompare(candVis(b)));
   const badge = c => c.nouv ? ` <span style="font-size:11px;font-weight:700;color:#fff;background:#C77D00;border-radius:8px;padding:2px 6px;vertical-align:middle">${c.envois > 1 ? "NOUVEL ENVOI" : "NOUVEAU"}</span>` : "";
   const stc = c => `<span style="display:inline-block;font-size:13px;font-weight:700;color:#fff;background:${CD_COL[c.statut] || "#5C6B66"};border-radius:999px;padding:3px 10px;white-space:nowrap">${esc(candStLabel(c.statut))}</span>`;
   const rv = c => { const x = ratio(c), s = candScore(c); return x ? `<b style="color:${x >= 3 ? "#1E7B4B" : x >= 2.5 ? "#8A5A00" : "#B3261E"}">× ${nf1(x)}</b>` : s && s.lvl === "ok" ? `<b style="color:#1E7B4B">${esc(s.txt)}</b>` : '<span class="muted">—</span>'; };
@@ -6091,12 +6119,12 @@ function viewCandsAll(){
   const cards = L.map(c => `<button class="rowbtn" data-act="cd-open" data-id="${c.id}" style="display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px;border-radius:14px;background:var(--card,#fff);border:1.5px solid ${c.nouv ? "#C77D00" : "var(--line,#d9e0dd)"};border-left:6px solid ${CD_COL[c.statut] || "#5C6B66"}">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:17px;flex:1;min-width:60%;overflow-wrap:anywhere">${esc(c.nom || "Sans nom")}${badge(c)}</b>${stc(c)}</div>
       <div class="small muted" style="margin-top:4px">${esc(bienName(c.bien))} · demande du ${c.dateDem ? frDate(c.dateDem) : "?"}</div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:14px"><span>📅 ${c.visite ? esc(fmtVisite(c.visite)) : '<span class="muted">pas de visite</span>'}</span><span>💶 ${rv(c)}</span><span>📎 ${pcs(c)}</span></div></button>`).join("");
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:14px"><span>📅 ${candVis(c) ? esc(fmtVisite(candVis(c))) : '<span class="muted">pas de visite</span>'}</span><span>💶 ${rv(c)}</span><span>📎 ${pcs(c)}</span></div></button>`).join("");
   const table = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="ot" style="width:100%;min-width:640px;font-size:14px"><thead><tr><th style="text-align:left">Candidat</th><th style="text-align:left">Logement</th><th>Étape</th><th>Demande</th><th>Visite</th><th>Revenus</th><th>Pièces</th></tr></thead><tbody>
-      ${L.map(c => `<tr data-act="cd-open" data-id="${c.id}" style="cursor:pointer;${c.nouv ? "background:rgba(242,184,75,.15)" : ""}"><td><b>${esc(c.nom || "Sans nom")}</b>${badge(c)}${c.tel || c.email ? `<div class="small muted">${esc(c.tel || c.email)}</div>` : ""}</td><td>${esc(bienName(c.bien))}</td><td style="text-align:center">${stc(c)}</td><td style="text-align:center">${c.dateDem ? frDate(c.dateDem) : "—"}</td><td style="text-align:center">${c.visite ? esc(fmtVisite(c.visite)) : "—"}</td><td style="text-align:center">${rv(c)}</td><td style="text-align:center">${pcs(c)}</td></tr>`).join("")}</tbody></table></div>`;
+      ${L.map(c => `<tr data-act="cd-open" data-id="${c.id}" style="cursor:pointer;${c.nouv ? "background:rgba(242,184,75,.15)" : ""}"><td><b>${esc(c.nom || "Sans nom")}</b>${badge(c)}${c.tel || c.email ? `<div class="small muted">${esc(c.tel || c.email)}</div>` : ""}</td><td>${esc(bienName(c.bien))}</td><td style="text-align:center">${stc(c)}</td><td style="text-align:center">${c.dateDem ? frDate(c.dateDem) : "—"}</td><td style="text-align:center">${candVis(c) ? esc(fmtVisite(candVis(c))) : "—"}</td><td style="text-align:center">${rv(c)}</td><td style="text-align:center">${pcs(c)}</td></tr>`).join("")}</tbody></table></div>`;
   return `<div class="card"><div class="top"><button class="btn sm ghost" data-act="ca-back">‹ Location</button><h2 style="font-size:21px;flex:1;margin:0 0 0 8px">👥 Tous mes candidats</h2></div>
       <div class="small muted">Tous les logements sur une seule page. Touche un candidat pour ouvrir sa fiche (étape, visite, pièces, retenir ou refuser).</div>${ctl}</div>
-    ${next.length ? `<div class="card"><h2>📅 Prochaines visites</h2><div class="rows">${next.slice(0, 8).map(c => `<button class="row rowbtn" data-act="cd-open" data-id="${c.id}" style="width:100%;text-align:left;background:none;border:0;padding:6px 0"><div class="main"><div class="t">${esc(fmtVisite(c.visite))} · ${esc(c.nom || "")}</div><div class="s">${esc(bienName(c.bien))}</div></div></button>`).join("")}</div></div>` : ""}
+    ${next.length ? `<div class="card"><h2>📅 Prochaines visites</h2><div class="rows">${next.slice(0, 8).map(c => `<button class="row rowbtn" data-act="cd-open" data-id="${c.id}" style="width:100%;text-align:left;background:none;border:0;padding:6px 0"><div class="main"><div class="t">${esc(fmtVisite(candVis(c)))} · ${esc(c.nom || "")}</div><div class="s">${esc(bienName(c.bien))}</div></div></button>`).join("")}</div></div>` : ""}
     <div class="card"><div class="small muted" style="margin-bottom:6px">${L.length} candidat${L.length > 1 ? "s" : ""} affiché${L.length > 1 ? "s" : ""}</div>${L.length ? (F.mode === "tab" ? table : cards) : '<div class="empty">Aucun candidat avec ces filtres.</div>'}</div>`;
 }
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act^='ca-']"); if (!b) return; const a = b.dataset.act; V.ca = V.ca || {};
@@ -6180,6 +6208,8 @@ async function cnxPull(silent){
         let d = null;
         try { const g = await fetch(c.srv + "/g/" + it.id, {headers:H, cache:"no-store"}); if (!g.ok) continue; d = await cnxOpen(priv, new Uint8Array(await g.arrayBuffer())); }
         catch(e){ bad++; c.bad = (c.bad || []).filter(x => x.id !== it.id).concat({id:it.id, t:it.t || 0, why:"cle"}).slice(-50); continue; }
+        /* envoi du « Test complet » : jamais transformé en fiche (le test l'efface lui-même) */
+        if (d && (d.test || /test automatique, à ignorer/.test(String(d.text || "")))){ if (Date.now() - (it.t || 0) > 600000) { try { await fetch(c.srv + "/g/" + it.id, {method:"DELETE", headers:H}); } catch(e){} } continue; }
         /* déchiffré : on ne perd plus rien, même si la fiche ne se remplit pas bien */
         let res = null; try { res = await candImport(d.text, d.files, {src:"en ligne"}); } catch(e){ res = null; }
         if (!res){ try { const c2 = candFromParsed({nom:"Candidat (en ligne, à compléter)", message:String(d.text || "").slice(0, 20000)}); c2.src = "en ligne"; candList().push(c2); try { await candAttach(c2, d.files || []); } catch(e){} res = {c:c2}; } catch(e){ bad++; continue; } }
@@ -6315,7 +6345,7 @@ async function cnxSelfTest(){
   try {
     const unb = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), ch => ch.charCodeAt(0)); };
     const plainTxt = "CANDIDATURE – test de l'appli\nNom : Test Appli\nMessage : test automatique, à ignorer";
-    const head = new TextEncoder().encode(JSON.stringify({v:1, kind:"cand", text:plainTxt, t:Date.now(), files:[]})), plain = new Uint8Array(4 + head.length); new DataView(plain.buffer).setUint32(0, head.length); plain.set(head, 4);
+    const head = new TextEncoder().encode(JSON.stringify({v:1, kind:"cand", text:plainTxt, t:Date.now(), files:[], test:1})), plain = new Uint8Array(4 + head.length); new DataView(plain.buffer).setUint32(0, head.length); plain.set(head, 4);
     const P = {name:"ECDH", namedCurve:"P-256"}, pub = await crypto.subtle.importKey("raw", unb(c.pub), P, false, []), eph = await crypto.subtle.generateKey(P, true, ["deriveKey"]);
     const key = await crypto.subtle.deriveKey({name:"ECDH", public:pub}, eph.privateKey, {name:"AES-GCM", length:256}, false, ["encrypt"]);
     const iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, plain)), epk = new Uint8Array(await crypto.subtle.exportKey("raw", eph.publicKey));
