@@ -371,7 +371,7 @@ const sum = a => a.reduce((s,v) => s + N(v), 0);
 /* ============ Données ============ */
 let S = null, memCopy = null;
 function load(){ try { const t = localStorage.getItem(KEY); if (t) return JSON.parse(t); } catch(e){} return memCopy; }
-let DEMO = false, REAL_S = null;
+let DEMO = false, REAL_S = null, DEMO_MINE = false;
 function persist(){ if (!S || DEMO) return; memCopy = S; if (SEC.on){ SEC.dirty = true; if (!SEC.saving) flushEnc(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
 /* ============ Sécurité : code, Face ID, chiffrement AES-GCM ============ */
@@ -723,7 +723,7 @@ function viewHome(){
     <div class="glass">${ids.map(id => { const p = placeOf(id), on = bourseOn(), parts = on ? PLACE_CATS.filter(c => p.by[c]).map(c => (c === "Bourse" ? "bourse" : c) + " " + eur(p.by[c])).concat(p.interets ? ["intérêts " + eur(p.interets)] : []) : [];
       return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(soldeBien(id))}</span></div>` + (parts.length ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">(${parts.join(" + ")}) · total ${eur(r2(soldeBien(id) + p.total))}</div>` : ""); }).join("")}
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Total tous biens confondus${bourseOn() ? " (comptes + placé)" : ""} : <b>${eur(r2(tot + (bourseOn() ? placeOf(null).total : 0)))}</b></div></div></div>
-  ${matelasHome()}${bourseCard(true)}
+  ${departHome()}${matelasHome()}${bourseCard(true)}
   <div class="tiles">${tileLate(c.retard)}${tile(c.pointer,"à pointer","warn","month","todo")}${tile(c.compta,"à saisir en compta","warn","month","compta")}</div>
   ${typeof avAlertHome === "function" ? avAlertHome() : ""}
   ${feHome()}
@@ -872,7 +872,7 @@ function tenantCard(id){
   const t = tenantFor(id, todayIso()), ended = t && t.fin && t.fin < todayIso();
   return `<div class="card" style="padding:12px 16px;gap:4px"><div class="top" style="justify-content:flex-start;gap:12px"><span class="small muted">Locataire actuel</span>${t ? `<button class="mini" data-act="ledit" data-id="${t.id}">Fiche</button>` : `<button class="mini" data-act="lnew">Ajouter</button>`}</div>
     ${t ? `<div class="t" style="font-weight:600;font-size:16px">${esc(t.nom)}${ended ? ' <span class="chip warn">bail terminé</span>' : ""}</div>
-      <div class="small muted">Bail depuis le ${t.debut ? frDate(t.debut) : "?"}${t.fin ? " jusqu'au " + frDate(t.fin) : ""} · loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""}</div>${soldeLine(id)}${typeof glLine === "function" ? glLine(t) : ""}${typeof edlPretLine === "function" ? edlPretLine(t) : ""}
+      <div class="small muted">Bail depuis le ${t.debut ? frDate(t.debut) : "?"}${t.fin ? " jusqu'au " + frDate(t.fin) : ""} · loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""}</div>${soldeLine(id)}${typeof glLine === "function" ? glLine(t) : ""}${typeof edlPretLine === "function" ? edlPretLine(t) : ""}${!ended && typeof departLine === "function" ? departLine(t) : ""}
       <div class="btns" style="gap:6px">${t.tel ? `<a class="mini" href="tel:${esc(t.tel)}">Appeler</a><a class="mini" href="sms:${esc(t.tel)}">SMS</a>` : ""}${t.email ? `<a class="mini" href="mailto:${esc(t.email)}">E-mail</a>` : ""}</div>`
     : '<div class="small muted">Aucun locataire enregistré pour ce bien.</div>'}
     ${t ? `<div class="btns"><button class="btn" style="flex:1" data-act="mv-open" data-v="dep">🚪 Départ du locataire</button><button class="btn ghost" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>` : `<div class="btns"><button class="btn" style="flex:1" data-act="mv-open" data-v="arr">🔑 Arrivée d'un locataire</button></div>`}</div>`;
@@ -972,7 +972,7 @@ function viewLoc(){
       return `<div class="card"><h2>${esc(bienName(id))}</h2>${T.length ? T.map(t => `<div class="env" style="padding:8px 0;gap:6px"><div class="top"><button class="rowbtn" data-act="ledit" data-id="${t.id}"><div class="t" style="font-weight:600">${esc(t.nom)}</div>
         <div class="s">Bail ${t.debut ? frDateL(t.debut) : "?"} → ${t.fin ? frDateL(t.fin) : "en cours"} ${soon(t) ? '<span class="chip warn">fin proche</span>' : ""}</div>
         <div class="s">Loyer ${eur(t.loyer)}${t.charges ? " dont charges " + eur(t.charges) : ""} · dépôt de garantie ${eur(t.depot)}</div>${t.note ? `<div class="s">${esc(t.note)}</div>` : ""}</button></div>${typeof edlPretLine === "function" ? edlPretLine(t) : ""}
-        <div class="btns">${t.tel ? `<a class="mini" href="tel:${esc(t.tel)}">Appeler</a><a class="mini" href="sms:${esc(t.tel)}">SMS</a>` : ""}${t.email ? `<a class="mini" href="mailto:${esc(t.email)}">E-mail</a>` : ""}</div></div>`).join("") : '<div class="empty">Aucun locataire.</div>'}</div>`; }).join("")) + viewDocsTenant();
+        <div class="btns">${t.tel ? `<a class="mini" href="tel:${esc(t.tel)}">Appeler</a><a class="mini" href="sms:${esc(t.tel)}">SMS</a>` : ""}${t.email ? `<a class="mini" href="mailto:${esc(t.email)}">E-mail</a>` : ""}</div></div>`).join("") : '<div class="empty">Aucun locataire.</div>'}</div>` + departCard(id); }).join("")) + viewDocsTenant();
 }
 function viewTarifs(){
   const ids = bienIds(), hist = S.tarifs.slice().sort((a,b) => b.date.localeCompare(a.date));
@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.68";
+const APP_VERSION = "1.7.69";
 const CHANGELOG = [
+  {v:"1.7.69", date:"2026-11-12", titre:"Mode essai avec mes données, date de départ en gros", items:["Réglages › Aide › « Essai avec mes données » : l'appli travaille sur une copie de tes vraies données. Tu peux tout essayer (jour J, signatures, saisies, suppressions, documents) ; rien n'est enregistré. « Quitter l'essai » dans le bandeau remet tout exactement comme avant ; fermer l'appli annule aussi l'essai.","Pendant l'essai (comme en démo), les fichiers et photos ajoutés ou supprimés restent en mémoire : tes vrais documents ne sont jamais effacés. À l'entrée, une fiche résume tout ce qu'il faut savoir (ce qui est protégé, ce qui part quand même : PDF enregistré, mail ou SMS envoyé, rendez-vous d'agenda, réglages d'apparence) ; le bouton ℹ️ du bandeau la rouvre.","Date de départ du locataire : un encadré « 🚪 Départ du locataire » en haut de Biens › Arrivée/Départ et dans Biens › Locataires permet de la noter. Elle s'affiche en gros (« jeudi 19 novembre 2026 · dans 7 jours ») et aussi sur l'accueil ; un tap mène au départ pas à pas. L'étape « Date de départ fixée » se coche toute seule, et la date est reprise pour la clôture, la lettre de rappel et la restitution du dépôt."]},
   {v:"1.7.68", date:"2026-11-12", titre:"Jour J à ton ordre, bail et reçu du dépôt, mes modèles", items:["Avant de démarrer le jour J, range les étapes dans l'ordre que tu veux avec les flèches ▲ ▼ (par exemple 1 inventaire, 2 état des lieux, 3 bail…), puis « Démarrer dans cet ordre ». L'appli enchaîne ensuite dans cet ordre.","Arrivée : le bail est maintenant une étape du jour J (« Bail : relire, vérifier et signer »), en premier par défaut. La fenêtre du bail rappelle les trois gestes (relecture ensemble, vérification, signature) ; la signature à l'écran coche l'étape toute seule, et « ✓ Bail signé : passer à l'étape suivante » enchaîne sur la suite (utile après une signature papier).","Après l'état des lieux ou l'inventaire, « Enregistrer et passer à l'étape suivante » ouvre aussi directement le bail si c'est la suite.","Nouveau : reçu du dépôt de garantie, signé à l'écran par toi et le locataire (montant, date, moyen de paiement, rappel des délais de restitution). Il est rangé avec le bail et coché d'office dans le dossier du bail. À l'arrivée, c'est l'étape « Dépôt de garantie » du jour J ; on le trouve aussi dans Biens › Locataires › lettres.","Mes modèles : dans un état des lieux ou un inventaire, « ☆ Enregistrer comme modèle » garde la liste (sans les états) sous le nom que tu choisis, par exemple « État des lieux vierge T2 », et pour le logement de ton choix. Tous tes modèles sont dans Biens › Documents › Mes modèles : Utiliser, PDF vierge, Renommer, Supprimer. Le modèle du logement est proposé d'office quand tu crées un nouveau document. Les anciens modèles ★ sont repris automatiquement."]},
   {v:"1.7.67", date:"2026-11-12", titre:"Jour J : les étapes s'enchaînent, dans l'ordre que tu veux", items:["Arrivée / Départ › Jour J : en bas de l'état des lieux et de l'inventaire, un gros bouton « ✓ Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire, coche l'étape et ouvre directement la suivante (par exemple l'inventaire de sortie après l'état des lieux).","Tu choisis l'ordre : avant de démarrer, « Commencer par ça » sur l'étape de ton choix (état des lieux, inventaire, signatures du bail…), puis « Faire maintenant » pour changer d'étape à tout moment.","Au départ, l'étape « Signatures » se coche toute seule quand l'état des lieux et l'inventaire de sortie sont signés. À l'arrivée, elle ouvre le bail à signer.","Correctif : le bouton d'une étape ouvre le document déjà préparé au lieu d'en créer un nouveau."]},
   {v:"1.7.66", date:"2026-11-12", titre:"État des lieux et inventaire en un tap", items:["État des lieux et inventaire (vue compacte) : quatre boutons Neuf / Bon / Moyen / Mauvais à la place de la liste déroulante. Un tap et la ligne se colore ; retaper sur le bouton l'efface.","Bouton « ✔ Tout le reste en bon état » dans chaque pièce, et à la sortie « = Identique à l'entrée ». La pièce passe en vert avec « Terminé » quand tout est renseigné ; une barre en haut indique combien de pièces sont finies.","Lecture d'un bail (PDF) : le modèle « contrat type » loi ALUR (I. Désignation des parties, II. Objet du contrat…) est maintenant lu, et les montants écrits en toutes lettres sont compris."]},
@@ -1833,8 +1834,8 @@ const ficheCard = () => `<div class="card"><h2>Fiche de l'appli (à partager)</h
   <div class="small muted">Une page de présentation claire avec toutes les fonctions. « Partager » envoie le lien avec un court descriptif au-dessus (points importants) ; la page est mise à jour à chaque nouvelle version de l'appli.</div>
   <div class="affs">${AFFICHES.map(a => `<button type="button" data-act="aff-open" data-f="${a[0]}"><img src="${a[0]}" alt="${a[1]}" loading="lazy"><span>${a[1]}</span></button>`).join("")}</div>
   <div class="btns"><button class="btn sm" data-act="fiche-share">Partager avec le descriptif</button><button class="btn sm ghost" data-act="fiche-open">Voir la fiche</button><button class="btn sm ghost" data-act="fiche-copy">Copier le lien</button></div></div>`;
-const aideCard = () => `<div class="card"><h2>Aide</h2><div class="btns"><button class="btn" data-act="guide">Tout le guide</button><button class="btn ghost" data-act="demo">Mode démo</button></div>
-  <div class="small muted">Le mode démo charge des données d'exemple à la place des données de cet appareil.</div></div>`;
+const aideCard = () => `<div class="card"><h2>Aide</h2><div class="btns"><button class="btn" data-act="guide">Tout le guide</button><button class="btn ghost" data-act="demo">Mode démo</button>${DEMO ? "" : '<button class="btn ghost" data-act="try">Essai avec mes données</button>'}</div>
+  <div class="small muted">Le mode démo charge des données d'exemple à la place des données de cet appareil. L'essai avec mes données travaille sur une copie de tes vraies données : rien n'est enregistré, « Quitter l'essai » remet tout comme avant.</div></div>`;
 
 /* ---------- Routines de démarrage (aussi après le code) ---------- */
 function bootRoutines(){
@@ -2286,6 +2287,8 @@ document.addEventListener("click", async ev => {
     case "demo-back": { let sv = null; try { sv = JSON.parse(localStorage.getItem("glf-avant-essai")); } catch(e){} if (!sv) return toast("Aucune sauvegarde de côté");
       S = Object.assign(emptyData(), sv); S.demo = false; persist(); try { localStorage.removeItem("glf-avant-essai"); } catch(e){} V.tab = "home"; toast("Tes données sont revenues"); render(); break; }
     case "demo-ok": closeSheet(); enterDemo(); break;
+    case "try": case "try-info": openSheet(tryInfo(a === "try")); break;
+    case "try-ok": enterTry(); break;
     case "ttabs": lsSet("glf-tabs", v); render(); break;
     case "sset": V.sset = v; render(); window.scrollTo(0, 0); break;
     case "pal": lsSet("glf-pal", v); applyTheme(); render(); break;
@@ -2451,12 +2454,24 @@ document.addEventListener("click", ev => {
 });
 
 /* ---------- Mode démo en mémoire : rien n'est enregistré, les vraies données ne sont pas touchées ---------- */
-function enterDemo(){ if (!DEMO){ REAL_S = S; } DEMO = true; S = demoData(true); migrate(); V.tab = "home"; V.doc = null; V.bsel = null; closeSheet(); render(); demoFiles(); toast("Mode démo : rien n'est enregistré"); }
-function exitDemo(){ if (!DEMO) return; DEMO = false; S = REAL_S || emptyData(); REAL_S = null; V.doc = null; V.bsel = null; V.pending = null; V.tab = live(S.biens).length ? "home" : "welcome"; if (V.tab === "welcome") V.wz = V.wz || {step:0}; try { history.replaceState(null, "", location.pathname); } catch(e){} closeSheet(); render(); window.scrollTo(0, 0); }
+function enterDemo(){ if (!DEMO){ REAL_S = S; } memfReset(); DEMO = true; DEMO_MINE = false; S = demoData(true); migrate(); V.tab = "home"; V.doc = null; V.bsel = null; closeSheet(); render(); demoFiles(); toast("Mode démo : rien n'est enregistré"); }
+/* Ce qu'il faut savoir sur le mode essai (affiché à l'entrée, et rouvrable avec « ℹ️ » dans le bandeau) */
+function tryInfo(start){
+  const L = [["✅ Ce que tu peux faire", ["Tout essayer sur une <b>copie de tes vraies données</b> : jour J, signatures, saisies, pointage, compta, suppressions, documents, modèles.", "Tout ce que tu fais pendant l'essai fonctionne normalement à l'écran, comme pour de vrai."]],
+    ["🔒 Ce qui est protégé", ["<b>Rien n'est enregistré</b> : tes vraies données restent exactement comme avant.", "Tes vrais documents, scans et photos <b>ne sont jamais effacés</b>, même si tu les supprimes dans l'essai.", "Les fichiers ajoutés pendant l'essai sont oubliés à la sortie.", "La restauration d'une sauvegarde est bloquée pendant l'essai."]],
+    ["⚠️ Ce qui part quand même (pour de vrai)", ["Un PDF <b>enregistré sur le téléphone</b> (Fichiers, iCloud…) reste enregistré.", "Un <b>mail ou un SMS envoyé</b> part vraiment : n'envoie rien à un vrai locataire pendant l'essai.", "Un rendez-vous ajouté à <b>l'agenda</b> (AgenDam, .ics) y reste.", "Les <b>réglages d'apparence</b> (thème, couleurs, style Fun, onglets) restent changés après l'essai."]],
+    ["🚪 Pour sortir", ["Bouton <b>« Quitter l'essai »</b> dans le bandeau en haut : tout revient comme avant.", "Fermer l'appli ou la recharger annule aussi l'essai.", "Le bouton <b>ℹ️</b> du bandeau rouvre cette fiche à tout moment."]]];
+  return `<h2>Mode essai avec mes données</h2>${L.map(([t, l]) => `<div style="padding:8px 0;border-top:1px solid var(--line)"><b>${t}</b><ul style="margin:6px 0 0 18px;padding:0;font-size:14px">${l.map(x => `<li style="margin:3px 0">${x}</li>`).join("")}</ul></div>`).join("")}
+    <div class="btns">${start ? `<button class="btn" style="flex:1" data-act="try-ok">Commencer l'essai</button><button class="btn ghost" data-act="sheetclose">Annuler</button>` : `<button class="btn" style="flex:1" data-act="sheetclose">Compris</button>`}</div>`;
+}
+/* Mode essai : une copie de MES données, en mémoire ; tout ce qui est fait est oublié en quittant */
+function enterTry(){ if (DEMO) return; REAL_S = S; memfReset(); let c; try { c = structuredClone(S); } catch(e){ c = JSON.parse(JSON.stringify(S)); }
+  DEMO = true; DEMO_MINE = true; S = c; V.doc = null; V.pending = null; closeSheet(); render(); window.scrollTo(0, 0); toast("Mode essai : tes données, mais rien n'est enregistré · ℹ️ dans le bandeau pour les infos"); }
+function exitDemo(){ if (!DEMO) return; const mine = DEMO_MINE; DEMO = false; DEMO_MINE = false; memfReset(); if (mine){ S = REAL_S; REAL_S = null; V.doc = null; V.pending = null; closeSheet(); render(); window.scrollTo(0, 0); toast("Essai terminé : tes vraies données sont revenues, intactes"); return; } S = REAL_S || emptyData(); REAL_S = null; V.doc = null; V.bsel = null; V.pending = null; V.tab = live(S.biens).length ? "home" : "welcome"; if (V.tab === "welcome") V.wz = V.wz || {step:0}; try { history.replaceState(null, "", location.pathname); } catch(e){} closeSheet(); render(); window.scrollTo(0, 0); }
 function demoBar(){ let el = document.getElementById("demobar");
   if (!DEMO){ if (el) el.remove(); document.body.classList.remove("demo"); return; }
   if (!el){ el = document.createElement("div"); el.id = "demobar"; document.body.appendChild(el); }
-  el.innerHTML = '<span><b>Mode démo</b> · rien n\'est enregistré</span><button type="button" data-act="exitdemo">Quitter la démo</button>'; document.body.classList.add("demo"); }
+  el.innerHTML = DEMO_MINE ? '<span><b>Mode essai</b> · tes données, rien n\'est enregistré</span><button type="button" data-act="try-info" aria-label="À savoir">ℹ️</button><button type="button" data-act="exitdemo">Quitter l\'essai</button>' : '<span><b>Mode démo</b> · rien n\'est enregistré</span><button type="button" data-act="exitdemo">Quitter la démo</button>'; document.body.classList.add("demo"); }
 
 /* ---------- Compta : regroupement pour ton site de compta (indicatif, à ajuster) ---------- */
 /* Articles de dépenses du site (liste lue sur l'écran Dépenses) */
@@ -3880,12 +3895,15 @@ function soldesCard(){
 
 /* ---------- Photos : stockées dans IndexedDB (jamais dans les données principales) ---------- */
 const PH = {db:null, cache:{}};
+/* Démo et mode essai : fichiers et photos gardés en mémoire seulement (rien n'est écrit ni effacé dans le stockage de l'appareil) */
+const MEMF = {f:{}, fd:{}, p:{}, pd:{}};
+function memfReset(){ for (const id in MEMF.p) delete PH.cache[id]; MEMF.f = {}; MEMF.fd = {}; MEMF.p = {}; MEMF.pd = {}; }
 function phOpen(){ return new Promise(res => { try { const r = indexedDB.open("glf-photos", 1); r.onupgradeneeded = () => r.result.createObjectStore("p"); r.onsuccess = () => { PH.db = r.result; res(PH.db); }; r.onerror = () => res(null); } catch(e){ res(null); } }); }
-async function phPut(id, obj){ PH.cache[id] = obj; const db = PH.db || await phOpen(); if (!db) return;
+async function phPut(id, obj){ PH.cache[id] = obj; if (DEMO){ MEMF.p[id] = 1; delete MEMF.pd[id]; return; } const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").put(obj, id); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
-async function phGet(id){ if (PH.cache[id]) return PH.cache[id]; const db = PH.db || await phOpen(); if (!db) return null;
+async function phGet(id){ if (DEMO && MEMF.pd[id]) return null; if (PH.cache[id]) return PH.cache[id]; const db = PH.db || await phOpen(); if (!db) return null;
   return new Promise(res => { try { const q = db.transaction("p").objectStore("p").get(id); q.onsuccess = () => { if (q.result) PH.cache[id] = q.result; res(q.result || null); }; q.onerror = () => res(null); } catch(e){ res(null); } }); }
-async function phDel(id){ delete PH.cache[id]; const db = PH.db || await phOpen(); if (!db) return;
+async function phDel(id){ if (DEMO){ if (!MEMF.p[id]) MEMF.pd[id] = 1; else delete PH.cache[id]; delete MEMF.p[id]; return; } delete PH.cache[id]; const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").delete(id); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
 function phCompress(file){ return new Promise((res, rej) => { const img = new Image(), url = URL.createObjectURL(file);
   img.onload = () => { const k = Math.min(1, 1000 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
@@ -4348,8 +4366,8 @@ function sheetLettre(kind){
   if (kind === "impaye"){ const du = r2(sum(s.retard.map(j => j.montant)));
     spec = dxF("lt-mont", "Montant dû (€)", fmtNum(du), 'inputmode="decimal"') + `<div class="small muted">${s.retard.length ? s.retard.map(j => MOIS[mo(j)].toLowerCase() + " " + yr(j) + " : " + eur(j.montant)).join(" · ") : "Aucun loyer non reçu dans l'appli : précise le montant."}</div>` + dxF("lt-delai", "Délai accordé (jours)", "8", 'inputmode="numeric"'); }
   if (kind === "attest") spec = `<div class="grid2">${dxF("lt-lhc", "Loyer hors charges (€)", fmtNum(t.loyer ? r2(N(t.loyer) - N(t.charges)) : ""), 'inputmode="decimal"')}${dxF("lt-chg", "Charges (€)", fmtNum(t.charges || ""), 'inputmode="decimal"')}</div>${dxF("lt-debut", "Occupe le logement depuis le", t.debut || "", 'type="date"')}${dxS("lt-jour", "Locataire à jour de ses loyers", [["Oui", "Oui"], ["Non", "Non"]], s.solde >= -0.005 ? "Oui" : "Non")}`;
-  if (kind === "depot") spec = `<div class="grid2">${dxF("lt-dep", "Dépôt versé (€)", fmtNum(t.depot || ""), 'inputmode="decimal"')}${dxF("lt-sortie", "Date de sortie", t.fin || todayIso(), 'type="date"')}</div><label class="f">Retenues (une par ligne : libellé ; montant)<textarea id="lt-ret" placeholder="Réparation du volet ; 80"></textarea></label>${dxS("lt-conf", "État des lieux de sortie", [["conforme", "Conforme à l'entrée (1 mois)"], ["ecart", "Écarts constatés (2 mois)"]], "conforme")}`;
-  if (kind === "rappel") spec = dxF("lt-sortie", "Date de départ prévue", (s.t && s.t.fin) || "", 'type="date"');
+  if (kind === "depot") spec = `<div class="grid2">${dxF("lt-dep", "Dépôt versé (€)", fmtNum(t.depot || ""), 'inputmode="decimal"')}${dxF("lt-sortie", "Date de sortie", t.fin || t.depart || todayIso(), 'type="date"')}</div><label class="f">Retenues (une par ligne : libellé ; montant)<textarea id="lt-ret" placeholder="Réparation du volet ; 80"></textarea></label>${dxS("lt-conf", "État des lieux de sortie", [["conforme", "Conforme à l'entrée (1 mois)"], ["ecart", "Écarts constatés (2 mois)"]], "conforme")}`;
+  if (kind === "rappel") spec = dxF("lt-sortie", "Date de départ prévue", (s.t && (s.t.depart || s.t.fin)) || "", 'type="date"');
   if (kind === "recu"){ const mx = bkind(id) === "vide" ? 1 : 2;
     spec = `<div class="grid2">${dxF("lt-dep", "Montant reçu (€)", fmtNum(t.depot || ""), 'inputmode="decimal"')}${dxF("lt-dver", "Reçu le", todayIso(), 'type="date"')}</div>${dxS("lt-mode", "Moyen de paiement", [["virement", "Virement"], ["chèque", "Chèque"], ["espèces", "Espèces"], ["autre", "Autre"]], "virement")}${dxF("lt-dbail", "Date du bail", t.debut || "", 'type="date"')}<div class="small muted">Maximum : ${mx} mois de loyer hors charges (${bkind(id) === "vide" ? "logement vide" : "meublé"}, article 22 de la loi du 6 juillet 1989). Le reçu est signé par toi et par le locataire, puis rangé avec le bail : il part dans le dossier du bail.</div>`; }
   openSheet(`<h2>${titre}</h2>${common}${spec}<div class="btns"><button class="btn" style="flex:1" data-act="let-pdf" data-v="${kind}" data-send="${titre}">Créer le PDF</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>
@@ -4446,11 +4464,11 @@ document.addEventListener("click", ev => {
 
 /* ============ Documents importés (bail signé, état des lieux, inventaire déjà faits) ============ */
 /* Les fichiers sont gardés dans IndexedDB (clé "f:<id>"), la fiche (nom, date, bien) dans S.docs. */
-async function flPut(fid, rec){ const db = PH.db || await phOpen(); if (!db) throw new Error("stockage indisponible");
+async function flPut(fid, rec){ if (DEMO){ MEMF.f[fid] = rec; delete MEMF.fd[fid]; return; } const db = PH.db || await phOpen(); if (!db) throw new Error("stockage indisponible");
   return new Promise((res, rej) => { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").put(rec, "f:" + fid); tx.oncomplete = () => res(); tx.onerror = tx.onabort = () => rej(tx.error || new Error("écriture impossible")); }); }
-async function flGet(fid){ const db = PH.db || await phOpen(); if (!db) return null;
+async function flGet(fid){ if (DEMO){ if (MEMF.f[fid]) return MEMF.f[fid]; if (MEMF.fd[fid]) return null; } const db = PH.db || await phOpen(); if (!db) return null;
   return new Promise(res => { try { const q = db.transaction("p").objectStore("p").get("f:" + fid); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch(e){ res(null); } }); }
-async function flDel(fid){ const db = PH.db || await phOpen(); if (!db) return;
+async function flDel(fid){ if (DEMO){ delete MEMF.f[fid]; MEMF.fd[fid] = 1; return; } const db = PH.db || await phOpen(); if (!db) return;
   return new Promise(res => { try { const tx = db.transaction("p", "readwrite"); tx.objectStore("p").delete("f:" + fid); tx.oncomplete = tx.onerror = tx.onabort = () => res(); } catch(e){ res(); } }); }
 const ANNEXES = [["dpe", "DPE (performance énergétique)"], ["erp", "État des risques et pollutions (ERP)"], ["boutin", "Mesurage loi Boutin (surface habitable)"], ["plomb", "Plomb (CREP)"], ["elec", "Diagnostic électricité"], ["gaz", "Diagnostic gaz"], ["amiante", "Amiante"], ["diag", "Autres diagnostics / dossier complet"], ["pno", "Assurance PNO (propriétaire non occupant)"], ["taxe", "Taxe foncière"], ["notice", "Notice d'information locataires / bailleurs"], ["copro", "Extraits du règlement de copropriété"], ["charges", "Liste des charges récupérables"], ["repar", "Liste des réparations locatives"], ["caution", "Acte de cautionnement solidaire"], ["assur", "Attestation d'assurance habitation"], ["caf", "Attestation de loyer (CAF)"], ["permis", "Autorisation de mise en location (permis de louer)"], ["bruit", "Bruit des aérodromes (zone PEB)"], ["vetuste", "Grille de vétusté"], ["anah", "Convention Anah"]];
 const annexLabel = k => (ANNEXES.find(a => a[0] === k) || [0, ""])[1];
@@ -4676,7 +4694,7 @@ const MVT = {
   ]},
   dep: {titre:"Départ d'un locataire", etapes:[
     ["con", "Congé reçu et vérifié", "Préavis du locataire : 1 mois en meublé, 3 mois en logement vide (1 mois en zone tendue et dans certains cas). Bailleur : au moins 3 mois (meublé) ou 6 mois (vide) avant la fin du bail, pour un motif légal. Forme : lettre recommandée, acte de commissaire de justice ou remise en main propre contre récépissé.", null],
-    ["dat", "Date de départ fixée avec le locataire", "Le locataire prend rendez-vous au moins une semaine avant son déménagement. La lettre de rappel lui liste ce qu'il doit préparer (propreté, clés, justificatifs).", ["rappel", "Lettre de rappel"]],
+    ["dat", "Date de départ fixée avec le locataire", "Note-la dans l'encadré « Départ du locataire » en haut de cet écran (elle s'affiche aussi en gros sur l'accueil). Le locataire prend rendez-vous au moins une semaine avant son déménagement. La lettre de rappel lui liste ce qu'il doit préparer (propreté, clés, justificatifs).", ["rappel", "Lettre de rappel"]],
     ["inv", "Inventaire du mobilier de sortie", "Repris de l'inventaire d'entrée : tu notes l'état de chaque article à la sortie et les remarques.", ["inv-s", "Inventaire de sortie"]],
     ["edl", "État des lieux de sortie", "Repris de l'état d'entrée : les éléments plus dégradés ressortent en rouge dans le PDF.", ["edl-s", "État des lieux de sortie"]],
     ["sig", "Signatures", "Document signé par les deux parties, un exemplaire chacun.", ["docs", "Aller aux documents"]],
@@ -4779,7 +4797,7 @@ function viewMvt(){
       ${head("1 · Préparatif (avant le jour J)", cnt(pre), pre.length)}${pre.map(e => row(e)).join("")}${adv}
       ${head("2 · Jour J, pas à pas", cnt(jj), jj.length)}${jjHtml}${started ? fin : ""}
       ${post.length ? head("3 · Après", cnt(post), post.length) + post.map(e => row(e)).join("") : ""}</div>`; };
-  return `<div class="info">${t ? "Locataire actuel : " + esc(t.nom) + (t.debut ? " · depuis le " + frDate(t.debut) : "") : "Aucun locataire en cours pour ce bien : tu es dans la phase d'arrivée."} Coche les étapes au fur et à mesure ; les boutons ouvrent directement le bon document.</div>
+  return departCard(id) + `<div class="info">${t ? "Locataire actuel : " + esc(t.nom) + (t.debut ? " · depuis le " + frDate(t.debut) : "") : "Aucun locataire en cours pour ce bien : tu es dans la phase d'arrivée."} Coche les étapes au fur et à mesure ; les boutons ouvrent directement le bon document.</div>
     ${t ? `<div class="btns"><button class="btn" style="flex:1" data-act="tcl-open" data-id="${t.id}">🚪 Clôturer le locataire (fin de bail)</button><button class="btn ghost" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>` : `<div class="btns"><button class="btn ghost" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>`}
     ${card("dep")}${card("arr")}<div class="small muted" style="padding:0 4px 12px">Repères généraux : la réglementation change.</div>
     <div class="card"><h2>Vérifier la réglementation</h2><div class="small muted">L'appli ne peut pas se mettre à jour toute seule sur la loi. Avant chaque nouveau bail, contrôle ces sources officielles${S.cfg && S.cfg.regVerif ? " (dernier contrôle noté le " + frDate(S.cfg.regVerif) + ")" : ""}.</div>
@@ -4851,12 +4869,52 @@ function demoCard(){
   const back = DEMO ? false : (() => { try { return !!localStorage.getItem("glf-avant-essai"); } catch(e){ return false; } })();
   const row = (act, t, s) => `<div class="row" data-act="${act}" style="cursor:pointer"><div class="main"><div class="t">${t}</div><div class="s">${s}</div></div><div class="s" style="font-size:22px;line-height:1">›</div></div>`;
   return `<div class="card"><h2>Démo et aide</h2><div class="rows">
-    ${DEMO ? row("exitdemo", "Quitter le mode démo", "") : row("demo", "Voir le mode démo", "Avec des données d'exemple")}
+    ${DEMO ? row("exitdemo", DEMO_MINE ? "Quitter le mode essai" : "Quitter le mode démo", "") : row("demo", "Voir le mode démo", "Avec des données d'exemple") + row("try", "Mode essai avec mes données", "Tout essayer sur une copie, rien n'est enregistré")}
     ${!DEMO && S.demo && back ? row("demo-back", "Retrouver mes données", "Quitter la démo") : ""}
     ${row("visite", "Visite guidée plein écran", "De A à Z, pas à pas, avec des captures")}
     ${row("guideweb", "Guide à lire (page web)", "Pas à pas, avec les vrais écrans")}
     ${row("guide", "Mode d'emploi", "Le guide, expliqué simplement")}</div></div>`;
 }
+
+/* ---------- Date de départ du locataire (prévue) : en gros, modifiable ---------- */
+const frDateLong = iso => { try { const x = new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", {weekday:"long", day:"numeric", month:"long", year:"numeric"}); return x.charAt(0).toUpperCase() + x.slice(1); } catch(e){ return frDate(iso); } };
+const departIn = iso => { const n = Math.round((new Date(iso + "T12:00:00") - new Date(todayIso() + "T12:00:00")) / 864e5); return n === 0 ? "aujourd'hui" : n === 1 ? "demain" : n > 1 ? "dans " + n + " jours" : n === -1 ? "hier" : "il y a " + (-n) + " jours"; };
+function departCard(bien){
+  const t = tenantFor(bien, todayIso()); if (!t || (t.fin && t.fin < todayIso())) return "";
+  const d = t.depart, col = d ? (d < todayIso() ? "#5C6B66" : "#C77D00") : "var(--line)";
+  return `<div class="card" style="border:2px solid ${col}"><div class="small muted">🚪 Départ du locataire · ${esc(t.nom)}</div>
+    ${d ? `<div style="font-size:24px;font-weight:800;line-height:1.2;margin:4px 0">${esc(frDateLong(d))}</div><div style="font-size:16px;font-weight:600;color:${col}">${departIn(d)}</div>` : `<div style="font-size:16px;font-weight:600;margin:4px 0">Pas encore de date de départ</div><div class="small muted">Note-la dès que le locataire te donne son congé : elle s'affiche en gros ici, sur l'accueil et dans Arrivée/Départ.</div>`}
+    <label class="f" style="margin-top:6px">Date de départ prévue<input type="date" data-dep-date="${t.id}" value="${esc(d || "")}"></label>
+    ${d ? `<div class="btns"><button class="btn sm ghost" data-act="dep-clear" data-id="${t.id}">Effacer la date</button><button class="btn sm ghost" data-act="mv-open" data-v="dep">Voir le départ pas à pas</button></div>` : ""}</div>`;
+}
+function departHome(){
+  const L = live(S.locataires).filter(t => t.depart && t.depart >= addDaysIso(todayIso(), -7) && !(t.fin && t.fin < todayIso())).sort((a, b) => a.depart.localeCompare(b.depart));
+  return L.map(t => `<div class="card" data-act="go-depart" data-bien="${esc(t.bien)}" role="button" style="cursor:pointer;border:2px solid #C77D00"><div class="small muted">🚪 Départ de ${esc(t.nom)} · ${esc(bienName(t.bien))}</div><div style="font-size:22px;font-weight:800">${esc(frDateLong(t.depart))}</div><div style="font-weight:600;color:#C77D00">${departIn(t.depart)} ›</div></div>`).join("");
+}
+/* Dans la carte « Locataire actuel » (en haut de tous les onglets de Biens) */
+function departLine(t){
+  if (!t.depart) return `<div class="btns" style="margin:6px 0 0"><button class="btn sm ghost" data-act="dep-edit" data-id="${t.id}">🚪 ＋ Noter la date de départ</button></div>`;
+  const past = t.depart < todayIso(), col = past ? "#5C6B66" : "#C77D00";
+  return `<button type="button" data-act="dep-edit" data-id="${t.id}" style="display:block;width:100%;text-align:left;margin:8px 0 2px;padding:10px 12px;border-radius:12px;border:2px solid ${col};background:rgba(242,184,75,.14);color:inherit;font:inherit;cursor:pointer"><div class="small muted">🚪 Départ prévu · toucher pour changer</div><div style="font-size:20px;font-weight:800">${esc(frDateLong(t.depart))}</div><div style="font-weight:700;color:${col}">${departIn(t.depart)}</div></button>`;
+}
+const addDaysIso = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+document.addEventListener("change", ev => {
+  const el = ev.target; if (!el || !el.dataset || !el.dataset.depDate) return;
+  const t = S.locataires.find(x => x.id === el.dataset.depDate); if (!t) return;
+  if (el.value){ t.depart = el.value; const r = mvtRec(t.bien, "dep"); if (!r.done.dat){ r.done.dat = todayIso(); r.upd = Date.now(); } toast("Date de départ notée : " + frDateLong(el.value)); } else delete t.depart;
+  t.upd = Date.now(); persist(); keepScroll(() => {});
+});
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "dep-edit"){ const t = S.locataires.find(x => x.id === b.dataset.id); if (!t) return;
+    openSheet(`<h2>Date de départ · ${esc(t.nom)}</h2><div class="small muted">La date à laquelle le locataire quitte le logement (congé reçu). Elle s'affiche en gros dans Biens, sur l'accueil et dans Arrivée/Départ. Elle ne clôture pas le bail : ça, c'est « Clôturer le locataire » le jour du départ.</div>
+      <label class="f">Date de départ prévue<input type="date" id="dep-in" value="${esc(t.depart || "")}"></label>
+      <div class="btns"><button class="btn" style="flex:1" data-act="dep-save" data-id="${t.id}">Enregistrer</button>${t.depart ? `<button class="btn ghost" data-act="dep-clear" data-id="${t.id}">Effacer</button>` : ""}<button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); return; }
+  if (b.dataset.act === "dep-save"){ const t = S.locataires.find(x => x.id === b.dataset.id), v = ($("#dep-in") || {}).value; if (!t) return; if (!v) return toast("Choisis une date");
+    t.depart = v; t.upd = Date.now(); const r = mvtRec(t.bien, "dep"); if (!r.done.dat){ r.done.dat = todayIso(); r.upd = Date.now(); } persist(); closeSheet(); keepScroll(() => {}); toast("Date de départ notée : " + frDateLong(v)); return; }
+  if (b.dataset.act === "dep-clear"){ closeSheet(); const t = S.locataires.find(x => x.id === b.dataset.id); if (t){ delete t.depart; t.upd = Date.now(); persist(); keepScroll(() => {}); } }
+  if (b.dataset.act === "go-depart"){ V.tab = "bld"; V.bsel = b.dataset.bien; V.bsub = "mvt"; V.doc = null; render(); window.scrollTo(0, 0); }
+});
 
 /* ============ Reprendre une liste depuis un PDF ou un texte collé (inventaire, état des lieux) ============ */
 const PDFJS_V = "3.11.174", PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_V + "/pdf.min.js", PDFJS_WK = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_V + "/pdf.worker.min.js";
@@ -5519,7 +5577,7 @@ function sheetClot(tid){
   const c = candList().find(x => !x.del && x.loc === tid), nd = docList("docs").filter(x => x.kind === "loc" && x.loc === tid && !x.del).length, nf = c ? (c.fichiers || []).length : 0;
   openSheet(`<h2>Clôturer · ${esc(t.nom)}</h2>
     <div class="small muted">À faire quand le locataire est parti (ou part). Cela : 1) enregistre la date de fin du bail, 2) coche les étapes « Retenues », « Dépôt restitué » et « Locataire clos » du départ (Biens › Arrivée/Départ), 3) calcule le dépôt à rendre. Tu peux annuler en rouvrant la fiche : rien n'est supprimé sans ta case cochée.</div>
-    <label class="f">Date de fin du bail (départ)<input id="tc-fin" type="date" value="${esc(t.fin || todayIso())}"></label>
+    <label class="f">Date de fin du bail (départ)<input id="tc-fin" type="date" value="${esc(t.fin || t.depart || todayIso())}"></label>
     <div class="kv"><span>Dépôt de garantie versé</span><b>${eur(t.depot || 0)}</b></div>
     <label class="f">Retenues justifiées (€) — dégradations, loyers impayés… avec devis ou factures<input id="tc-ret" inputmode="decimal" value="0"></label>
     <div class="kv"><span>Dépôt à restituer</span><b id="tc-rest" data-dep="${t.depot || 0}">${eur(t.depot || 0)}</b></div>
@@ -5603,6 +5661,8 @@ async function exportFullZip(){
   toast("Préparation de la sauvegarde…");
   const db = PH.db || await phOpen(), enc = new TextEncoder(), files = [], ents = [];
   const all = db ? await new Promise(res => { try { const tx = db.transaction("p"), st = tx.objectStore("p"), ks = st.getAllKeys(), vs = st.getAll(); tx.oncomplete = () => res([ks.result, vs.result]); tx.onerror = tx.onabort = () => res([[], []]); } catch(e){ res([[], []]); } }) : [[], []];
+  if (DEMO){ const K = [], Vv = []; all[0].forEach((key, n) => { const id = String(key); if ((id.startsWith("f:") && MEMF.fd[id.slice(2)]) || MEMF.pd[id] || (id.startsWith("f:") && MEMF.f[id.slice(2)]) || MEMF.p[id]) return; K.push(key); Vv.push(all[1][n]); });
+    for (const id in MEMF.f){ K.push("f:" + id); Vv.push(MEMF.f[id]); } for (const id in MEMF.p){ K.push(id); Vv.push(PH.cache[id]); } all[0] = K; all[1] = Vv; }
   all[0].forEach((key, n) => { const v = all[1][n]; if (v == null) return;
     if (v.buf instanceof ArrayBuffer){ const meta = Object.assign({}, v); delete meta.buf; const fn = "fichiers/" + n + " - " + cleanName(meta.name || "fichier"); ents.push({n, key, bin:true, meta, file:fn}); files.push({name:fn, data:new Uint8Array(v.buf)}); }
     else { ents.push({n, key, bin:false}); files.push({name:"fichiers/" + n + ".json", data:enc.encode(JSON.stringify(v))}); } });
@@ -5612,6 +5672,7 @@ async function exportFullZip(){
   await saveFile("mes-locations-sauvegarde-complete.zip", zipStore(files), "application/zip");
 }
 async function restoreFull(files){
+  if (DEMO){ toast("Mode démo ou essai : les fichiers ne sont pas restaurés (rien n'est enregistré)"); return 0; }
   const dec = new TextDecoder(), man = files.find(f => f.name === "manifest.json"); if (!man) return 0;
   const m = JSON.parse(dec.decode(man.data)), by = new Map(files.map(f => [f.name, f.data])), db = PH.db || await phOpen(); if (!db) throw new Error("stockage indisponible"); let n = 0;
   await new Promise((res, rej) => { const tx = db.transaction("p", "readwrite"), st = tx.objectStore("p");
