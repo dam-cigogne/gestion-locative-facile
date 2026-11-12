@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.65";
+const APP_VERSION = "1.7.66";
 const CHANGELOG = [
+  {v:"1.7.66", date:"2026-11-12", titre:"État des lieux et inventaire en un tap", items:["État des lieux et inventaire (vue compacte) : quatre boutons Neuf / Bon / Moyen / Mauvais à la place de la liste déroulante. Un tap et la ligne se colore ; retaper sur le bouton l'efface.","Bouton « ✔ Tout le reste en bon état » dans chaque pièce, et à la sortie « = Identique à l'entrée ». La pièce passe en vert avec « Terminé » quand tout est renseigné ; une barre en haut indique combien de pièces sont finies.","Lecture d'un bail (PDF) : le modèle « contrat type » loi ALUR (I. Désignation des parties, II. Objet du contrat…) est maintenant lu, et les montants écrits en toutes lettres sont compris."]},
   {v:"1.7.65", date:"2026-11-11", titre:"Générer les listes et l'acte de cautionnement", items:["Pièces à joindre : bouton « 📄 Générer » sur « Notice d\'information » (texte officiel, version consolidée de l\'arrêté du 9 octobre 2026), « Liste des réparations locatives », « Liste des charges récupérables » et « Acte de cautionnement solidaire ». Le PDF est créé avec les infos du logement et du locataire, rangé sur la ligne et inclus dans le dossier du bail.","La notice reprend le texte officiel ; les deux listes sont des synthèses à titre indicatif (le décret fait foi) ; l'acte de cautionnement est un modèle à compléter et à faire relire.","Correctif iPhone : dans « Documents du bien », le nom des fichiers ne s'affiche plus lettre par lettre (la ligne passe à la ligne, boutons dessous)."]},
   {v:"1.7.64", date:"2026-11-11", titre:"Nouvelle notice d'information 2026", items:["Le lien « 🔗 Notice officielle » mène à la nouvelle annexe (arrêté du 9 octobre 2026, JO du 17/10/2026), obligatoire pour les baux conclus ou renouvelés depuis le 18/10/2026.","Une notice importée avec une date d'avant le 18/10/2026 passe en « À refaire » : télécharge la nouvelle version et remplace-la."]},
   {v:"1.7.63", date:"2026-11-11", titre:"Dossier du bail : fin de bail ou nouveau bail", items:["Dossier du bail : deux onglets « 🚪 Fin de bail (sortie) » et « 🔑 Nouveau bail (entrée) ». En sortie, seuls le bail, l'état des lieux de sortie et l'inventaire de sortie sont cochés. En entrée, bail, diagnostics et annexes obligatoires, état des lieux et inventaire d'entrée.","Chaque pièce porte une étiquette Obligatoire / Conseillé / Facultatif / À ne pas joindre avec la raison ; les documents personnels du locataire et sa candidature ne sont jamais cochés."]},
@@ -4006,6 +4007,16 @@ function perfCard(){
 const dxF = (id, label, val, ex) => `<label class="f">${label}<input id="${id}" value="${esc(val ?? "")}" ${ex || ""}></label>`;
 const dxS = (id, label, opts, val) => `<label class="f">${label}<select id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${String(v) === String(val) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>`;
 const dxV = id => { const e = $("#" + id); return e ? e.value.trim() : ""; };
+const ET_COL = {"Neuf":"#1E7B4B", "Bon":"#0E6B5C", "Moyen":"#C77D00", "Mauvais":"#B3261E"}, ET_LAB = {"Neuf":"Neuf", "Bon":"Bon", "Moyen":"Moyen", "Mauvais":"Mauvais"};
+/* état en un tap : 4 boutons, retaper sur le bouton actif l'efface */
+const etatBtns = (cur, p, i) => `<div data-dxg="etat" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">${ETATS.map(x => `<button type="button" data-act="dx-et" data-v="${x}" data-p="${esc(p || "")}" data-i="${i}" aria-pressed="${x === cur}" style="padding:7px 0;font-size:12px;border-radius:8px;border:1.5px solid ${ET_COL[x]};background:${x === cur ? ET_COL[x] : "transparent"};color:${x === cur ? "#fff" : ET_COL[x]};font-weight:${x === cur ? 700 : 500}">${ET_LAB[x]}</button>`).join("")}</div>`;
+const dxRowBg = it => it.etat ? "background:" + (it.etat === "Mauvais" ? "rgba(179,38,30,.08)" : it.etat === "Moyen" ? "rgba(242,184,75,.14)" : "rgba(14,107,92,.09)") + ";border-radius:8px;padding:5px 6px;margin:2px -6px" : "padding:5px 0";
+function dxHead(nom, done, tot, isOpen, key){ const full = tot > 0 && done === tot, c = full ? "#1E7B4B" : done ? "#C77D00" : "var(--muted,#5C6B66)";
+  return `<button class="rowbtn" data-act="dx-room" data-p="${esc(key)}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600;color:${full ? "#1E7B4B" : "inherit"}">${full ? "✔ " : ""}${esc(nom)}</div><div class="s" style="color:${c};font-weight:${full ? 700 : 400}">${full ? "Terminé · " : ""}${done}/${tot} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>`; }
+function dxQuick(key, its, sortie){ const vides = its.filter(i => !i.etat).length; if (!vides) return "";
+  return `<div class="btns" style="margin:6px 0"><button class="btn sm" data-act="dx-allok" data-p="${esc(key)}">✔ Tout le reste en bon état (${vides})</button>${sortie && its.some(i => !i.etat && i.e0) ? `<button class="btn sm ghost" data-act="dx-same" data-p="${esc(key)}">= Identique à l'entrée</button>` : ""}</div>`; }
+function dxProg(parts, mot){ const tot = parts.length, ok = parts.filter(x => x[1] > 0 && x[0] === x[1]).length, n = parts.reduce((a, x) => a + x[0], 0), m = parts.reduce((a, x) => a + x[1], 0), pc = m ? Math.round(n / m * 100) : 0;
+  return `<div id="dx-prog" class="card" style="padding:10px 14px;position:sticky;top:0;z-index:5"><div class="top"><b>${ok} ${mot} sur ${tot} terminé${ok > 1 ? "s" : ""}</b><span class="small muted">${n}/${m} lignes</span></div><div style="height:8px;border-radius:6px;background:var(--line,#d9e0dd);overflow:hidden;margin-top:6px"><div style="height:100%;width:${pc}%;background:${pc === 100 ? "#1E7B4B" : "#C77D00"}"></div></div></div>`; }
 const etatSel = (cur, attrs) => `<select ${attrs}><option value="">État…</option>${ETATS.map(x => `<option ${x === cur ? "selected" : ""}>${x}</option>`).join("")}</select>`;
 const chipEtat = s => s ? `<span class="chip ${s === "Mauvais" ? "bad" : s === "Moyen" ? "warn" : "ok"}">${esc(s)}</span>` : "";
 
@@ -4065,8 +4076,8 @@ function viewEdl(e){
   const rooms = e.pieces.map(p => { const done = p.items.filter(i => i.etat).length, isOpen = open[p.id];
     const items = !isOpen ? "" : p.items.map(it => { const worse = sortie && it.e0 && it.etat && RANK[it.etat] > RANK[it.e0];
       if (compact){ const more = !!(it.com || (it.ph || []).length || obs[it.id]);
-        return `<div style="padding:5px 0;border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:minmax(96px,1fr) 30px;gap:6px;align-items:center">
-          <b style="grid-column:1/-1;font-size:13px;line-height:1.25;overflow-wrap:anywhere">${esc(it.nom)}</b>${etatSel(it.etat, `style="padding:6px 4px;font-size:13px" data-dx="etat" data-p="${p.id}" data-i="${it.id}"`)}
+        return `<div style="${dxRowBg(it)};border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:minmax(96px,1fr) 30px;gap:6px;align-items:center">
+          <b style="grid-column:1/-1;font-size:13px;line-height:1.25;overflow-wrap:anywhere">${it.etat ? "✔ " : ""}${esc(it.nom)}</b>${etatBtns(it.etat, p.id, it.id)}
           <button class="mini" data-act="inv-obs" data-i="${it.id}" aria-label="Détails">${it.com || (it.ph || []).length ? "📝" : "＋"}</button></div>
           ${sortie && it.e0 ? `<div class="small muted" style="font-size:11px">Entrée : ${esc(it.e0)}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}${worse ? '<div class="small neg" style="font-size:11px">Plus dégradé qu\'à l\'entrée</div>' : ""}
           ${more ? `<div class="dxi" style="margin-top:4px"><input style="padding:6px 8px;font-size:13px" data-dx="com" data-p="${p.id}" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>
@@ -4076,15 +4087,16 @@ function viewEdl(e){
         ${sortie && it.e0 ? `<div class="small muted">À l'entrée : ${esc(it.e0)}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}${worse ? '<div class="small neg">Plus dégradé qu\'à l\'entrée</div>' : ""}
         <div class="grid2 dxi">${etatSel(it.etat, `data-dx="etat" data-p="${p.id}" data-i="${it.id}"`)}<input data-dx="com" data-p="${p.id}" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>
         <div class="dxph">${(it.ph || []).map(pid => `<span class="dxp"><img data-ph="${pid}" alt="photo"><button data-act="ph-del" data-p="${p.id}" data-i="${it.id}" data-id="${pid}" aria-label="Retirer la photo">×</button></span>`).join("")}
-          <label class="mini">+ Photo<input type="file" accept="image/*" multiple hidden data-edl-ph data-p="${p.id}" data-i="${it.id}"></label></div></div>`; }).join("") +
+          <label class="mini">+ Photo<input type="file" accept="image/*" multiple hidden data-edl-ph data-p="${p.id}" data-i="${it.id}"></label></div></div>`; }).join("") + dxQuick(p.id, p.items, sortie) +
       `<div class="grid2 dxi" style="margin-top:8px"><input id="ni-${p.id}" placeholder="Ajouter un élément"><button class="btn sm ghost" data-act="edl-additem" data-p="${p.id}">Ajouter</button></div>
        <div class="btns"><button class="btn sm danger" data-act="edl-delroom" data-p="${p.id}">Supprimer la pièce</button></div>`;
-    return `<div class="card" style="padding:12px 16px"><button class="rowbtn" data-act="dx-room" data-p="${p.id}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600">${esc(p.nom)}</div><div class="s">${done}/${p.items.length} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>${items}</div>`; }).join("");
+    return `<div class="card" style="padding:12px 16px;${p.items.length && done === p.items.length ? "border-left:5px solid #1E7B4B" : done ? "border-left:5px solid #C77D00" : ""}">${dxHead(p.nom, done, p.items.length, isOpen, p.id)}${items}</div>`; }).join("");
   return topbar("État des lieux") + dxTop(e, "État des lieux") + fileLink(e) + prInfoCard(e) + `<div class="btns" style="margin:6px 0 0"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button></div>`+`
     <div class="small muted" style="margin-top:6px">Relevés des compteurs${ref ? " (entrée : élec. " + esc(ref.elec || "—") + " · eau " + esc(ref.eau || "—") + " · gaz " + esc(ref.gaz || "—") + ")" : ""}</div>
     <div class="grid2 dxi"><label class="f">Électricité<input data-dxh="elec" inputmode="decimal" value="${esc(e.elec || "")}"></label><label class="f">Eau<input data-dxh="eau" inputmode="decimal" value="${esc(e.eau || "")}"></label></div>
     <div class="grid2 dxi"><label class="f">Gaz<input data-dxh="gaz" inputmode="decimal" value="${esc(e.gaz || "")}"></label><label class="f">Clés remises<input data-dxh="cles" inputmode="numeric" value="${esc(e.cles || "")}"></label></div>
     <label class="f">Détecteur de fumée<select data-dxh="fumee"><option value="">—</option>${["Présent et testé", "Présent", "Absent"].map(x => `<option ${x === e.fumee ? "selected" : ""}>${x}</option>`).join("")}</select></label></div>
+  ${dxProg(e.pieces.map(p => [p.items.filter(i => i.etat).length, p.items.length]), "pièces")}
   ${rooms}
   <div class="card"><h2>Ajouter une pièce</h2><div class="btns"><button class="btn sm ghost" data-act="bulk-open">Coller une liste de pièces et éléments</button></div><div class="grid2 dxi"><input id="np-nom" placeholder="Ex. Balcon, cave"><button class="btn sm ghost" data-act="edl-addroom">Ajouter</button></div></div>
   <div class="card"><label class="f">Remarques générales<textarea data-dxh="rem">${esc(e.rem || "")}</textarea></label>
@@ -4095,20 +4107,20 @@ function viewInv(e){
   const sortie = e.type === "sortie", groups = [...new Set(e.items.map(i => i.grp || "Autres"))];
   const compact = V.doc.compact !== false, obs = V.doc.obs = V.doc.obs || {};
   const open = V.doc.open = V.doc.open || {}; if (!V.doc.cinit){ V.doc.cinit = 1; for (const g of groups) open["g:" + g] = compact || g === groups[0] ? 1 : 0; } const nOpen = groups.filter(g => open["g:" + g]).length;
-  const body = `<div class="btns" style="margin:0 0 8px"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button><button class="btn sm ghost" data-act="dx-all" data-v="${nOpen === groups.length ? "0" : "1"}">${nOpen === groups.length ? "Tout replier" : "Tout déplier"}</button></div>` + groups.map(g => { const its = e.items.filter(i => (i.grp || "Autres") === g), done = its.filter(i => i.etat).length, isOpen = !!open["g:" + g];
+  const body = dxProg(groups.map(g => { const its = e.items.filter(i => (i.grp || "Autres") === g); return [its.filter(i => i.etat).length, its.length]; }), "rubriques") + `<div class="btns" style="margin:0 0 8px"><button class="btn sm" data-act="inv-compact">${compact ? "Vue détaillée" : "Vue compacte (d'ensemble)"}</button><button class="btn sm ghost" data-act="dx-all" data-v="${nOpen === groups.length ? "0" : "1"}">${nOpen === groups.length ? "Tout replier" : "Tout déplier"}</button></div>` + groups.map(g => { const its = e.items.filter(i => (i.grp || "Autres") === g), done = its.filter(i => i.etat).length, isOpen = !!open["g:" + g];
     const rows = !isOpen ? "" : compact ? its.map(it => { const showObs = !!(it.com || obs[it.id]);
-      return `<div style="padding:5px 0;border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:46px minmax(96px,1fr) 30px;gap:6px;align-items:center">
-        <b style="grid-column:1/-1;font-size:13px;line-height:1.25;overflow-wrap:anywhere">${esc(it.nom)}</b>
+      return `<div style="${dxRowBg(it)};border-top:1px solid var(--line)"><div class="dxi" style="display:grid;grid-template-columns:46px minmax(96px,1fr) 30px;gap:6px;align-items:center">
+        <b style="grid-column:1/-1;font-size:13px;line-height:1.25;overflow-wrap:anywhere">${it.etat ? "✔ " : ""}${esc(it.nom)}</b>
         <input style="padding:6px 4px;font-size:13px;text-align:center" data-dx="qte" data-i="${it.id}" inputmode="numeric" value="${esc(it.qte || "")}" aria-label="Quantité">
-        ${etatSel(it.etat, `style="padding:6px 4px;font-size:13px" data-dx="etat" data-i="${it.id}"`)}
+        ${etatBtns(it.etat, "", it.id)}
         <button class="mini" data-act="inv-obs" data-i="${it.id}" aria-label="Observation">${it.com ? "📝" : "＋"}</button></div>
         ${sortie && (it.e0 || it.q0) ? `<div class="small muted" style="font-size:11px">Entrée : ${esc(it.q0 || "1")} · ${esc(it.e0 || "non noté")}</div>` : ""}
-        ${showObs ? `<div class="dxi" style="margin-top:4px"><input style="padding:6px 8px;font-size:13px" data-dx="com" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>` : ""}</div>`; }).join("") : its.map(it => `<div style="padding:8px 0;border-top:1px solid var(--line)">
+        ${showObs ? `<div class="dxi" style="margin-top:4px"><input style="padding:6px 8px;font-size:13px" data-dx="com" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div>` : ""}</div>`; }).join("") + dxQuick("g:" + g, its, sortie) : its.map(it => `<div style="padding:8px 0;border-top:1px solid var(--line)">
       <div class="top"><b style="font-size:14px">${esc(it.nom)}</b><button class="mini" data-act="inv-delitem" data-i="${it.id}" aria-label="Supprimer">×</button></div>
       ${sortie && (it.e0 || it.q0) ? `<div class="small muted">À l'entrée : ${esc(it.q0 || "1")} · ${esc(it.e0 || "état non noté")}${it.c0 ? " · " + esc(it.c0) : ""}</div>` : ""}
       <div class="dxi" style="display:grid;grid-template-columns:70px 1fr;gap:8px"><input data-dx="qte" data-i="${it.id}" inputmode="numeric" value="${esc(it.qte || "")}" aria-label="Quantité">${etatSel(it.etat, `data-dx="etat" data-i="${it.id}"`)}</div>
       <div class="dxi" style="margin-top:6px"><input data-dx="com" data-i="${it.id}" placeholder="Observation" value="${esc(it.com || "")}"></div></div>`).join("");
-    return `<div class="card" style="padding:12px 16px"><button class="rowbtn" data-act="dx-room" data-p="${esc("g:" + g)}" style="width:100%"><div class="top"><div><div class="t" style="font-weight:600">${esc(g)}</div><div class="s">${done}/${its.length} renseignés</div></div><span class="muted">${isOpen ? "▾" : "▸"}</span></div></button>${rows}</div>`; }).join("");
+    return `<div class="card" style="padding:12px 16px;${its.length && done === its.length ? "border-left:5px solid #1E7B4B" : done ? "border-left:5px solid #C77D00" : ""}">${dxHead(g, done, its.length, isOpen, "g:" + g)}${rows}</div>`; }).join("");
   return topbar("Inventaire") + dxTop(e, "Inventaire du mobilier") + fileLink(e) + prInfoCard(e) + `<div class="small muted">Liste minimale d'un meublé (décret n° 2015-981) : complète-la avec le mobilier réellement présent.</div></div>
   ${body}
   <div class="card"><h2>Ajouter un article</h2><div class="dxi"><input id="ni-nom" placeholder="Ex. Télévision, bureau"></div>
@@ -4173,6 +4185,10 @@ document.addEventListener("click", async ev => {
     case "inv-compact": V.doc.compact = V.doc.compact === false; render(); break;
     case "inv-obs": { V.doc.obs = V.doc.obs || {}; V.doc.obs[b.dataset.i] = !V.doc.obs[b.dataset.i]; render(); break; }
     case "dx-all": if (e && V.doc.kind === "inv"){ V.doc.open = V.doc.open || {}; for (const g of new Set(e.items.map(i => i.grp || "Autres"))) V.doc.open["g:" + g] = v === "1"; render(); } break;
+    case "dx-et": if (e){ const it = dxItem(e, b.dataset.p, b.dataset.i); if (it){ it.etat = it.etat === b.dataset.v ? "" : b.dataset.v; dxTouch(e); persist(); const y = window.scrollY; render(); window.scrollTo(0, y); } } break;
+    case "dx-allok": case "dx-same": if (e){ const k = b.dataset.p, its = k.startsWith("g:") ? e.items.filter(i => (i.grp || "Autres") === k.slice(2)) : ((e.pieces || []).find(p => p.id === k) || {items:[]}).items; let n = 0;
+      for (const it of its) if (!it.etat){ if (a === "dx-same"){ if (it.e0){ it.etat = it.e0; n++; } } else { it.etat = "Bon"; n++; } }
+      if (n){ dxTouch(e); persist(); const y = window.scrollY; render(); window.scrollTo(0, y); toast(n + " ligne" + (n > 1 ? "s" : "") + (a === "dx-same" ? " reprise" + (n > 1 ? "s" : "") + " de l'entrée" : " en bon état")); } } break;
     case "dx-room": if (e){ V.doc.open[b.dataset.p] = !V.doc.open[b.dataset.p]; render(); } break;
     case "edl-addroom": { const n = dxV("np-nom"); if (!e || !n) return toast("Donne un nom à la pièce"); const p = mkPiece(n, ["Sol", "Murs", "Plafond"]); e.pieces.push(p); dxTouch(e); V.doc.open[p.id] = 1; persist(); render(); break; }
     case "edl-delroom": if (e){ e.pieces = e.pieces.filter(p => p.id !== b.dataset.p); dxTouch(e); persist(); render(); } break;
@@ -6822,6 +6838,21 @@ function bkDate(s){
   return "";
 }
 function bkNum(s){ const m = /(\d[\d\s]*(?:[.,]\d{1,2})?)\s*(?:€|euros?|eur\b)/i.exec(s || ""); return m ? parseFloat(m[1].replace(/\s/g, "").replace(",", ".")) : null; }
+/* montant écrit en toutes lettres (« trois cent quatre vingt quinze ») -> nombre, ou null */
+const BK_W = {zero:0, un:1, une:1, deux:2, trois:3, quatre:4, cinq:5, six:6, sept:7, huit:8, neuf:9, dix:10, onze:11, douze:12, treize:13, quatorze:14, quinze:15, seize:16, vingt:20, vingts:20, trente:30, quarante:40, cinquante:50, soixante:60, septante:70, huitante:80, octante:80, nonante:90};
+function bkLettres(s){
+  const w = (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[-.…_]/g, " ").split(/\s+/).filter(Boolean); let best = null, i = 0;
+  while (i < w.length){ let tot = 0, cur = 0, n = 0, j = i;
+    for (; j < w.length; j++){ const x = w[j];
+      if (x === "et" && n){ continue; }
+      if (x in BK_W){ const v = BK_W[x]; if (v === 20 && cur % 100 === 4 && w[j - 1] === "quatre") cur = cur - 4 + 80; else cur += v; n++; }
+      else if (x === "cent" || x === "cents"){ cur = (cur % 100 || 1) * 100 + Math.floor(cur / 100) * 100; n++; }
+      else if (x === "mille"){ tot += (cur || 1) * 1000; cur = 0; n++; }
+      else break; }
+    if (n && tot + cur >= 10 && (best == null || n > best.n)) best = {v:tot + cur, n};
+    i = n ? j + 1 : i + 1; }
+  return best ? best.v : null;
+}
 /* case cochée devant un libellé : true / false / null (illisible) */
 function bkChk(T, label){
   const m = new RegExp("(\\S)\\s*" + label, "i").exec(T); if (!m) return null;
@@ -6846,6 +6877,37 @@ function bkParse(txt){
   const T = (txt || "").replace(/\r/g, ""), R = {f:{}, warn:[], info:[]}, f = R.f;
   R.kind = /parking|garage|box ferm|stationnement/i.test(T.slice(0, 600)) && !/MEUBL/i.test(T.slice(0, 300)) ? "parking" : /NON\s+MEUBL|VIDE/i.test(T.slice(0, 300)) ? "vide" : "meuble";
   if (!/CONTRAT DE LOCATION|BAIL/i.test(T.slice(0, 600))) R.warn.push("Le document ne ressemble pas à un contrat de location : vérifie le fichier choisi.");
+  if (/D[ÉE]SIGNATION DES PARTIES/i.test(T) && /OBJET DU CONTRAT/i.test(T)){   // modèle « contrat type » loi ALUR (I. Désignation des parties, II. Objet du contrat…)
+    const g = re => { const m = re.exec(T); return m ? bkClean(m[1]) : ""; }, eu = re => { const m = re.exec(T); return m ? bkNum(m[1] + " €") : null; };
+    let v;
+    if ((v = g(/d[ée]nomination du bailleur\s*:\s*([^\n]*)/i))) f.bail = v;
+    if ((v = g(/si[èe]ge social du bailleur\s*:\s*([^\n]*)/i))) f.badr = v;
+    if ((v = g(/T[ée]l[ée]phone\s*:\s*([^\n]*)/i))) f.bmob = v;
+    if ((v = g(/Nom et pr[ée]nom du locataire\s*:\s*([^\n]*)/i))) f.loc = v; else R.warn.push("Locataire non rempli sur le document (ou écrit à la main) : à saisir.");
+    if ((v = g(/T[ée]l[ée]phone du locataire\s*:\s*([^\n]*)/i))) f.lmob = v;
+    if ((v = g(/Adresse du logement\s*:\s*([^\n]*)/i))) f.adr = v;
+    if ((v = g(/[ée]tage\s*\/\s*porte\s*:\s*([^\n]*)/i)) && !/Immeuble/i.test(v)) f.etage = v;
+    const sf = /Surface habitable[^:\n]*:\s*(\d+(?:[.,]\d+)?)/i.exec(T); if (sf) f.surf = sf[1].replace(",", "."); else R.warn.push("Surface non lisible : à vérifier.");
+    const np = /pi[èe]ces principales\s*:\s*(\d+)/i.exec(T); if (np) f.pieces = np[1];
+    f.type = "Appartement";
+    const ch = bkPair((/production de chauffage[^\n]*/i.exec(T) || [""])[0], "Individuel", "Collectif"); if (ch) f.chauf = ch;
+    const ea = bkPair((/eau chaude sanitaire[^\n]*/i.exec(T) || [""])[0], "Individuel", "Collectif"); if (ea) f.eau = ea === "Individuel" ? "Individuelle" : "Collective";
+    if (bkChk(T, "Terrasse") === true) f.annex = "une terrasse";
+    const de = /Date de prise d.effet du contrat\s*:([^\n]*)/i.exec(T), dx = de && bkDate(de[1]); if (dx) f.debut = dx; else R.warn.push("Date de début non lisible : à saisir.");
+    const du = /Dur[ée]e du contrat\s*:([^\n(]*)/i.exec(T); f.duree = du && /9\s*mois/i.test(du[1]) ? "9" : "12";
+    const lo = eu(/-\s*Loyer\s*:\s*([\d\s.,]+)/i), tot = eu(/loyer mensuel\s*:\s*([\d\s.,]+)/i), cg = eu(/-\s*Charges r[ée]cup[ée]rables\s*:\s*([\d\s.,]+)/i);
+    if (lo) f.lhc = lo; else if (tot) f.lhc = tot; else R.warn.push("Loyer non lisible : à saisir.");
+    if (cg != null) f.chg = cg; else if (lo && tot && tot > lo) f.chg = Math.round((tot - lo) * 100) / 100;
+    f.regchg = bkChk(T, "Forfait de charges") === true ? "forf" : "prov";
+    if (bkChk(T, "Paiement p[ée]riodique") === true) R.info.push("Charges : paiement périodique sans provision (repris comme provisions)");
+    const jr = /d[ûu] avant le\s*(\d{1,2})/i.exec(T); if (jr) f.jour = String(+jr[1]);
+    const dg = eu(/d[ée]p[ôo]t de garantie\s+d.un\s+montant\s+de\s*:?\s*([\d\s.,]+)/i); if (dg) f.dep = dg;
+    if ((v = g(/Indice de R[ée]f[ée]rence du Loyer\s*:\s*([^\n]*)/i))) f.irl = v;
+    if ((v = g(/Date de r[ée]vision du loyer annuel\s*:\s*([^\n]*)/i))) R.info.push("Révision du loyer le " + v);
+    const vi = /(?:^|\n)\s*Le\s+[\d\/.\s-]{6,14}\s*[àa]\s+([A-ZÉÈa-zéèêç' -]{2,}?)\s*,?\s*en\s/i.exec(T); if (vi) f.ville = bkClean(vi[1]);
+    if ((v = g(/AUTRES CONDITIONS PARTICULI[ÈE]RES\s*\n\s*-?\s*([^\n]*)/i))) R.info.push("Conditions particulières : " + v);
+    return R;
+  }
   if (R.kind === "parking"){
     const names = [...T.matchAll(/Pr[ée]nom\(s\),?\s*Nom\(s\)\s*:?\s*([^\n]*)/gi)].flatMap(m => m[1].split(/Pr[ée]nom\(s\),?\s*Nom\(s\)\s*:?/i)).map(bkClean);
     if (names[0]) f.bail = names[0]; if (names[1]) f.loc = names[1];
@@ -6876,12 +6938,12 @@ function bkParse(txt){
   const iD = T.search(/DUR[ÉE]E/i); if (iD >= 0){ const sg = T.slice(iD, T.search(/CONDITIONS PARTICULI/i) > iD ? T.search(/CONDITIONS PARTICULI/i) : iD + 600);
     const d12 = /de\s*1\s*an\s*[àa]\s*compter\s*du([^\n]*)/i.exec(sg), d9 = /de\s*9\s*mois\s*[àa]\s*compter\s*du([^\n]*)/i.exec(sg), x12 = d12 && bkDate(d12[1]), x9 = d9 && bkDate(d9[1]);
     if (x9 && !x12){ f.duree = "9"; f.debut = x9; } else if (x12){ f.duree = "12"; f.debut = x12; } else R.warn.push("Durée et date de début non lisibles : à saisir."); }
-  const iLo = T.search(/Loyers? mensuel/i); if (iLo >= 0){ const sg = T.slice(iLo, T.search(/payable/i) > iLo ? T.search(/payable/i) : iLo + 300), n = bkNum(sg); if (n) f.lhc = n; else R.warn.push("Loyer non lisible (en lettres ou à la main) : à saisir."); }
+  const iLo = T.search(/Loyers? mensuel/i); if (iLo >= 0){ const sg = T.slice(iLo, T.search(/payable/i) > iLo ? T.search(/payable/i) : iLo + 300), n = bkNum(sg) || bkLettres(sg); if (n) f.lhc = n; else R.warn.push("Loyer non lisible (en lettres ou à la main) : à saisir."); }
   const pj = /entre\s*le\s*(\d{1,2})\s*et\s*le\s*(\d{1,2})/i.exec(T); if (pj) f.jour = pj[1];
   if (/comprises dans le loyer/i.test(T) && bkChk(T, "comprises dans le loyer") === true){ f.chg = 0; }
   const pv = /provision mensuelle de([^\n]*)/i.exec(T), ff = /forfaitairement\s+fix[ée]es\s+[àa]([^\n]*)/i.exec(T);
   if (ff && bkNum(ff[1]) && bkChk(T, "forfaitairement") === true){ f.chg = bkNum(ff[1]); f.regchg = "forf"; } else if (pv && bkNum(pv[1])){ f.chg = bkNum(pv[1]); f.regchg = "prov"; }
-  const dg = /D[ée]p[ôo]t de garantie[\s\S]{0,260}/i.exec(T); if (dg){ const n = bkNum(dg[0].replace(/^D[ée]p[ôo]t de garantie/i, "")); if (n) f.dep = n; }
+  const dg = /D[ée]p[ôo]t de garantie[\s\S]{0,260}/i.exec(T); if (dg){ const x = dg[0].replace(/^D[ée]p[ôo]t de garantie/i, ""), n = bkNum(x) || bkLettres(x.replace(/^[\s\S]*?toutes lettres\)?/i, "").split(/En annexe/i)[0]); if (n) f.dep = n; }
   const rv = /r[ée]vis[ée]\s+le\s*([^\n,]*?)\s*,\s*de chaque/i.exec(T); if (rv && bkClean(rv[1])) R.info.push("Révision du loyer le " + bkClean(rv[1]));
   const ir = /trimestre\s+de\s+l.ann[ée]e\s*([\d]{4})\s*d.une\s+valeur\s+de\s*([\d.,]+)/i.exec(T); if (ir) f.irl = "trimestre " + ir[1] + " : " + ir[2].replace(".", ",");
   const an = []; for (const [k, l] of [["état des lieux", "(?:Un|Le)\\s+[ée]tat des lieux"], ["diagnostics", "Le dossier de diagnostic"], ["règlement de copropriété", "Les extraits du r[èe]glement"], ["inventaire", "Un inventaire"], ["acte de caution", "Un acte de caution"]]) if (bkChk(T, l) === true) an.push(k);
