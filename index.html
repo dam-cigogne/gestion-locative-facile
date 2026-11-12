@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.66";
+const APP_VERSION = "1.7.67";
 const CHANGELOG = [
+  {v:"1.7.67", date:"2026-11-12", titre:"Jour J : les étapes s'enchaînent, dans l'ordre que tu veux", items:["Arrivée / Départ › Jour J : en bas de l'état des lieux et de l'inventaire, un gros bouton « ✓ Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire, coche l'étape et ouvre directement la suivante (par exemple l'inventaire de sortie après l'état des lieux).","Tu choisis l'ordre : avant de démarrer, « Commencer par ça » sur l'étape de ton choix (état des lieux, inventaire, signatures du bail…), puis « Faire maintenant » pour changer d'étape à tout moment.","Au départ, l'étape « Signatures » se coche toute seule quand l'état des lieux et l'inventaire de sortie sont signés. À l'arrivée, elle ouvre le bail à signer.","Correctif : le bouton d'une étape ouvre le document déjà préparé au lieu d'en créer un nouveau."]},
   {v:"1.7.66", date:"2026-11-12", titre:"État des lieux et inventaire en un tap", items:["État des lieux et inventaire (vue compacte) : quatre boutons Neuf / Bon / Moyen / Mauvais à la place de la liste déroulante. Un tap et la ligne se colore ; retaper sur le bouton l'efface.","Bouton « ✔ Tout le reste en bon état » dans chaque pièce, et à la sortie « = Identique à l'entrée ». La pièce passe en vert avec « Terminé » quand tout est renseigné ; une barre en haut indique combien de pièces sont finies.","Lecture d'un bail (PDF) : le modèle « contrat type » loi ALUR (I. Désignation des parties, II. Objet du contrat…) est maintenant lu, et les montants écrits en toutes lettres sont compris."]},
   {v:"1.7.65", date:"2026-11-11", titre:"Générer les listes et l'acte de cautionnement", items:["Pièces à joindre : bouton « 📄 Générer » sur « Notice d\'information » (texte officiel, version consolidée de l\'arrêté du 9 octobre 2026), « Liste des réparations locatives », « Liste des charges récupérables » et « Acte de cautionnement solidaire ». Le PDF est créé avec les infos du logement et du locataire, rangé sur la ligne et inclus dans le dossier du bail.","La notice reprend le texte officiel ; les deux listes sont des synthèses à titre indicatif (le décret fait foi) ; l'acte de cautionnement est un modèle à compléter et à faire relire.","Correctif iPhone : dans « Documents du bien », le nom des fichiers ne s'affiche plus lettre par lettre (la ligne passe à la ligne, boutons dessous)."]},
   {v:"1.7.64", date:"2026-11-11", titre:"Nouvelle notice d'information 2026", items:["Le lien « 🔗 Notice officielle » mène à la nouvelle annexe (arrêté du 9 octobre 2026, JO du 17/10/2026), obligatoire pour les baux conclus ou renouvelés depuis le 18/10/2026.","Une notice importée avec une date d'avant le 18/10/2026 passe en « À refaire » : télécharge la nouvelle version et remplace-la."]},
@@ -1723,7 +1724,8 @@ const HELP = {
     "8. Départ : fiche du locataire › « Clôturer ce locataire ». Date de fin, retenues, dépôt à rendre, étapes cochées ; tu choisis d'effacer ou non son dossier. Le suivi détaillé est dans Biens › Arrivée/Départ.",
     "Les fiches, pièces et documents restent sur cet appareil et ne sont pas dans la sauvegarde. Efface les dossiers des candidats non retenus."]},
   "bld-mvt":{t:"Biens › Arrivée/Départ", p:"La démarche complète, étape par étape.", l:[
-    "Chaque démarche est en trois temps : Préparatif (cases à cocher), Jour J (étape par étape : un gros bouton ouvre le document, puis « Fait, étape suivante ») et Après.",
+    "Chaque démarche est en trois temps : Préparatif (cases à cocher), Jour J (étape par étape : un gros bouton ouvre le document ; en bas du document, « Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire et ouvre la suite) et Après.",
+    "Jour J dans l'ordre que tu veux : « Commencer par ça » sur n'importe quelle étape, puis « Faire maintenant » pour changer d'étape en cours de route.",
     "Avant le jour J : dans le Préparatif de l'arrivée, « Gagne du temps » te laisse envoyer le bail en pré-lecture au locataire et préparer l'état des lieux et l'inventaire. Au départ : lettre de rappel, état des lieux et inventaire de sortie préparés d'avance. Le jour J ils sont marqués « attend le jour J ».",
     "Quand le Jour J est terminé, « Dossier d'envoi » assemble bail, annexes, états des lieux et inventaires en un seul PDF : « Relire le PDF » pour le vérifier, puis envoi.",
     "Deux listes : le départ (en haut) et l'arrivée. Coche chaque étape quand elle est faite : la date s'inscrit.",
@@ -4021,7 +4023,7 @@ const etatSel = (cur, attrs) => `<select ${attrs}><option value="">État…</opt
 const chipEtat = s => s ? `<span class="chip ${s === "Mauvais" ? "bad" : s === "Moyen" ? "warn" : "ok"}">${esc(s)}</span>` : "";
 
 function docsDrill(){
-  if (V.doc){ const e = docCur(); if (!e || e.bien !== V.bsel) V.doc = null; else return V.doc.kind === "edl" ? viewEdl(e) : viewInv(e); }
+  if (V.doc){ const e = docCur(); if (!e || e.bien !== V.bsel) V.doc = null; else return jjTop(e, V.doc.kind) + (V.doc.kind === "edl" ? viewEdl(e) : viewInv(e)) + jjDocCard(e, V.doc.kind); }
   return null;
 }
 function viewDocsTenant(){
@@ -4650,7 +4652,7 @@ const MVT = {
     ["bail", "Bail préparé et relu", "Remplis le bail, puis crée le PDF de relecture et relis-le avec le locataire avant de signer.", ["bail", "Préparer le bail"]],
     ["inv", "Inventaire du mobilier d'entrée", "Obligatoire en meublé (liste minimale du décret n° 2015-981), inutile en logement vide. Tu peux le préparer avant la visite en reprenant la liste d'un autre logement.", ["inv-e", "Inventaire d'entrée"]],
     ["edl", "État des lieux d'entrée", "Pièce par pièce, avec photos. Le locataire peut le compléter sous 10 jours (chauffage : premier mois).", ["edl-e", "État des lieux d'entrée"]],
-    ["sig", "Signatures", "Bail, état des lieux et inventaire signés par les deux parties, un exemplaire chacun (signature à l'écran possible).", ["docs", "Aller aux documents"]],
+    ["sig", "Signatures", "Le bail se signe ici (à l'écran ou sur papier). L'état des lieux et l'inventaire se signent dans leur propre document. Un exemplaire chacun.", ["bail", "Signer le bail"]],
     ["dep", "Dépôt de garantie reçu", "Maximum : 2 mois de loyer hors charges en meublé, 1 mois en logement vide. Il se note dans l'appli et dans Excel.", null],
     ["cle", "Clés remises et compteurs relevés", "Note les index d'électricité, d'eau et de gaz dans l'état des lieux.", null],
     ["ass", "Attestation d'assurance habitation reçue", "Le locataire doit l'avoir à l'entrée puis chaque année.", null],
@@ -4676,18 +4678,51 @@ function mvtRec(bien, mv){
   if (!r){ r = {id:uid(), kind:"chk", bien, mv, done:{}, upd:Date.now()}; docList("docs").push(r); }
   return r;
 }
-function mvtHas(bien, k, type){ return docList(k).some(x => x.bien === bien && !x.del && x.type === type); }
+function mvtHas(bien, k, type){ return !!mvtDoc(bien, k, type); }
+/* Document du jour J : le plus récent du bien pour ce type (sortie : depuis l'arrivée du locataire actuel ; entrée : 6 derniers mois) */
+function mvtDoc(bien, kind, type){
+  const t = tenantFor(bien, todayIso()), d = new Date(); d.setDate(d.getDate() - 180);
+  const lim = type === "sortie" ? (t && t.debut || "") : d.toISOString().slice(0, 10);
+  return docList(kind).filter(x => x.bien === bien && !x.del && x.type === type && (x.date || "") >= lim).sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.upd || 0) - (a.upd || 0))[0] || null;
+}
+const MV_PH = {arr:{pre:["dos","pl","diag","bail"], jj:["edl","inv","sig","dep","cle","ass"], post:["loc"]}, dep:{pre:["con","dat","sol","pl"], jj:["edl","inv","sig","cle"], post:["ret","res","qui","clo"]}};
+const mvtOk = (bien, k) => !(k === "inv" && bkind(bien) === "vide") && !(k === "pl" && !plOn(bien));
+function mvtJJ(bien, mv){ return MV_PH[mv].jj.map(k => MVT[mv].etapes.find(e => e[0] === k)).filter(e => e && mvtOk(bien, e[0])); }
+/* Étape en cours : celle choisie (jjCur) si elle n'est pas faite, sinon la première pas faite */
+function mvtCur(bien, mv, r){ const jj = mvtJJ(bien, mv), c = r.jjCur && jj.find(e => e[0] === r.jjCur && !r.done[e[0]]); return c || jj.find(e => !r.done[e[0]]) || null; }
+/* Ouvre le document d'une étape : celui déjà préparé s'il existe, sinon la fenêtre de création */
+function mvtOpenDoc(kind, type){
+  const d = mvtDoc(V.bsel, kind, type); V.bsub = "loc";
+  if (d){ V.doc = {kind, id:d.id, open:{}}; render(); window.scrollTo(0, 0); } else { V.doc = null; render(); sheetNewDoc(kind, type); }
+}
+/* Carte affichée en bas de l'état des lieux / inventaire pendant le jour J */
+function jjDocCard(e, kind){
+  if (!e) return ""; const mv = e.type === "sortie" ? "dep" : "arr", r = docList("docs").find(x => x.kind === "chk" && x.bien === e.bien && x.mv === mv && !x.del);
+  if (!r || !r.jjStart || r.done[kind]) return "";
+  const cur = mvtDoc(e.bien, kind, e.type); if (!cur || cur.id !== e.id) return "";
+  const nx = mvtJJ(e.bien, mv).find(x => x[0] !== kind && !r.done[x[0]] && !(x[0] === "sig" && mv === "dep" && jjSigOk(e.bien, kind))), nm = kind === "edl" ? "l'état des lieux" : "l'inventaire", t = sendTenant(e.bien);
+  return `<div class="card" style="border:2px solid var(--accent,#0E6B5C);background:rgba(14,107,92,.06)"><div class="small muted">Jour J · ${esc(MVT[mv].titre)}</div>
+    <div style="font-size:16px;font-weight:700;margin:2px 0 6px">${e.sig ? "✅ Signé : passe à la suite" : "Quand " + nm + " est rempli et signé"}</div>
+    <div class="small muted" style="margin-bottom:8px">Ce bouton ${t ? "range le PDF" + (e.sig ? " signé" : "") + " dans la fiche de " + esc(t.nom) + ", " : ""}coche cette étape et ${nx ? "ouvre directement la suivante : <b>" + esc(nx[1]) + "</b>" : "te ramène au pas à pas"}.${e.sig ? "" : " <b>Pas encore signé</b> : fais-le signer d'abord (« Faire signer sur l'écran » ou « Signer sur papier » plus haut)."}</div>
+    <div class="btns"><button class="btn" style="flex:1" data-act="jj-done" data-k="${kind}" data-mv="${mv}">✓ Enregistrer et ${nx ? "passer à l'étape suivante" : "finir le jour J"}</button></div>
+    <div class="btns"><button class="btn sm ghost" data-act="jj-back">‹ Revenir au pas à pas du jour J</button></div></div>`;
+}
+function jjTop(e, kind){
+  if (!jjDocCard(e, kind)) return ""; return `<div class="info" style="margin-bottom:8px">Jour J en cours : quand c'est fini et signé, le bouton <b>« ✓ Enregistrer et passer à l'étape suivante »</b> est tout en bas.</div>`;
+}
+/* Départ : la case Signatures se coche seule quand l'état des lieux (et l'inventaire en meublé) de sortie sont signés */
+function jjSigOk(bien, justDone){ return ["edl", "inv"].filter(x => mvtOk(bien, x)).every(x => { const d = mvtDoc(bien, x, "sortie"); return d && d.sig; }); }
 function viewMvt(){
   const id = V.bsel, t = tenantFor(id, todayIso());
-  const PH = {arr:{pre:["dos","pl","diag","bail"], jj:["edl","inv","sig","dep","cle","ass"], post:["loc"]}, dep:{pre:["con","dat","sol","pl"], jj:["edl","inv","sig","cle"], post:["ret","res","qui","clo"]}};
+  const PH = MV_PH;
   const card = mv => { const M = MVT[mv], r = docList("docs").find(x => x.kind === "chk" && x.bien === id && x.mv === mv && !x.del) || {done:{}};
     const type = mv === "arr" ? "entree" : "sortie", P = PH[mv];
-    const okE = e => !(e[0] === "inv" && bkind(id) === "vide") && !(e[0] === "pl" && !plOn(id));
+    const okE = e => mvtOk(id, e[0]);
     const grp = keys => keys.map(k => M.etapes.find(e => e[0] === k)).filter(e => e && okE(e));
     const pre = grp(P.pre), jj = grp(P.jj), post = grp(P.post), vis = pre.concat(jj, post), n = vis.filter(e => r.done[e[0]]).length;
     const chipOf = k => { if ((k === "inv" || k === "edl") && mvtHas(id, k, type)) return r.done[k] ? ' <span class="chip ok">créé</span>' : ' <span class="chip warn">préparé : attend le jour J</span>';
       if (k === "sig" && mv === "arr" && r.relu) return ' <span class="chip warn">bail envoyé en pré-lecture le ' + frDate(r.relu) + " : attend la signature</span>"; return ""; };
-    const row = ([k, ti, hint, act], dim) => { const ok = !!r.done[k], btn = act ? `<button class="mini" data-act="mv-go" data-v="${act[0]}">${act[1]}</button>` : "";
+    const row = ([k, ti, hint, act], dim, pick) => { const ok = !!r.done[k], btn = (pick && !ok ? `<button class="mini" data-act="mv-cur" data-mv="${mv}" data-k="${k}">▶ Faire maintenant</button>` : "") + (act ? `<button class="mini" data-act="mv-go" data-v="${act[0]}">${act[1]}</button>` : "");
       return `<div style="padding:10px 0;border-top:1px solid var(--line);${dim ? "opacity:.6" : ""}"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" data-mv="${mv}" data-k="${k}" ${ok ? "checked" : ""} style="margin-top:3px"><span><b style="font-size:14px">${esc(ti)}</b>${chipOf(k)}${ok ? ` <span class="small muted">· ${frDate(r.done[k])}</span>` : ""}</span></label>
         <div class="small muted" style="margin:4px 0 6px 28px">${esc(hint)}</div>${btn ? `<div style="margin-left:28px">${btn}</div>` : ""}</div>`; };
     const advDoc = k => { const has = mvtHas(id, k, type), nm = (k === "edl" ? "État des lieux " : "Inventaire ") + (mv === "arr" ? "d'entrée" : "de sortie"); return `<div class="row" style="padding:6px 0"><div class="main"><div class="t">${nm}</div><div class="s">${has ? "✔ Déjà fait : attend le jour J" + (r.done[k] ? " (validé)" : "") : mv === "arr" ? "À préparer avant (pièces, mobilier), puis à compléter sur place." : "Préparé d'avance à partir de l'entrée : le jour J, tu notes seulement ce qui a changé."}</div></div><button class="mini" data-act="mv-go" data-v="${k}-${mv === "arr" ? "e" : "s"}">${has ? "Rouvrir" : "Préparer"}</button></div>`; };
@@ -4697,10 +4732,11 @@ function viewMvt(){
       ${advBail}${["edl", "inv"].filter(k => okE([k])).map(advDoc).join("")}</div>`;
     const head = (t, a, b) => `<div class="top" style="margin-top:14px"><h3 style="margin:0;font-size:15px">${t}</h3><span class="chip ${a === b ? "ok" : "warn"}">${a}/${b}</span></div>`;
     const cnt = es => es.filter(e => r.done[e[0]]).length;
-    const cur = jj.find(e => !r.done[e[0]]), idx = cur ? jj.indexOf(cur) + 1 : jj.length;
+    const cur = mvtCur(id, mv, r), idx = cnt(jj) + 1;
     const started = !!r.jjStart || cnt(jj) > 0;
-    const intro = `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700;margin-bottom:6px">Prêt pour le jour J ?</div><div class="small muted">Quand tu appuies sur « Démarrer », l'appli te fait enchaîner ces ${jj.length} étapes, une à la fois. Pour chacune : un gros bouton ouvre le bon document, tu le remplis (avec photos, signature à l'écran), puis tu touches « Fait, étape suivante ».</div><ol style="margin:8px 0 8px 20px;padding:0;font-size:14px">${jj.map(e => `<li>${esc(e[1])}</li>`).join("")}</ol><div class="small muted" style="margin-bottom:10px">À la fin, un gros bouton « Dossier d'envoi » rassemble tout en un seul PDF (bail, annexes, états des lieux, inventaires) : tu le relis, puis tu l'envoies.</div><div class="btns"><button class="btn" style="flex:1" data-act="mv-start" data-mv="${mv}">▶ Démarrer le jour J</button></div></div>`;
-    const jjHtml = !started ? intro : jj.map(e => { if (e !== cur) return row(e, !r.done[e[0]]); const [k, ti, hint, act] = e;
+    const intro = `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700;margin-bottom:6px">Prêt pour le jour J ?</div><div class="small muted">L'appli te fait enchaîner ces ${jj.length} étapes, une à la fois. Pour chacune : un gros bouton ouvre le bon document, tu le remplis (avec photos, signature à l'écran), puis en bas du document « Enregistrer et passer à l'étape suivante » ouvre directement la suivante. <b>Tu choisis l'ordre</b> : commence par celle que tu veux, et à tout moment « Faire maintenant » change d'étape.</div>
+      <div style="margin:8px 0">${jj.map((e, i) => `<div class="row" style="padding:6px 0"><div class="main"><div class="t">${i + 1}. ${esc(e[1])}${chipOf(e[0])}</div></div><button class="mini" data-act="mv-start" data-mv="${mv}" data-k="${e[0]}">Commencer par ça</button></div>`).join("")}</div><div class="small muted" style="margin-bottom:10px">À la fin, un gros bouton « Dossier d'envoi » rassemble tout en un seul PDF (bail, annexes, états des lieux, inventaires) : tu le relis, puis tu l'envoies.</div><div class="btns"><button class="btn" style="flex:1" data-act="mv-start" data-mv="${mv}">▶ Démarrer dans l'ordre</button></div></div>`;
+    const jjHtml = !started ? intro : jj.map(e => { if (e !== cur) return row(e, !r.done[e[0]], true); const [k, ti, hint, act] = e;
       return `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div class="small muted">Étape ${idx} sur ${jj.length} · en cours</div><div style="font-size:16px;font-weight:700;margin:2px 0 4px">${esc(ti)}${chipOf(k)}</div><div class="small muted" style="margin-bottom:10px">${esc(hint)}</div>
         <div class="btns">${act ? `<button class="btn" style="flex:1" data-act="mv-go" data-v="${act[0]}">▶ ${act[1]}</button>` : ""}<button class="btn ${act ? "ghost" : ""}" style="flex:1" data-act="mv-next" data-mv="${mv}" data-k="${k}">✓ Fait, étape suivante</button></div></div>`; }).join("");
     const fin = cur ? "" : `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700">✅ Jour J terminé</div><div class="small muted" style="margin:4px 0 10px">Dernière étape : le dossier d'envoi. Tu relis, tu coches les pièces à joindre (bail, ERP et diagnostics, permis, états des lieux, inventaires) et tout part dans un seul PDF.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier d'envoi</button></div></div>`;
@@ -4742,10 +4778,23 @@ document.addEventListener("click", async ev => {
       if (v === "docs" || v === "loc"){ V.bsub = v; render(); break; }
       if (v === "bail"){ V.bsub = "loc"; render(); sheetBail(); break; }
       if (v === "impaye" || v === "depot" || v === "rappel"){ V.bsub = "loc"; render(); sheetLettre(v); break; }
-      const m = /^(edl|inv)-(e|s)$/.exec(v); if (m){ V.bsub = "loc"; render(); sheetNewDoc(m[1], m[2] === "e" ? "entree" : "sortie"); }
+      const m = /^(edl|inv)-(e|s)$/.exec(v); if (m){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === (m[2] === "e" ? "arr" : "dep") && !x.del);
+        if (r && r.jjStart && !r.done[m[1]]){ r.jjCur = m[1]; r.upd = Date.now(); persist(); }
+        mvtOpenDoc(m[1], m[2] === "e" ? "entree" : "sortie"); }
       break; }
-    case "mv-start": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjStart = todayIso(); r.upd = Date.now(); persist(); render(); break; }
-    case "mv-next": { const r = mvtRec(V.bsel, b.dataset.mv); r.done[b.dataset.k] = todayIso(); r.upd = Date.now(); persist(); render(); window.scrollTo(0, 0); break; }
+    case "mv-start": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjStart = todayIso(); if (b.dataset.k) r.jjCur = b.dataset.k; else delete r.jjCur; r.upd = Date.now(); persist(); render(); break; }
+    case "mv-cur": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjCur = b.dataset.k; r.upd = Date.now(); persist(); render(); break; }
+    case "mv-next": { const r = mvtRec(V.bsel, b.dataset.mv); r.done[b.dataset.k] = todayIso(); delete r.jjCur; r.upd = Date.now(); persist(); render(); window.scrollTo(0, 0); break; }
+    case "jj-back": V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); break;
+    case "jj-done": { const k = b.dataset.k, mv = b.dataset.mv, bien = V.bsel, t = sendTenant(bien); let warn = "";
+      if (e && t){ toast("Enregistrement du PDF…"); try { const bytes = k === "edl" ? await edlPdf(e) : invPdf(e), titre = (k === "edl" ? "État des lieux " : "Inventaire du mobilier ") + (e.type === "sortie" ? "de sortie" : "d'entrée");
+          await sendArchive({t, c:{bien, titre, date:e.date}, data:bytes, name:(k === "edl" ? "etat-des-lieux-" : "inventaire-") + e.type + "-" + e.bien + "-" + e.date + ".pdf", mime:"application/pdf"}, true); } catch(err){ warn = " (attention : PDF non rangé dans la fiche : " + err.message + ")"; } }
+      const r = mvtRec(bien, mv); r.done[k] = todayIso(); delete r.jjCur;
+      if (mv === "dep" && !r.done.sig && jjSigOk(bien)) r.done.sig = todayIso();
+      const nx = mvtCur(bien, mv, r), m = nx && nx[3] && /^(edl|inv)-(e|s)$/.exec(nx[3][0]); r.upd = Date.now();
+      if (m){ r.jjCur = nx[0]; persist(); toast("Étape suivante : " + nx[1] + warn); mvtOpenDoc(m[1], m[2] === "e" ? "entree" : "sortie"); }
+      else { persist(); V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); toast((nx ? "Étape suivante : " + nx[1] : "Jour J terminé") + warn); }
+      break; }
     case "reg-ok": S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.regVerif = todayIso(); persist(); render(); break;
     case "dx-rel": { if (!e) break; toast("Création du PDF de relecture…"); try { const bytes = await pdfRelect(() => V.doc.kind === "edl" ? edlPdf(e) : invPdf(e), e);
         await relectOpen("RELECTURE-" + (V.doc.kind === "edl" ? "etat-des-lieux-" : "inventaire-") + e.type + "-" + e.bien + "-" + e.date + ".pdf", bytes); } catch(err){ toast("PDF impossible : " + err.message); } break; }
