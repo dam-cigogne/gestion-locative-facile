@@ -1,4 +1,4 @@
-const C = 'glf-2b71c029';
+const C = 'glf-a9b1f7b4';
 const SHELL = ['./', './index.html', './manifest.json', './pdf-lib.min.js', './icon-180.png', './icon-192.png', './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
 self.addEventListener('install', e => e.waitUntil(
@@ -14,4 +14,17 @@ self.addEventListener('fetch', e => {
   } else {      // bibliothèque externe : cache d'abord
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(n => { const cp = n.clone(); caches.open(C).then(c => c.put(e.request, cp)); return n; })));
   }
+});
+/* Notifications (réception connectée des candidatures) : message générique envoyé par le serveur personnel du propriétaire */
+self.addEventListener('push', e => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch (x) { d = {body: e.data ? e.data.text() : ''}; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Gestion Locative Facile', {body: d.body || 'Nouveau candidat ou nouveau dossier pour ta location.', icon: './icon-192.png', badge: './icon-192.png', tag: 'glf-cand', renotify: true, data: {url: './index.html?cand=1'}}));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || './index.html?cand=1';
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(L => {
+    for (const c of L) { if ('focus' in c) { c.postMessage({glf: 'cand'}); return c.focus(); } }
+    return self.clients.openWindow ? self.clients.openWindow(url) : null;
+  }));
 });
