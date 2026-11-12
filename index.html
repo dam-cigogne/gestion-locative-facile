@@ -155,6 +155,7 @@ label.f textarea{min-height:110px;resize:vertical}
 input[type="date"],input[type="datetime-local"],input[type="time"],input[type="month"]{min-width:0;max-width:100%;width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;display:block;min-height:44px;text-align:left}
 input::-webkit-date-and-time-value{text-align:left}
 #sheet{overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
+html,body{overscroll-behavior-y:none}
 #sheet input,#sheet select,#sheet textarea{max-width:100%;box-sizing:border-box}
 .btn{border:0;border-radius:14px;padding:13px 16px;transition:transform .08s ease,opacity .15s;font-weight:600;background:var(--accent);color:var(--accent-ink);font-size:15px;text-decoration:none;display:inline-block;text-align:center}
 .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
@@ -1507,8 +1508,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.85";
+const APP_VERSION = "1.7.86";
 const CHANGELOG = [
+  {v:"1.7.86", date:"2026-11-12", titre:"iPhone : barre du bas qui ne remonte plus ; « Mettre à jour la fiche » quand un candidat renvoie le formulaire", items:["iPhone : en tirant la page vers le bas tout en haut (ou vers le haut tout en bas), la page « rebondissait » avec un grand vide et la barre d'onglets du bas remontait au milieu de l'écran. Le rebond est désactivé et la barre ne bouge plus que quand le clavier est ouvert.","Candidat qui renvoie le formulaire (même nom ou même e-mail) : au lieu d'un texte dans les remarques, un encadré orange s'affiche en haut de sa fiche : « 📨 Nouvel envoi reçu le … » avec chaque changement (ancien barré → nouveau), à cocher, et « ✓ Mettre à jour la fiche » ou « Garder l'ancien ». Les cases qui étaient vides sont remplies tout de suite ; son message est ajouté aux remarques une fois l'encadré validé."]},
   {v:"1.7.85", date:"2026-11-12", titre:"Page entière « Tous mes candidats »", items:["Location › Candidats › « 👥 Tous mes candidats sur une page » : tous les candidats de tous les logements, en cartes ou en tableau (tableau d'office sur iPad). Pour chacun : logement, étape en couleur (demande, visite, dossier, retenu, refusé), date de demande, date et heure de visite, revenus par rapport au loyer, pièces reçues. Filtres par logement et par étape (avec les nombres), recherche par nom, e-mail ou téléphone, tri : nouveaux d'abord, prochaine visite, date de demande, étape, revenus, nom. Les prochaines visites sont en haut. Toucher un candidat ouvre sa fiche."]},
   {v:"1.7.84", date:"2026-11-12", titre:"Fenêtres bien calées sur iPhone", items:["iPhone : les champs de date et d'heure (Emménagement souhaité, Visite…) débordaient de l'écran, ce qui faisait glisser la fiche du candidat de gauche à droite. Ils restent maintenant dans la largeur de l'écran, et les fenêtres ne bougent plus que de haut en bas."]},
   {v:"1.7.83", date:"2026-11-12", titre:"Deuxième envoi d'un même candidat : rien n'est perdu", items:["Quand un candidat déjà enregistré renvoie le formulaire (même nom ou même e-mail), sa fiche n'est plus seulement marquée « Nouveau » : les cases vides sont complétées, et en tête des remarques s'ajoute « 📨 Nouvel envoi reçu le … » avec les changements (ex. « Revenus : 2 000 (avant : 1 800) ») et son message. La carte affiche « NOUVEL ENVOI (2e) ». Avant, le texte du 2e envoi était perdu (seules les pièces jointes étaient ajoutées)."]},
@@ -5549,13 +5551,28 @@ function sheetAnnonce(){
 }
 
 /* ---------- Fiche candidat ---------- */
+const CAND_LAB = {nom:"Nom", tel:"Téléphone", email:"E-mail", contrat:"Situation", rev:"Revenus nets / mois", occ:"Occupants", entree:"Emménagement souhaité", garant:"Garant", grev:"Revenus du garant"};
+/* Encadré en haut de la fiche : le candidat a renvoyé le formulaire avec d'autres informations */
+function candMajBox(c){
+  const m = c && c.maj; if (!m || m.vu) return "";
+  const ks = Object.keys(m.prop || {}), fmt = (k, v) => k === "rev" || k === "grev" ? (v === "" || v == null ? "—" : eur(Number(v))) : k === "entree" && v ? frDate(v) : v === "" || v == null ? "—" : String(v);
+  return `<div style="border:2px solid #C77D00;border-radius:14px;padding:12px;background:rgba(242,184,75,.15)"><div style="font-weight:800;font-size:16px">📨 Nouvel envoi reçu le ${new Date(m.t).toLocaleString("fr-FR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"})}</div>
+    <div class="small muted" style="margin:2px 0 8px">${esc(c.nom)} a renvoyé le formulaire${m.n ? " avec " + m.n + " pièce(s) jointe(s), ajoutée(s) en bas de la fiche" : ""}.${ks.length ? " Coche ce que tu veux mettre à jour :" : ""}</div>
+    ${ks.length ? `<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start">${ks.map(k => `<input type="checkbox" data-maj="${k}" checked style="width:22px;height:22px;margin:2px 0 0"><div><b>${esc(CAND_LAB[k] || k)}</b><div class="small"><span class="muted" style="text-decoration:line-through">${esc(fmt(k, c[k]))}</span> → <b>${esc(fmt(k, m.prop[k]))}</b></div></div>`).join("")}</div>` : ""}
+    ${m.msg ? `<div class="small" style="margin-top:8px;padding:8px;border-radius:10px;background:var(--surface,#fff)"><b>Son message :</b> ${esc(m.msg)}</div>` : ""}
+    <div class="btns" style="margin-top:10px">${ks.length ? `<button class="btn" style="flex:1" data-act="cd-maj-ok" data-id="${c.id}">✓ Mettre à jour la fiche</button>` : ""}<button class="btn ghost" ${ks.length ? "" : 'style="flex:1"'} data-act="cd-maj-no" data-id="${c.id}">${ks.length ? "Garder l'ancien" : "✓ Vu"}</button></div></div>`;
+}
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='cd-maj-ok'],[data-act='cd-maj-no']"); if (!b) return; const c = candGet(b.dataset.id); if (!c || !c.maj) return; const m = c.maj;
+  if (b.dataset.act === "cd-maj-ok"){ const done = []; document.querySelectorAll("[data-maj]").forEach(x => { if (x.checked){ c[x.dataset.maj] = m.prop[x.dataset.maj]; done.push(CAND_LAB[x.dataset.maj] || x.dataset.maj); } }); toast(done.length ? "Fiche mise à jour : " + done.join(", ") : "Rien de coché"); }
+  if (m.msg) c.note = (("Message du " + new Date(m.t).toLocaleDateString("fr-FR") + " : " + m.msg) + (c.note ? "\n\n" + c.note : "")).trim();
+  delete c.maj; c.upd = Date.now(); persist(); sheetCand(c.id); render(); });
 function sheetCand(id){
   const c = id ? candGet(id) : {bien:V.lsel, nom:"", tel:"", email:"", statut:"dem", dateDem:todayIso(), contrat:"", rev:"", occ:"", entree:"", garant:"", grev:"", visite:"", note:"", pieces:{}, fichiers:[]};
   if (!c) return;
   const garantOn = c.garant === "proche" || c.garant === "autre";
   const pcs = CAND_PIECES.map(([k, l, g]) => `<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0${g ? ";" + (garantOn ? "" : "display:none") : ""}" ${g ? 'class="cd-g"' : ""}><input type="checkbox" id="cd-p-${k}" ${c.pieces && c.pieces[k] ? "checked" : ""} style="margin-top:3px"> <span>${esc(l)}</span></label>`).join("");
   const files = (c.fichiers || []).map(f => `<div class="row">${thumb(f.fid, f.nom)}<div class="main"><div class="t" style="font-size:13.5px">${esc(f.nom)}</div></div><button class="mini" data-act="cf-open" data-id="${c.id}" data-fid="${f.fid}">Ouvrir</button><button class="mini" data-act="cf-del" data-id="${c.id}" data-fid="${f.fid}">Retirer</button></div>`).join("");
-  openSheet(`<h2>${id ? esc(c.nom) : "Nouveau candidat"}</h2>${!id && typeof permisDue === "function" && permisDue(c.bien) ? `<div class="info" style="border:2px solid #C77D00;margin-bottom:8px">🔑 Rappel : ce logement est soumis au <b>permis de louer</b>. L'autorisation de la mairie est à obtenir avant la signature du bail (pas avant d'enregistrer un candidat). <button class="mini" data-act="cd-permis">Voir le permis de louer</button></div>` : ""}
+  openSheet(`<h2>${id ? esc(c.nom) : "Nouveau candidat"}</h2>${id ? candMajBox(c) : ""}${!id && typeof permisDue === "function" && permisDue(c.bien) ? `<div class="info" style="border:2px solid #C77D00;margin-bottom:8px">🔑 Rappel : ce logement est soumis au <b>permis de louer</b>. L'autorisation de la mairie est à obtenir avant la signature du bail (pas avant d'enregistrer un candidat). <button class="mini" data-act="cd-permis">Voir le permis de louer</button></div>` : ""}
     ${dxF("cd-nom", "Nom et prénom", c.nom)}
     <div class="tl">${dxF("cd-tel", "Téléphone", c.tel, 'type="tel"')}${dxF("cd-mail", "E-mail", c.email, 'type="email" autocapitalize="off"')}</div>
     <div class="tl">${dxS("cd-st", "Étape", CAND_ST, c.statut)}${dxF("cd-dem", "Demande du", c.dateDem, 'type="date"')}</div>
@@ -5804,13 +5821,14 @@ async function candImport(txt, files, opt){
   const isDos = /^\s*DOSSIER\b/i.test(txt), c = candFromParsed(o); if (isDos){ c.statut = "dos"; c.src = "dossier"; c.note = c.note.replace(/^Pièces annoncées[^\n]*\n?/m, "").trim(); } else if (opt.src) c.src = opt.src;
   const dup = candList().find(x => !x.del && x.bien === c.bien && ((c.email && x.email && x.email.toLowerCase() === c.email.toLowerCase()) || x.nom.toLowerCase() === c.nom.toLowerCase()));
   if (dup){ const n = await candAttach(dup, files || []); if (isDos && (dup.statut === "dem" || dup.statut === "vis")) dup.statut = "dos";
-    /* Nouvel envoi de la même personne : rien n'est perdu. Les cases vides sont complétées, le reste est noté en tête des remarques. */
-    const lab = {nom:"Nom", tel:"Téléphone", email:"E-mail", contrat:"Situation", rev:"Revenus", occ:"Occupants", entree:"Entrée souhaitée", garant:"Garant", grev:"Revenus du garant"}, chg = [];
-    for (const k in lab){ const nv = c[k], ov = dup[k]; if (nv === "" || nv == null) continue; if (ov === "" || ov == null){ dup[k] = nv; chg.push(lab[k] + " : " + nv + " (ajouté)"); } else if (String(ov) !== String(nv)) chg.push(lab[k] + " : " + nv + " (avant : " + ov + ")"); }
-    dup.envois = (dup.envois || 1) + 1; dup.lastEnv = new Date().toISOString();
-    const head = "📨 " + (isDos ? "Dossier" : "Nouvel envoi") + " reçu le " + new Date().toLocaleString("fr-FR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) + (n ? " · " + n + " pièce(s) jointe(s)" : "") + (opt.src ? " · " + opt.src : "");
-    const body = [chg.length ? "Changements : " + chg.join(" ; ") : "", c.note && c.note !== dup.note ? "Message : " + c.note : ""].filter(Boolean).join("\n");
-    dup.note = [head + (body ? "\n" + body : " (mêmes informations)"), dup.note || ""].filter(Boolean).join("\n\n"); dup.upd = Date.now(); return {c:dup, n, dup:true, isDos}; }
+    /* Nouvel envoi de la même personne : les cases vides sont complétées tout de suite ; les valeurs qui changent sont PROPOSÉES dans la fiche (« Mettre à jour ») */
+    const prop = {};
+    for (const k in CAND_LAB){ const nv = c[k], ov = dup[k]; if (nv === "" || nv == null) continue; if (ov === "" || ov == null) dup[k] = nv; else if (String(ov) !== String(nv)) prop[k] = nv; }
+    dup.envois = (dup.envois || 1) + 1;
+    const msg = c.note && c.note !== dup.note && !(dup.note || "").includes(c.note) ? c.note : "";
+    dup.maj = {t:new Date().toISOString(), src:opt.src || "", n, kind:isDos ? "dossier" : "candidature", prop:Object.assign({}, (dup.maj && dup.maj.prop) || {}, prop), msg:[(dup.maj && dup.maj.msg) || "", msg].filter(Boolean).join("\n")};
+    if (!Object.keys(dup.maj.prop).length && !dup.maj.msg) dup.maj.vu = 1;
+    dup.upd = Date.now(); return {c:dup, n, dup:true, isDos}; }
   candList().push(c); const n = await candAttach(c, files || []); return {c, n, dup:false, isDos};
 }
 function sheetPaste(){
@@ -8829,7 +8847,9 @@ if (secAvailable() && lsGet(ENC)){ SEC.on = true; showLock(); } else startApp();
 /* barre d'onglets : sur iPhone, après le clavier, une liste déroulante ou un zoom, la barre fixe peut rester « coincée » en haut : on la remet en bas */
 (function(){
   const fix = () => { const n = document.getElementById("tabs"); if (!n) return; const vv = window.visualViewport;
-    const off = vv ? Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop))) : 0;
+    /* pendant le rebond iOS (tirer en haut ou en bas de la page), offsetTop devient négatif ou la page « déborde » : on ne bouge pas la barre */
+    const ae = document.activeElement, typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName), bounce = window.scrollY < 0 || window.scrollY + window.innerHeight > document.documentElement.scrollHeight + 2;
+    const off = vv && typing && !bounce ? Math.max(0, Math.round(window.innerHeight - (vv.height + Math.max(0, vv.offsetTop)))) : 0;
     n.style.transform = off > 2 && vv.scale <= 1.01 ? "translateY(" + (-off) + "px)" : "";
     n.style.bottom = "0.5px"; requestAnimationFrame(() => { n.style.bottom = ""; }); };
   const later = () => { setTimeout(fix, 60); setTimeout(fix, 350); };
