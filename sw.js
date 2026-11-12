@@ -1,4 +1,4 @@
-const C = 'glf-0004f7f9';
+const C = 'glf-0e695f3e';
 const SHELL = ['./', './index.html', './manifest.json', './pdf-lib.min.js', './icon-180.png', './icon-192.png', './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
 self.addEventListener('install', e => e.waitUntil(
