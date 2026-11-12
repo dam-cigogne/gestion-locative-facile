@@ -1525,8 +1525,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.92";
+const APP_VERSION = "1.7.93";
 const CHANGELOG = [
+  {v:"1.7.93", date:"2026-11-12", titre:"Dossier de diagnostics propre, « À faire maintenant », amiante liste A / liste B", items:["Nouveau cadre rouge « 🚨 À faire maintenant », au-dessus des documents à renouveler. Il montre ce qui est obligatoire même pendant le bail en cours : par exemple l'évaluation périodique de l'amiante quand il y en a, avec depuis combien de temps elle est en retard. Le bouton « ✅ Fait » note la date du contrôle, et les 3 ans repartent de cette date.", "Documents à renouveler : « périmé depuis 8 mois », « depuis 2 ans et 3 mois »… et le rappel que ces diagnostics se refont avant la prochaine signature de bail, pas pendant le bail en cours.", "Nouveau : « 📦 Dossier de diagnostics du bail (valables seulement) » dans Biens › Documents. Il assemble un seul PDF propre avec une page de garde : uniquement les diagnostics valables, en reprenant seulement les bonnes pages du gros dossier découpé. La page de garde liste ce qui manque ou est à refaire. L'amiante n'est pas annexé (il est tenu à disposition du locataire). Dans « Dossier du bail », ce PDF remplace le gros dossier et les diagnostics séparés.", "Lecture du rapport amiante : quand il dit « liste A : il n'a pas été repéré… » mais « liste B : il a été repéré… des matériaux contenant de l'amiante », l'appli retient « Présence d'amiante ». Avant, elle laissait « à préciser ».", "Amiante présent et 3 ans dépassés : la ligne précise qu'il s'agit de faire faire l'évaluation périodique de l'état des matériaux, pas forcément un nouveau repérage complet."]},
   {v:"1.7.92", date:"2026-11-12", titre:"Plomb et amiante : plus de « Périmé » tant que le résultat n'est pas choisi", items:["Plomb et amiante : tant que tu n'as pas choisi « Présence » ou « Néant », un vieux rapport n'est plus marqué « Périmé » mais « Résultat à préciser » (orange). Choisis « Néant » et il passe « À jour », valable sans limite.", "Lecture du résultat améliorée : « matériaux et produits susceptibles de contenir de l'amiante » et « revêtements contenant du plomb au-delà des seuils en vigueur » sont reconnus. Pour une ligne issue d'un dossier découpé, ↻ lit aussi la page de résumé du dossier."]},
   {v:"1.7.91", date:"2026-11-12", titre:"Relire aussi les dossiers de diagnostics", items:["Pièces à joindre : le bouton ↻ (relire la date sur le document) est maintenant aussi sur chaque dossier complet de diagnostics, pas seulement sur les lignes DPE, plomb, etc.", "Plomb et amiante sans document : la ligne affiche seulement « 6 ans si présence · illimité si néant » (ou 3 ans pour l'amiante), sans le « Durée suivie » en double."]},
   {v:"1.7.90", date:"2026-11-12", titre:"Revenus bruts sur l'accueil, plomb et amiante plus clairs, meilleure lecture des dates", items:["Accueil : glisse le grand cadre vers la gauche pour voir un 2e cadre, bleu nuit, « Revenus bruts depuis le début ». Il montre, bien par bien, les recettes encaissées (pointées) sans les dépenses, avec la date de la première recette et la part des loyers. Les petits points en dessous montrent quel cadre est affiché.", "Plomb (CREP) et amiante : la durée est affichée en entier : « 6 ans si présence de plomb · illimité si néant » et « 3 ans si présence d'amiante · illimité si néant ». Deux boutons clairs, « Présence de plomb / Néant, sans plomb » et « Présence d'amiante / Néant, sans amiante », remplacent l'ancien bouton « Résultat ? ».", "Lecture des diagnostics : la date d'édition est choisie d'après son libellé (« Date du rapport », « Date du constat », « Fait à …, le », « Établi le »…). Les dates parasites sont écartées : chargement de la source de l'appareil, certification du diagnostiqueur, lois, construction. Avant, un constat plomb pouvait prendre la date de chargement de l'appareil (2018) au lieu de la date du rapport. Pour un document déjà importé, appuie sur ↻ pour relire la date et le résultat.", "Plomb : « Date limite de validité : Aucune » sur le constat = néant (sans limite) ; une vraie date limite = présence.", "Le résultat est lu automatiquement sur le rapport : à l'import, au découpage d'un dossier de diagnostics et avec ↻. Si la phrase n'est pas nette, l'appli ne devine pas et te laisse choisir."]},
@@ -6625,9 +6626,68 @@ const DK_ORDER = {"01 Bail":1, "06 Pièces à joindre au bail et autres document
 async function dkList(tid){
   const t = S.locataires.find(x => x.id === tid && !x.del); if (!t) return [];
   const all = await locataireFiles(tid), root = "Gestion locative/" + cleanName(bienName(t.bien)) + "/Locataires/" + cleanName(t.nom) + "/";
-  return all.map(f => { const rel = f.name.slice(root.length), dir = rel.split("/")[0], nom = rel.split("/").slice(1).join("/"); return {dir, nom, data:f.data, ok:dkIsPdf(f.data) || !!dkImg(f.data)}; })
-    .filter(f => f.dir !== "00 Fiche").sort((a, b) => (DK_ORDER[a.dir] || 9) - (DK_ORDER[b.dir] || 9) || a.nom.localeCompare(b.nom));
+  const L = all.map(f => { const rel = f.name.slice(root.length), dir = rel.split("/")[0], nom = rel.split("/").slice(1).join("/"); return {dir, nom, data:f.data, ok:dkIsPdf(f.data) || !!dkImg(f.data)}; })
+    .filter(f => f.dir !== "00 Fiche");
+  /* diagnostics : un seul PDF propre (seulement les valables) à la place du gros dossier et des fichiers séparés */
+  try { const r = await ddtBuild(t.bien); if (r.inc.length){ const labs = [...DDT_KEYS, "diag"].map(k => annexLabel(k)).filter(Boolean);
+      L.forEach(f => { if (/^06/.test(f.dir) && labs.some(l => f.nom.startsWith(l + " - "))) f.repl = true; });
+      L.push({dir:"06 Pièces à joindre au bail et autres documents", nom:"Dossier de diagnostic technique (diagnostics valables).pdf", data:r.bytes, ok:true, ddt:r}); } } catch(e){}
+  return L.sort((a, b) => (DK_ORDER[a.dir] || 9) - (DK_ORDER[b.dir] || 9) || (b.ddt ? 1 : 0) - (a.ddt ? 1 : 0) || a.nom.localeCompare(b.nom));
 }
+/* ============ Dossier de diagnostic technique « propre » : seulement les diagnostics valables ============
+   Les lignes découpées d'un gros dossier pointent vers ses pages : on ne recopie que ces pages.
+   Amiante : tenu à disposition du locataire, pas annexé au bail. */
+const DDT_KEYS = ["dpe", "erp", "bruit", "plomb", "elec", "gaz", "boutin"];
+async function ddtBuild(bien){
+  const PL = await loadPdfLib(), out = await PL.PDFDocument.create(), inc = [], miss = [], parents = {};
+  const rows = [];
+  for (const k of DDT_KEYS){
+    const s = avStat(bien, k); if (s.st === "na") continue;
+    if (!s.d){ if (avMust(bien, k) || AV_REQ.includes(k)) miss.push(avLab(k) + " : manquant"); continue; }
+    if (s.st === "perime" || s.st === "refaire"){ miss.push(avLab(k) + " : périmé " + avSince(s.exp)); continue; }
+    rows.push({k, s});
+  }
+  for (const {k, s} of rows){
+    const d = s.d; let n0 = out.getPageCount();
+    try {
+      if (d.parent){
+        if (!parents[d.parent]){ const r = await flGet(d.parent); parents[d.parent] = r && r.buf ? await PL.PDFDocument.load(new Uint8Array(r.buf), {ignoreEncryption:true}) : null; }
+        const src = parents[d.parent]; if (!src) throw new Error("fichier introuvable");
+        const a = Math.max(1, (d.pages || [1, 1])[0]), b = Math.min(src.getPageCount(), (d.pages || [1, 1])[1]), idx = []; for (let i = a; i <= b; i++) idx.push(i - 1);
+        (await out.copyPages(src, idx)).forEach(p => out.addPage(p));
+      } else {
+        const r = await flGet(d.id); if (!r || !r.buf) throw new Error("fichier introuvable"); const u8 = new Uint8Array(r.buf);
+        if (dkIsPdf(u8)){ const src = await PL.PDFDocument.load(u8, {ignoreEncryption:true}); (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p)); }
+        else if (dkImg(u8)){ const im = dkImg(u8) === "png" ? await out.embedPng(u8) : await out.embedJpg(u8), W = 595, H = 842, m = 36, sc = Math.min((W - 2 * m) / im.width, (H - 2 * m) / im.height, 1), w = im.width * sc, h = im.height * sc, pg = out.addPage([W, H]); pg.drawImage(im, {x:(W - w) / 2, y:(H - h) / 2, width:w, height:h}); }
+        else throw new Error("format non lisible");
+      }
+      inc.push({lab:avLab(k), d, s, n:out.getPageCount() - n0});
+    } catch(e){ miss.push(avLab(k) + " : non lu (" + (e && e.message || "erreur") + ")"); }
+  }
+  /* page de garde en tête */
+  const cv = new PdfDoc("Dossier de diagnostic technique");
+  cv.text(cv.W / 2, cv.y, "Dossier de diagnostic technique", {size:19, bold:true, center:true, color:"#0E6B5C"}); cv.y -= 24;
+  cv.text(cv.W / 2, cv.y, bienName(bien) + " · au " + frDate(todayIso()), {size:11.5, center:true}); cv.y -= 30;
+  cv.h("Diagnostics joints (valables)");
+  if (!inc.length) cv.para("Aucun diagnostic valable trouvé dans les documents du logement.", 10, 14);
+  inc.forEach((x, i) => { cv.need(30); cv.text(cv.M, cv.y, (i + 1) + ". " + x.lab, {size:10.5, bold:true}); cv.y -= 14;
+    cv.text(cv.M + 14, cv.y, "Établi le " + frDate(x.d.date) + " · " + (x.s.exp ? "valable jusqu'au " + frDate(x.s.exp) : "sans limite de durée") + (AV_RES[x.d.sub] && x.d.res ? " · " + AV_RES_LAB(x.d.sub, x.d.res).toLowerCase() : "") + " · " + x.n + " page" + (x.n > 1 ? "s" : ""), {size:9.5, color:"#4A5753"}); cv.y -= 16; });
+  if (miss.length){ cv.y -= 6; cv.h("À fournir à part (à refaire ou manquant)"); miss.forEach(m => { cv.need(16); cv.text(cv.M, cv.y, "• " + m, {size:10, color:"#B3261E"}); cv.y -= 14; }); }
+  const am = avStat(bien, "amiante"); if (am.st !== "na"){ cv.y -= 8; cv.para("Amiante (immeuble dont le permis de construire date d'avant juillet 1997) : le repérage amiante des parties privatives n'est pas annexé au bail ; il est tenu à la disposition du locataire, qui peut le demander.", 9.5, 13); }
+  const cover = await PL.PDFDocument.load(cv.finish("Dossier de diagnostic technique")), cp = await out.copyPages(cover, cover.getPageIndices()); cp.reverse().forEach(p => out.insertPage(0, p));
+  return {bytes:await out.save(), name:"Dossier de diagnostic technique - " + cleanName(bienName(bien)) + " - " + todayIso() + ".pdf", inc, miss};
+}
+document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act='ddt-make']"); if (!b) return; const bien = b.dataset.b || V.bsel;
+  toast("Préparation du dossier de diagnostics…");
+  try { const r = await ddtBuild(bien); if (!r.inc.length) return toast("Aucun diagnostic valable à joindre pour ce logement");
+    openSheet(`<h2>Dossier de diagnostics du bail</h2><div class="info">✅ <b>${r.inc.length} diagnostic${r.inc.length > 1 ? "s" : ""} valable${r.inc.length > 1 ? "s" : ""}</b> assemblé${r.inc.length > 1 ? "s" : ""} dans un seul PDF, avec une page de garde : ${esc(r.inc.map(x => x.lab).join(", "))}.<br>Les pages périmées du gros dossier ne sont pas reprises.</div>
+      ${r.miss.length ? `<div class="info" style="border:2px solid #B3261E;background:#FDECEA;color:#5C1A14">À refaire ou à ajouter avant de signer : <b>${esc(r.miss.join(" · "))}</b></div>` : ""}
+      <div class="small muted">L'amiante n'est pas annexé au bail : garde-le à la disposition du locataire. Ce PDF est aussi proposé dans « Dossier du bail ».</div>
+      <div class="btns"><button class="btn" style="flex:1" data-act="ddt-view">👁 Relire</button><button class="btn ghost" data-act="ddt-save">Enregistrer / partager</button><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+    V.ddt = r; } catch(e){ toast("Préparation impossible : " + (e && e.message || e)); } });
+document.addEventListener("click", async ev => { const b = ev.target.closest("[data-act='ddt-view'],[data-act='ddt-save']"); if (!b || !V.ddt) return;
+  if (b.dataset.act === "ddt-view") await relectOpen(V.ddt.name, V.ddt.bytes); else await saveFile(V.ddt.name, V.ddt.bytes, "application/pdf"); });
+
 /* classement des pièces selon le moment : entrée (nouveau bail) ou sortie (fin de bail) */
 function dkInfo(f, mode){
   const sortie = /sortie/i.test(f.nom), d = f.dir.replace(/^\d+ /, ""), n = f.nom;
@@ -6643,6 +6703,9 @@ function dkInfo(f, mode){
   }
   if (/^06/.test(f.dir)){
     if (mode === "sortie") return {on:false, lvl:"fac", tag:"Facultatif", why:"déjà remis à l'entrée ; inutile pour solder la sortie"};
+    if (f.ddt) return {on:true, lvl:"obl", tag:"Obligatoire", why:"diagnostics valables seulement (" + f.ddt.inc.map(x => x.lab).join(", ") + ")" + (f.ddt.miss.length ? " · à ajouter : " + f.ddt.miss.join(", ") : "")};
+    if (f.repl) return {on:false, lvl:"fac", tag:"Déjà dans le dossier de diagnostics", why:"repris (pages valables seulement) dans le « Dossier de diagnostic technique »"};
+    if (/amiante/i.test(n)) return {on:false, lvl:"fac", tag:"À tenir à disposition", why:"le rapport amiante n'est pas annexé au bail ; à remettre si le locataire le demande"};
     if (/diagnostic|dpe|erp|risque|plomb|amiante|électricit|gaz|boutin|bruit|notice/i.test(n)) return {on:true, lvl:"obl", tag:"Obligatoire", why:"annexe obligatoire du bail"};
     if (/copropri|règlement/i.test(n)) return {on:true, lvl:"obl", tag:"Obligatoire si copropriété", why:"extraits du règlement à remettre au locataire"};
     return {on:true, lvl:"con", tag:"Conseillé", why:"pièce jointe au bail"};
@@ -7365,10 +7428,10 @@ function avStat(bien, k){
   if (c.loc && t && t.debut && d.date && d.date < t.debut) return {st:"refaire", d, c, why:"antérieur au bail de " + t.nom};
   if (c.m === null || c.m === undefined) return {st:"ok", d, c, txt:"Au dossier"};
   if (c.m === 0) return {st:"ok", d, c, txt:"Sans limite de durée"};
-  const old = k === "dpe" && c.m === 120 ? dpeOld(d.date) : "", exp = old || avAdd(d.date || today, c.m), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  const old = k === "dpe" && c.m === 120 ? dpeOld(d.date) : "", base = k === "amiante" && d.res === "presence" && d.evalDone && d.evalDone > (d.date || "") ? d.evalDone : (d.date || today), exp = old || avAdd(base, c.m), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
   /* plomb / amiante sans résultat choisi : on ne dit pas « périmé » (s'il n'y en a pas, il est valable sans limite) */
   if (AV_RES[k] && !d.res && exp <= soon) return {st:"preciser", d, c, why:"choisis « Présence » ou « Néant » : si néant, il reste valable sans limite"};
-  return {st:exp < today ? "perime" : exp <= soon ? "bientot" : "ok", d, c, exp, why:old ? "ancien DPE : validité arrêtée au " + frDate(old) : ""};
+  return {st:exp < today ? "perime" : exp <= soon ? "bientot" : "ok", d, c, exp, why:old ? "ancien DPE : validité arrêtée au " + frDate(old) : k === "amiante" && d.res === "presence" && exp <= soon ? "présence d'amiante : faire faire l'évaluation périodique de l'état des matériaux (pas forcément un nouveau repérage complet)" : ""};
 }
 const AV_CHIP = {ok:'<span class="chip ok">À jour</span>', bientot:'<span class="chip warn">Expire bientôt</span>', perime:'<span class="chip bad">Périmé</span>', refaire:'<span class="chip bad">À refaire</span>', preciser:'<span class="chip warn">Résultat à préciser</span>'};
 const avDurTxt = c => c.m === null || c.m === undefined ? (c.loc ? "à chaque location" : "") : c.m === 0 ? "sans limite" : avDur(c.m) + (c.loc ? " · à chaque location" : "");
@@ -7382,7 +7445,7 @@ function avRow(id, k){
   if (k === "diag") return avDiagRow(id);
   const s = avStat(id, k), a = k;
   if (s.st === "na") return `<div class="row" style="opacity:.55;flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))}</div><div class="s">Non concerné pour ce bien</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="mini" data-act="im-open" data-v="autre" data-s="${a}">Importer</button><button class="mini" data-act="av-todo" data-k="${k}" data-b="${esc(id)}">📌 À faire faire</button><button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button></div></div>`;
-  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${AV_RES[k] && s.d.res ? " · " + AV_RES_LAB(k, s.d.res).toLowerCase() : ""}` : (s.c.m && !AV_RES[k] ? `Durée suivie : ${avDur(s.c.m)}` : "");
+  const sub = s.d ? `Édité le ${frDate(s.d.date)}${s.exp ? " · valable jusqu'au " + frDate(s.exp) : s.txt ? " · " + s.txt : ""}${s.why ? " · " + s.why : ""}${k === "amiante" && s.d.evalDone ? " · évaluation périodique faite le " + frDate(s.d.evalDone) : ""}${AV_RES[k] && s.d.res ? " · " + AV_RES_LAB(k, s.d.res).toLowerCase() : ""}` : (s.c.m && !AV_RES[k] ? `Durée suivie : ${avDur(s.c.m)}` : "");
   return `<div class="row" style="flex-wrap:wrap"><div class="main" style="flex:1 1 100%;min-width:0"><div class="t">${esc(avLab(k))} ${AV_RES[k] ? `<span class="chip" style="font-weight:600">⏱ ${esc(AV_RES_DUR[k])}</span>` : avDurTxt(s.c) ? `<span class="chip" style="font-weight:600">⏱ ${esc(avDurTxt(s.c))}</span>` : ""}</div>${s.d && AV_RES[k] ? `<div class="s" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px"><span>Résultat du rapport :</span><button class="mini" data-act="av-res" data-v="presence" data-id="${s.d.id}" style="${s.d.res === "presence" ? "background:#B3261E;color:#fff;border-color:transparent;font-weight:700" : ""}">${s.d.res === "presence" ? "● " : ""}${AV_RES_LAB(k, "presence")}</button><button class="mini" data-act="av-res" data-v="absence" data-id="${s.d.id}" style="${s.d.res === "absence" ? "background:#1A7A4C;color:#fff;border-color:transparent;font-weight:700" : ""}">${s.d.res === "absence" ? "● " : ""}${AV_RES_LAB(k, "absence")}</button>${s.d.res ? "" : `<b style="color:#B26A00">à préciser</b>`}</div>` : ""}${sub ? `<div class="s">${esc(sub)}</div>` : ""}${AV_WHEN[k] ? `<div class="s" style="font-style:italic">Exigé : ${esc(AV_WHEN[k])}</div>` : ""}${s.c.req && !s.d ? `<div class="s" style="color:#B3261E"><b>À faire faire avant la prochaine location</b></div>` : ""}</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.d ? AV_CHIP[s.st] || "" : ""}${k === "notice" ? `<a class="mini" href="${NOTICE_URL}" target="_blank" rel="noopener" aria-label="Notice officielle sur Légifrance">🔗 Notice officielle</a>` : ""}${k === "erp" ? `<a class="mini" href="${ERP_URL}" target="_blank" rel="noopener" aria-label="Établir l'état des risques gratuitement">🔗 Faire l'ERP</a>` : ""}${s.d && k === "diag" && !s.d.parent && (s.d.type === "application/pdf" || /\.pdf$/i.test(s.d.fname || "")) ? `<button class="mini" data-act="spl-open" data-id="${s.d.id}">✂ Découper</button>` : ""}${s.d ? `<button class="mini" data-act="fl-open" data-id="${s.d.id}">Voir</button><button class="mini" data-act="av-date" data-id="${s.d.id}" aria-label="Changer la date d'édition">📅</button><button class="mini" data-act="av-reread" data-id="${s.d.id}" aria-label="Relire la date sur le document">↻</button>` : ""}${s.st !== "ok" ? `<button class="mini" data-act="im-open" data-v="autre" data-s="${a}">${s.d ? "Remplacer" : "Importer"}</button>` : ""}${!s.d && AV_MOD.includes(k) ? `<button class="mini" data-act="mod-gen" data-k="${k}" data-b="${esc(id)}">📄 Générer</button>` : ""}${!s.d && !AV_REQ.includes(k) ? `<button class="mini" data-act="av-todo" data-k="${k}" data-b="${esc(id)}">${s.c.req ? "✔ À faire faire (retirer)" : "📌 À faire faire"}</button>` : ""}<button class="mini" data-act="av-cfg" data-k="${k}" data-b="${esc(id)}" aria-label="Réglage">⚙</button>${s.d ? `<button class="mini" data-act="fl-del" data-id="${s.d.id}" aria-label="Supprimer ce document">×</button>` : ""}</div></div>`;
 }
 function avSummary(id, keys){
@@ -7403,7 +7466,7 @@ function annexRows(id){
   const locPart = `<div class="small" style="margin-top:12px"><b>👤 Documents de la location</b> : à refaire à chaque nouveau locataire.</div>${avSummary(id, AV_LOC)}${avGroups(id, AV_GRP_LOC)}<div class="rows">${visaleRow(id)}</div>`;
   const one = i => avGroups(id, [AV_GRP_BIEN[i]]);
   const body = t === "req" ? one(0) : t === "sel" ? one(1) : t === "sui" ? one(2) : t === "loc" ? locPart : `${avSummary(id, AV_BIEN)}${avGroups(id, AV_GRP_BIEN)}${locPart}`;
-  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div><div class="btns" style="margin:8px 0"><button class="btn ghost" data-act="av-reread-all" data-b="${esc(id)}">↻ Relire la date de tous les documents importés</button></div><div class="small muted" id="av-rr-note"></div>${bar}${body}`;
+  return `<div class="small" style="margin-top:4px"><b>🏠 Documents du bien « ${esc(name)} »</b> : valables pour tous les locataires, à renouveler selon leur durée.</div><div class="btns" style="margin:8px 0"><button class="btn ghost" data-act="av-reread-all" data-b="${esc(id)}">↻ Relire la date de tous les documents importés</button><button class="mini" style="font-weight:700" data-act="ddt-make" data-b="${esc(id)}">📦 Dossier de diagnostics du bail (valables seulement)</button></div><div class="small muted" id="av-rr-note"></div>${bar}${body}`;
 }
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-tab']"); if (!b) return; V.avt = b.dataset.v; render(); });
 const AV_SYM = {preciser:["?", "#B26A00"], ok:["✓", "#1A7A4C"], bientot:["⏳", "#B26A00"], perime:["✗", "#B3261E"], refaire:["✗", "#B3261E"], manque:["–", "#8A9690"], na:["·", "#B5BDB9"]};
@@ -7427,18 +7490,28 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
     persist(); closeSheet(); render(); } });
 
 /* alertes : documents périmés / à refaire (rouge), bientôt périmés (orange) */
+/* « périmé depuis … » en mots simples */
+function avSince(iso){ if (!iso) return ""; const ms = Date.now() - new Date(iso + "T12:00:00").getTime(); if (ms < 0) return ""; const m = Math.floor(ms / (30.44 * 864e5)); return m < 1 ? "depuis quelques jours" : m < 12 ? "depuis " + m + " mois" : "depuis " + Math.floor(m / 12) + " an" + (m >= 24 ? "s" : "") + (m % 12 ? " et " + (m % 12) + " mois" : ""); }
+/* obligatoire tout de suite, même pendant un bail : amiante présent dont l'évaluation périodique (3 ans) est dépassée */
+function avNow(id){ const s = avStat(id, "amiante"); return s.d && s.d.res === "presence" && s.exp && s.exp < todayIso() ? [{k:"amiante", id:s.d.id, lab:"Amiante : évaluation périodique de l'état des matériaux", txt:"en retard " + avSince(s.exp) + " (à faire tous les 3 ans quand il y a de l'amiante, avec ou sans changement de locataire)" + (s.d.evalDone ? " · dernière faite le " + frDate(s.d.evalDone) : " · rapport du " + frDate(s.d.date))}] : []; }
 function avProblems(id){
-  const out = {late:[], soon:[], miss:[]};
+  const out = {late:[], soon:[], miss:[], now:avNow(id)};
   [...new Set([...AV_REQ, ...AV_BIEN, ...AV_LOC])].forEach(k => { if (avMust(id, k) && avStat(id, k).st === "manque") out.miss.push(avLab(k) + (AV_REQ.includes(k) ? "" : " (à faire faire)")); });
-  [...AV_BIEN, ...AV_LOC].forEach(k => { const s = avStat(id, k); if (s.st === "perime" || s.st === "refaire") out.late.push(avLab(k) + (s.st === "refaire" ? " (à refaire)" : " (périmé)")); else if (s.st === "bientot") out.soon.push(avLab(k)); else if (s.st === "preciser") out.soon.push(avLab(k) + " (résultat à préciser)"); });
+  [...AV_BIEN, ...AV_LOC].forEach(k => { const s = avStat(id, k); if (k === "amiante" && out.now.length) return; if (s.st === "perime" || s.st === "refaire") out.late.push(avLab(k) + (s.st === "refaire" ? " (à refaire)" : " (périmé " + avSince(s.exp) + ")")); else if (s.st === "bientot") out.soon.push(avLab(k)); else if (s.st === "preciser") out.soon.push(avLab(k) + " (résultat à préciser)"); });
   const t = tenantFor(id, todayIso()), e = t && t.gl && typeof glEnd === "function" ? glEnd(t.gl) : ""; if (e === "exp") out.late.push("Garantie " + (typeof glLab === "function" ? glLab(t) : "") + " (expirée)"); else if (e === "soon") out.soon.push("Garantie " + (typeof glLab === "function" ? glLab(t) : ""));
   return out;
 }
+function avNowBox(id, home, p){
+  if (!p.now.length) return "";
+  return `<div class="card" style="border:3px solid #B3261E;background:#FDECEA;color:#3A1512;padding:12px 14px;gap:8px"><div class="top" style="gap:8px"><b style="color:#B3261E;font-size:16px">🚨 À faire maintenant${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
+    <div class="small" style="color:#7A1E17">Obligatoire même pendant le bail en cours.</div>
+    ${p.now.map(n => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid rgba(179,38,30,.25);padding-top:8px"><div style="flex:1 1 200px;min-width:0"><b>${esc(n.lab)}</b><div class="small">${esc(n.txt)}</div></div><button class="mini" style="background:#1A7A4C;color:#fff;border-color:transparent;font-weight:700" data-act="av-done" data-id="${esc(n.id)}">✅ Fait</button></div>`).join("")}</div>`;
+}
 function avAlert(id, home){
-  const p = avProblems(id); if (!p.late.length && !p.soon.length && !p.miss.length) return "";
+  const p = avProblems(id), nb = avNowBox(id, home, p); if (!p.late.length && !p.soon.length && !p.miss.length) return nb;
   const red = p.late.length > 0, col = red ? "#B3261E" : "#B26A00", bg = red ? "#FDECEA" : "#FFF4DE";
-  return `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : p.soon.length ? "⏳ Documents bientôt périmés" : "📋 Documents obligatoires manquants"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
-    ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}${p.miss.length ? `<div class="small" style="color:${red ? col : "#B26A00"}">${red || p.soon.length ? "Manquant : " : "À faire faire avant la prochaine location : "}<b>${esc(p.miss.join(" · "))}</b></div>` : ""}</div>`;
+  return nb + `<div class="card" style="border:2px solid ${col};background:${bg};padding:12px 14px;gap:6px"><div class="top" style="gap:8px"><b style="color:${col};font-size:15px">${red ? "⚠️ Documents à renouveler" : p.soon.length ? "⏳ Documents bientôt périmés" : "📋 Documents obligatoires manquants"}${home ? " · " + esc(bienName(id)) : ""}</b><button class="mini" data-act="go" data-av="1" data-v="bld" data-sub="docs" data-bien="${esc(id)}">Voir</button></div>
+    ${red ? `<div class="small" style="color:${col}"><b>${esc(p.late.join(" · "))}</b></div><div class="small" style="color:#5C3A36">Diagnostics : à refaire avant la <b>prochaine signature de bail</b> (pas d'obligation pendant le bail en cours).</div>` : ""}${p.soon.length ? `<div class="small" style="color:#B26A00">${red ? "Bientôt : " : ""}${esc(p.soon.join(" · "))}</div>` : ""}${p.miss.length ? `<div class="small" style="color:${red ? col : "#B26A00"}">${red || p.soon.length ? "Manquant : " : "À faire faire avant la prochaine location : "}<b>${esc(p.miss.join(" · "))}</b></div>` : ""}</div>`;
 }
 const avAlertHome = () => (typeof bienIds === "function" ? bienIds() : []).map(i => avAlert(i, true)).join("");
 
@@ -7531,8 +7604,10 @@ function avResOf(k, txt){
     pre = /pr[eé]sence de rev[eê]tements? (d[eé]grad[eé]s? )?contenant du plomb|rev[eê]tements? contenant du plomb (ont|a) [eé]t[eé] (rep[eé]r|identifi|mis en [eé]vidence)|il a [eé]t[eé] rep[eé]r[eé] des rev[eê]tements? contenant du plomb/i.test(t);
   } else if (k === "amiante"){
     abs = /(il )?n.a pas [eé]t[eé] rep[eé]r[eé] de mat[eé]riaux.{0,40}(contenant|susceptibles? de contenir) de l.amiante|absence de mat[eé]riaux.{0,40}amiante|aucun mat[eé]riau.{0,60}amiante|pas de mat[eé]riaux.{0,40}(contenant|susceptibles? de contenir) de l.amiante/i.test(t);
-    pre = /il a [eé]t[eé] rep[eé]r[eé].{0,60}mat[eé]riaux.{0,40}(contenant|susceptibles? de contenir) de l.amiante|(?<!absence |pas de |sans )pr[eé]sence d.amiante(?! *:? *(non|n[eé]ant|aucun))|mat[eé]riaux.{0,40}contenant de l.amiante (ont|a) [eé]t[eé] rep[eé]r/i.test(t);
+    pre = /il a [eé]t[eé] rep[eé]r[eé].{0,60}mat[eé]riaux.{0,40}(contenant|susceptibles? de contenir) de l.amiante|mat[eé]riaux.{0,40}contenant de l.amiante (ont|a) [eé]t[eé] rep[eé]r/i.test(t);
   }
+  /* amiante : un rapport peut dire « liste A : rien » et « liste B : il a été repéré… » ; la présence l'emporte */
+  if (k === "amiante" && pre) return "presence";
   return abs && !pre ? "absence" : pre && !abs ? "presence" : "";
 }
 document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-res']"); if (!b) return; const d = docList("docs").find(x => x.id === b.dataset.id); if (!d) return;
@@ -7587,6 +7662,11 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ac
       <div class="btns"><button class="btn" style="flex:1" data-act="av-print-ok">Créer le PDF</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); return; }
   const sel = ids.filter((i, k) => $("#ap-b-" + k) && $("#ap-b-" + k).checked); if (!sel.length) return toast("Choisis au moins un bien");
   const pdf = annexPdf(sel, {loc:$("#ap-loc").checked, todo:$("#ap-todo").checked}); closeSheet(); saveFile("pieces-a-joindre.pdf", pdf, "application/pdf"); });
+
+/* « ✅ Fait » : évaluation périodique de l'amiante faite (la durée de 3 ans repart de cette date) */
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-act='av-done'],[data-act='av-done-ok']"); if (!b) return; const d = docList("docs").find(x => x.id === b.dataset.id); if (!d) return;
+  if (b.dataset.act === "av-done"){ openSheet(`<h2>Évaluation périodique faite</h2><div class="small muted">Date à laquelle le diagnostiqueur a contrôlé l'état des matériaux amiantés. Les 3 ans repartent de cette date. Pense à importer son rapport dans les documents du bien.</div><label class="f">Faite le<input id="av-ed" type="date" value="${esc(todayIso())}" max="${esc(todayIso())}"></label><div class="btns"><button class="btn" style="flex:1" data-act="av-done-ok" data-id="${esc(d.id)}">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`); return; }
+  const v = ($("#av-ed") || {}).value; if (!v) return toast("Indique la date"); d.evalDone = v; d.upd = Date.now(); persist(); closeSheet(); render(); toast("Noté : faite le " + frDate(v) + " · prochaine avant le " + frDate(avAdd(v, 36))); });
 
 /* ============ Découper un dossier de diagnostics (un gros PDF) en une ligne par diagnostic ============ */
 /* Le gros fichier reste entier (c'est lui qui est joint au bail) ; chaque ligne créée pointe vers ses pages (parent + pages). */
