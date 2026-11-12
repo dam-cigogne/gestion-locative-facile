@@ -1,4 +1,4 @@
-const C = 'glf-1636d406';
+const C = 'glf-94fb6c0e';
 const SHELL = ['./', './index.html', './manifest.json', './pdf-lib.min.js', './icon-180.png', './icon-192.png', './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
 self.addEventListener('install', e => e.waitUntil(
@@ -11,7 +11,8 @@ self.addEventListener('fetch', e => {
   if (same) {   // fichiers de l'appli : réseau d'abord (mises à jour), cache si hors ligne
     e.respondWith(fetch(e.request).then(n => { const cp = n.clone(); caches.open(C).then(c => c.put(e.request, cp)); return n; })
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
-  } else {      // bibliothèque externe : cache d'abord
+  } else if (new URL(e.request.url).hostname === 'cdnjs.cloudflare.com') {      // bibliothèque externe : cache d'abord
+    /* tout le reste (ton serveur de candidatures …workers.dev, etc.) n'est JAMAIS touché ni mis en cache : il va directement au réseau */
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(n => { const cp = n.clone(); caches.open(C).then(c => c.put(e.request, cp)); return n; })));
   }
 });
