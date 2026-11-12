@@ -1497,8 +1497,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.69";
+const APP_VERSION = "1.7.70";
 const CHANGELOG = [
+  {v:"1.7.70", date:"2026-11-12", titre:"Jour J : une seule signature pour tous les documents, accord du locataire", items:["Arrivée / Départ › Jour J : nouvelle case « ✍️ Signer tout à la fin, en une seule fois ». À chaque étape (bail, état des lieux, inventaire, reçu du dépôt), tu remplis, tu relis le PDF (« 👁 Relire le PDF »), puis « ✓ Relu : étape suivante », sans signer.","Dernière étape « Signature de tous les documents » : tu relis et coches les documents, puis le bailleur signe et paraphe une fois, le locataire aussi. La signature et le paraphe sont reportés sur chaque document, avec sa propre page de preuve et sa propre empreinte.","Les PDF signés sont rangés comme d'habitude (bail et reçu avec le bail, états des lieux et inventaires dans la fiche du locataire) ; le bouton « 📦 Dossier d'envoi » les rassemble en un seul PDF. Sans la case, rien ne change : signature document par document.","En tête de la liste à signer : « Accord du locataire pour la signature électronique » (coché d'office). Le locataire y déclare avoir pu signer sur papier, avoir relu chaque document et accepter la signature unique reportée ; il liste chaque document avec sa référence (empreinte). Signé dans la même série, rangé avec le bail et joint au dossier du bail. Chaque page de preuve indique aussi les documents signés ensemble."]},
   {v:"1.7.69", date:"2026-11-12", titre:"Mode essai avec mes données, date de départ en gros", items:["Réglages › Aide › « Essai avec mes données » : l'appli travaille sur une copie de tes vraies données. Tu peux tout essayer (jour J, signatures, saisies, suppressions, documents) ; rien n'est enregistré. « Quitter l'essai » dans le bandeau remet tout exactement comme avant ; fermer l'appli annule aussi l'essai.","Pendant l'essai (comme en démo), les fichiers et photos ajoutés ou supprimés restent en mémoire : tes vrais documents ne sont jamais effacés. À l'entrée, une fiche résume tout ce qu'il faut savoir (ce qui est protégé, ce qui part quand même : PDF enregistré, mail ou SMS envoyé, rendez-vous d'agenda, réglages d'apparence) ; le bouton ℹ️ du bandeau la rouvre.","Date de départ du locataire : un encadré « 🚪 Départ du locataire » en haut de Biens › Arrivée/Départ et dans Biens › Locataires permet de la noter. Elle s'affiche en gros (« jeudi 19 novembre 2026 · dans 7 jours ») et aussi sur l'accueil ; un tap mène au départ pas à pas. L'étape « Date de départ fixée » se coche toute seule, et la date est reprise pour la clôture, la lettre de rappel et la restitution du dépôt."]},
   {v:"1.7.68", date:"2026-11-12", titre:"Jour J à ton ordre, bail et reçu du dépôt, mes modèles", items:["Avant de démarrer le jour J, range les étapes dans l'ordre que tu veux avec les flèches ▲ ▼ (par exemple 1 inventaire, 2 état des lieux, 3 bail…), puis « Démarrer dans cet ordre ». L'appli enchaîne ensuite dans cet ordre.","Arrivée : le bail est maintenant une étape du jour J (« Bail : relire, vérifier et signer »), en premier par défaut. La fenêtre du bail rappelle les trois gestes (relecture ensemble, vérification, signature) ; la signature à l'écran coche l'étape toute seule, et « ✓ Bail signé : passer à l'étape suivante » enchaîne sur la suite (utile après une signature papier).","Après l'état des lieux ou l'inventaire, « Enregistrer et passer à l'étape suivante » ouvre aussi directement le bail si c'est la suite.","Nouveau : reçu du dépôt de garantie, signé à l'écran par toi et le locataire (montant, date, moyen de paiement, rappel des délais de restitution). Il est rangé avec le bail et coché d'office dans le dossier du bail. À l'arrivée, c'est l'étape « Dépôt de garantie » du jour J ; on le trouve aussi dans Biens › Locataires › lettres.","Mes modèles : dans un état des lieux ou un inventaire, « ☆ Enregistrer comme modèle » garde la liste (sans les états) sous le nom que tu choisis, par exemple « État des lieux vierge T2 », et pour le logement de ton choix. Tous tes modèles sont dans Biens › Documents › Mes modèles : Utiliser, PDF vierge, Renommer, Supprimer. Le modèle du logement est proposé d'office quand tu crées un nouveau document. Les anciens modèles ★ sont repris automatiquement."]},
   {v:"1.7.67", date:"2026-11-12", titre:"Jour J : les étapes s'enchaînent, dans l'ordre que tu veux", items:["Arrivée / Départ › Jour J : en bas de l'état des lieux et de l'inventaire, un gros bouton « ✓ Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire, coche l'étape et ouvre directement la suivante (par exemple l'inventaire de sortie après l'état des lieux).","Tu choisis l'ordre : avant de démarrer, « Commencer par ça » sur l'étape de ton choix (état des lieux, inventaire, signatures du bail…), puis « Faire maintenant » pour changer d'étape à tout moment.","Au départ, l'étape « Signatures » se coche toute seule quand l'état des lieux et l'inventaire de sortie sont signés. À l'arrivée, elle ouvre le bail à signer.","Correctif : le bouton d'une étape ouvre le document déjà préparé au lieu d'en créer un nouveau."]},
@@ -1727,6 +1728,7 @@ const HELP = {
     "Les fiches, pièces et documents restent sur cet appareil et ne sont pas dans la sauvegarde. Efface les dossiers des candidats non retenus."]},
   "bld-mvt":{t:"Biens › Arrivée/Départ", p:"La démarche complète, étape par étape.", l:[
     "Chaque démarche est en trois temps : Préparatif (cases à cocher), Jour J (étape par étape : un gros bouton ouvre le document ; en bas du document, « Enregistrer et passer à l'étape suivante » range le PDF dans la fiche du locataire et ouvre la suite) et Après.",
+    "Signature groupée : coche « ✍️ Signer tout à la fin, en une seule fois » dans le Jour J. Chaque document est seulement relu (PDF de relecture) ; à la dernière étape, une seule signature et un seul paraphe de chaque partie sont reportés sur tous les documents cochés.",
     "Jour J dans l'ordre que tu veux : avant de démarrer, range les étapes avec ▲ ▼, puis « Démarrer dans cet ordre » ; « Faire maintenant » permet encore de sauter à une autre étape. À l'arrivée, le bail (relire, vérifier, signer) et le reçu signé du dépôt de garantie sont des étapes du jour J ; le reçu part dans le dossier du bail.",
     "Avant le jour J : dans le Préparatif de l'arrivée, « Gagne du temps » te laisse envoyer le bail en pré-lecture au locataire et préparer l'état des lieux et l'inventaire. Au départ : lettre de rappel, état des lieux et inventaire de sortie préparés d'avance. Le jour J ils sont marqués « attend le jour J ».",
     "Quand le Jour J est terminé, « Dossier d'envoi » assemble bail, annexes, états des lieux et inventaires en un seul PDF : « Relire le PDF » pour le vérifier, puis envoi.",
@@ -4374,8 +4376,17 @@ function sheetLettre(kind){
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="let-pdf" data-v="${kind}" data-sign="1">Faire signer sur l'écran</button></div>
     ${kind === "recu" ? jjStepBox(id, "dep", "Reçu du dépôt de garantie", ["Vérifie le montant et le moyen de paiement.", "« Faire signer sur l'écran » : toi puis le locataire.", "Le reçu signé est rangé avec le bail et joint au dossier du bail."]) : ""}<div class="small muted">« Faire signer » : tu signes (et, pour la restitution du dépôt ou le reçu, le locataire aussi) avec le doigt. Le PDF signé est rangé dans le dossier du locataire (Documents du locataire) et prêt à envoyer.</div>`);
 }
+/* Reçu du dépôt : lecture de la fenêtre, et enregistrement une fois signé (quiet = signature groupée, sans fenêtre d'envoi) */
+function recuRead(){ return {bail:dxV("lt-bail"), badr:dxV("lt-badr"), loc:dxV("lt-loc"), adr:dxV("lt-adr"), ville:dxV("lt-ville"), dep:parseNum(dxV("lt-dep")) || 0, dver:dxV("lt-dver") || todayIso(), mode:dxV("lt-mode") || "virement", dbail:dxV("lt-dbail")}; }
+async function recuSignedSave(o, res, bien, quiet){
+  const titre = "Reçu du dépôt de garantie", pdf = letterPdf("recu", o, res), fid = uid(), name = "signe-recu-depot-de-garantie-" + bien + "-" + res.ts.slice(0, 10) + ".pdf";
+  await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer});
+  docList("docs").push({id:fid, bien, kind:"bail", sub:"recu", nom:titre + " (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()});
+  const rj = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === "arr" && !x.del); if (rj && rj.jjStart && !rj.done.dep){ rj.done.dep = todayIso(); delete rj.jjCur; rj.upd = Date.now(); if (!quiet) toast("Jour J : étape « Dépôt de garantie » cochée"); }
+  persist(); if (quiet) return; render(); sendMark(bien, titre, res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", titre + " signé électroniquement le " + hhmm(res.ts) + ".");
+}
 function letterPdf(kind, o, sig){
-  const d = new PdfDoc(kind === "impaye" ? "Loyer impayé" : kind === "attest" ? "Attestation de loyer" : kind === "rappel" ? "Rappel état des lieux de sortie" : kind === "recu" ? "Reçu du dépôt de garantie" : "Dépôt de garantie"), M = d.M, R = d.W - M, P = (s, g) => { d.para(s, 10.5, g || 15); d.y -= 4; };
+  const d = new PdfDoc(kind === "consent" ? "Accord pour la signature électronique" : kind === "impaye" ? "Loyer impayé" : kind === "attest" ? "Attestation de loyer" : kind === "rappel" ? "Rappel état des lieux de sortie" : kind === "recu" ? "Reçu du dépôt de garantie" : "Dépôt de garantie"), M = d.M, R = d.W - M, P = (s, g) => { d.para(s, 10.5, g || 15); d.y -= 4; };
   d.text(M, d.y, o.bail || "(bailleur)", {size:10.5, bold:true}); d.text(R, d.y, o.loc || "(locataire)", {size:10.5, bold:true, right:true}); d.y -= 14;
   d.text(M, d.y, o.badr || "", {size:10}); d.text(R, d.y, o.adr || "", {size:10, right:true}); d.y -= 30;
   d.text(R, d.y, (o.ville ? o.ville + ", le " : "Le ") + frDate(todayIso()), {size:10.5, right:true}); d.y -= 30;
@@ -4394,6 +4405,17 @@ function letterPdf(kind, o, sig){
     P("Le loyer mensuel est de " + eur(o.lhc) + " hors charges, auquel s'ajoutent " + eur(o.chg) + " de charges, soit " + eur(r2(o.lhc + o.chg)) + " charges comprises.", 17);
     P("À la date du " + frDate(todayIso()) + ", le locataire " + (o.jour === "Oui" ? "est à jour du paiement de son loyer et de ses charges." : "n'est pas à jour du paiement de son loyer et de ses charges."), 17);
     P("Attestation établie pour servir et valoir ce que de droit.", 17); d.y -= 30; d.text(R, d.y, "Signature du bailleur", {size:10.5, right:true});
+  } else if (kind === "consent"){
+    d.y -= 6; d.text(d.W / 2, d.y, "ACCORD POUR LA SIGNATURE ÉLECTRONIQUE", {size:16, bold:true, center:true, color:"#0E6B5C"}); d.y -= 30;
+    P("Entre " + (o.bail || "………") + ", bailleur, et " + (o.loc || "………") + ", locataire, pour le logement situé " + (o.adr || "………") + ".", 15);
+    P("Le locataire déclare :", 15);
+    ["avoir été informé qu'il pouvait signer ces documents sur papier s'il le préférait, et choisir librement de les signer électroniquement, à l'écran ;",
+     "avoir pu relire chacun des documents ci-dessous avant de le signer (version de relecture) ;",
+     "accepter qu'une seule signature et un seul paraphe de sa part soient reportés sur chacun de ces documents ;",
+     "recevoir une copie de chaque document signé" + (o.mail ? " (adresse e-mail : " + o.mail + ")" : "") + "."].forEach(x => P("•  " + x, 14));
+    dTable(d, [{h:"Document signé électroniquement", w:360}, {h:"Référence", w:151, right:true}], (o.docs || []).map(x => [x[0], x[1] || "à la signature"]));
+    P("Les parties conviennent que ces documents, signés électroniquement, font preuve entre elles comme des documents signés à la main (articles 1366, 1367 et 1368 du Code civil). Les références ci-dessus correspondent à l'empreinte numérique de chaque document, indiquée sur sa page de preuve.", 14);
+    if (!sig){ d.y -= 20; d.text(M, d.y, "Le locataire", {size:10.5}); d.text(R, d.y, "Le bailleur", {size:10.5, right:true}); d.y -= 50; }
   } else if (kind === "recu"){
     d.y -= 6; d.text(d.W / 2, d.y, "REÇU DU DÉPÔT DE GARANTIE", {size:18, bold:true, center:true, color:"#0E6B5C"}); d.y -= 34;
     P("Je soussigné(e) " + (o.bail || "………") + ", demeurant " + (o.badr || "………") + ", bailleur du logement situé " + (o.adr || "………") + ", reconnais avoir reçu de " + (o.loc || "………") + " la somme de " + eur(o.dep) + " (" + montantLettres(o.dep) + ") au titre du dépôt de garantie prévu par le bail" + (o.dbail ? " du " + frDate(o.dbail) : "") + ".", 17);
@@ -4420,7 +4442,7 @@ function letterPdf(kind, o, sig){
     P(o.net >= 0 ? "Le versement sera effectué par virement sur le compte que vous voudrez bien m'indiquer." : "Je vous remercie de bien vouloir régler ce solde dans les meilleurs délais.");
     P("Je vous prie d'agréer, Madame, Monsieur, mes salutations distinguées."); d.y -= 20; d.text(R, d.y, o.bail || "", {size:10.5, right:true});
   }
-  const ttl = kind === "impaye" ? "Lettre de loyer impayé" : kind === "attest" ? "Attestation de loyer" : kind === "rappel" ? "Rappel avant état des lieux de sortie" : kind === "recu" ? "Reçu du dépôt de garantie" : "Restitution du dépôt de garantie";
+  const ttl = kind === "consent" ? "Accord pour la signature électronique" : kind === "impaye" ? "Loyer impayé" : kind === "attest" ? "Attestation de loyer" : kind === "rappel" ? "Rappel avant état des lieux de sortie" : kind === "recu" ? "Reçu du dépôt de garantie" : "Restitution du dépôt de garantie";
   if (sig){ d.need(150); d.y -= 8;
     if (sig.locataire) d.text(M, d.y, "Lu et approuvé par le locataire", {size:9, color:"#5C6B66"});
     if (sig.bailleur) d.text(R, d.y, "Signature électronique du bailleur", {size:9, right:true, color:"#5C6B66"}); d.y -= 62;
@@ -4452,11 +4474,10 @@ document.addEventListener("click", ev => {
       const fn = {impaye:"loyer-impaye-", attest:"attestation-loyer-", depot:"restitution-depot-", rappel:"rappel-etat-des-lieux-sortie-", recu:"recu-depot-de-garantie-"}[v] + V.bsel + "-" + todayIso() + ".pdf";
       if (b.dataset.sign){ const bien = V.bsel, tn = soldeLoc(bien).t, titre = {impaye:"Lettre de loyer impayé", attest:"Attestation de loyer", depot:"Restitution du dépôt de garantie", rappel:"Rappel avant l'état des lieux de sortie", recu:"Reçu du dépôt de garantie"}[v];
         const parties = [{key:"bailleur", label:"Bailleur", name:o.bail || "Bailleur"}].concat(v === "depot" || v === "recu" ? [{key:"locataire", label:"Locataire", name:o.loc || "Locataire"}] : []);
-        signFlow(parties, async res => { const pdf = letterPdf(v, o, res), fid = uid(), name = "signe-" + fn;
+        signFlow(parties, async res => { if (v === "recu") return recuSignedSave(o, res, bien);
+          const pdf = letterPdf(v, o, res), fid = uid(), name = "signe-" + fn;
           await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer});
-          if (v === "recu"){ docList("docs").push({id:fid, bien, kind:"bail", sub:"recu", nom:titre + " (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()});
-            const rj = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === "arr" && !x.del); if (rj && rj.jjStart && !rj.done.dep){ rj.done.dep = todayIso(); delete rj.jjCur; rj.upd = Date.now(); toast("Jour J : étape « Dépôt de garantie » cochée"); }
-          } else docList("docs").push(Object.assign({id:fid, bien, kind:tn ? "loc" : "autre", nom:titre + " (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()}, tn ? {loc:tn.id, ptype:"Courrier signé"} : {}));
+          docList("docs").push(Object.assign({id:fid, bien, kind:tn ? "loc" : "autre", nom:titre + " (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()}, tn ? {loc:tn.id, ptype:"Courrier signé"} : {}));
           persist(); render(); sendMark(bien, titre, res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", titre + " signé électroniquement le " + hhmm(res.ts) + "."); }, "ce courrier", JSON.stringify(o)); break; }
       saveFile(fn, letterPdf(v, o), "application/pdf"); break; }
   }
@@ -4584,6 +4605,16 @@ function sgStep(){
     <div class="btns"><button class="btn" style="flex:1" data-act="sg-ok">Je signe</button><button class="btn ghost" data-act="sg-clear">Effacer</button><button class="btn ghost" data-act="sg-cancel">Annuler</button></div>`);
   setTimeout(sgSetup, 30);
 }
+/* Bail : mémorise bailleur, adresse et description du logement saisis dans le bail */
+function bailApply(o, bien){ S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.bailleur = o.bail; S.cfg.bailleurAdr = o.badr; S.cfg.ville = o.ville;
+  const bn = S.biens.find(x => x.id === bien); if (bn){ if (o.adr) bn.adresse = o.adr; bn.desc = {type:o.type, surface:o.surf, etage:o.etage, pieces:o.pieces, copro:o.copro, dpe:o.dpe, chauffage:o.chauf, eauch:o.eau, annexes:o.annex}; } persist(); }
+/* Bail signé : PDF rangé avec le bail ; quiet = pas de fenêtre d'envoi (signature groupée) */
+async function bailSignedSave(o, res, bien, quiet){
+  const pdf = bailPdf(o, res), fid = uid(), name = "Bail signé " + o.debut + ".pdf";
+  await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer}); docList("docs").push({id:fid, bien, kind:"bail", nom:"Bail signé le " + frDate(res.ts.slice(0, 10)), fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()});
+  { const rj = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === "arr" && !x.del); if (rj && rj.jjStart && !rj.done.sig){ rj.done.sig = todayIso(); delete rj.jjCur; rj.upd = Date.now(); if (!quiet) toast("Jour J : étape « Bail » cochée"); } }
+  persist(); if (quiet) return; render(); sendMark(bien, "Bail de location", res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", "Contrat de location meublée signé électroniquement le " + hhmm(res.ts) + ".");
+}
 async function sgFinish(){
   const sg = V.sg, ts = new Date().toISOString(); sg.res.ts = ts; sg.res.hash = await sha256Hex(JSON.stringify({ctx:sg.fingerprint || "", ts, sig:sg.parties.map(p => [p.key, p.name, sg.res[p.key] && sg.res[p.key].ts, sg.res[p.key] && sg.res[p.key].d])}));
   closeSheet(); const f = sg.done; V.sg = null; proofStep(sg.res, f);
@@ -4606,6 +4637,7 @@ function sigBlock(d, ville, date, sig){
 }
 function proofPage(d, sig, titre){
   d.stampSig = sig; d.newPage(); d.text(d.M, d.y, "PREUVE DE SIGNATURE ÉLECTRONIQUE", {size:15, bold:true, color:"#0E6B5C"}); d.y -= 26; d.para("Document : " + titre, 10.5, 15); d.y -= 6;
+  if (sig.groupe && sig.groupe.length > 1){ d.para("Signature groupée : une seule signature et un seul paraphe de chaque partie, reportés sur les " + sig.groupe.length + " documents suivants, signés ensemble : " + sig.groupe.join(" ; ") + ".", 9.5, 13.5); d.y -= 6; }
   dTable(d, [{h:"Rôle", w:110}, {h:"Nom", w:230}, {h:"Date et heure de signature", w:171}], [["Bailleur", sig.bailleur], ["Locataire", sig.locataire]].filter(r => r[1]).map(r => [r[0], r[1].nom || "", hhmm(r[1].ts)]));
   d.para("Empreinte numérique (SHA-256) du contenu et des signatures :", 10, 14); const hx = sig.hash || "indisponible"; d.para(hx.slice(0, 32), 10, 14); d.para(hx.slice(32), 10, 14); d.y -= 8;
   d.para("Signatures électroniques simples (articles 1366 et 1367 du Code civil ; règlement européen n° 910/2014 « eIDAS »), tracées à l'écran de l'appareil du bailleur, en présence des signataires, après leur mention « lu et approuvé ». L'identité des signataires n'est pas vérifiée par un tiers de confiance : cette preuve est moins forte qu'une signature électronique avancée ou qualifiée. Conserve ce PDF : le document et l'empreinte ci-dessus en font foi.", 9.5, 13.5);
@@ -4665,13 +4697,8 @@ document.addEventListener("click", async ev => {
         e.sig = res; e.upd = Date.now(); persist(); render(); toast("Signé le " + hhmm(res.ts)); }, what, JSON.stringify(Object.assign({}, e, {sig:null}))); break; }
     case "bail-sign": { const o = bailRead(); if (!o.loc || !o.debut) return toast("Indique au moins le locataire et la date de prise d'effet"); if (o.lhc <= 0) return toast("Indique le loyer hors charges");
       { const mx = bkind(V.bsel) === "vide" ? 1 : 2; if (o.dep > r2(o.lhc * mx) + 0.005) return toast("Le dépôt ne peut pas dépasser " + mx + " mois de loyer hors charges (" + eur(o.lhc * mx) + ")"); }
-      S.cfg = S.cfg || {bailleur:"", adr:{}}; S.cfg.bailleur = o.bail; S.cfg.bailleurAdr = o.badr; S.cfg.ville = o.ville;
-      const bn = S.biens.find(x => x.id === V.bsel); if (bn){ if (o.adr) bn.adresse = o.adr; bn.desc = {type:o.type, surface:o.surf, etage:o.etage, pieces:o.pieces, copro:o.copro, dpe:o.dpe, chauffage:o.chauf, eauch:o.eau, annexes:o.annex}; } persist();
-      const bien = V.bsel; signFlow([{key:"bailleur", label:"Bailleur", name:o.bail || "Bailleur"}, {key:"locataire", label:"Locataire", name:o.loc}], async res => {
-        const pdf = bailPdf(o, res), fid = uid(), name = "Bail signé " + o.debut + ".pdf";
-        await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer}); docList("docs").push({id:fid, bien, kind:"bail", nom:"Bail signé le " + frDate(res.ts.slice(0, 10)), fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()});
-        { const rj = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === "arr" && !x.del); if (rj && rj.jjStart && !rj.done.sig){ rj.done.sig = todayIso(); delete rj.jjCur; rj.upd = Date.now(); toast("Jour J : étape « Bail » cochée"); } }
-        persist(); render(); sendMark(bien, "Bail de location", res.ts.slice(0, 10)); await saveFile(name, pdf, "application/pdf", "Contrat de location meublée signé électroniquement le " + hhmm(res.ts) + "."); }, "ce contrat de location", JSON.stringify(o)); break; }
+      bailApply(o, V.bsel);
+      const bien = V.bsel; signFlow([{key:"bailleur", label:"Bailleur", name:o.bail || "Bailleur"}, {key:"locataire", label:"Locataire", name:o.loc}], async res => { await bailSignedSave(o, res, bien); }, "ce contrat de location", JSON.stringify(o)); break; }
     case "zip-bien": exportDossier([V.bsel], "Dossier " + cleanName(bienName(V.bsel))); break;
     case "zip-all": exportDossier(bienIds(), "Gestion Locative Facile"); break;
   }
@@ -4724,10 +4751,15 @@ const mvtOk = (bien, k) => !(k === "inv" && bkind(bien) === "vide") && !(k === "
 /* Étapes du jour J, dans l'ordre choisi par l'utilisateur (r.jjOrder) puis l'ordre par défaut */
 function mvtJJ(bien, mv, r){ r = r || docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === mv && !x.del) || {};
   const def = MV_PH[mv].jj, ord = (r.jjOrder || []).filter(k => def.includes(k)).concat(def.filter(k => !(r.jjOrder || []).includes(k)));
-  return ord.map(k => MVT[mv].etapes.find(e => e[0] === k)).filter(e => e && mvtOk(bien, e[0])); }
+  const L = ord.map(k => MVT[mv].etapes.find(e => e[0] === k)).filter(e => e && mvtOk(bien, e[0]) && !(r.grp && mv === "dep" && e[0] === "sig"));
+  return r.grp ? L.concat([GSIG]) : L; }
+/* Signature groupée : une étape finale qui signe tous les documents en une fois */
+const GSIG = ["gsig", "✍️ Signature de tous les documents, en une fois", "Bailleur puis locataire signent et paraphent une seule fois : la signature et le paraphe sont reportés sur chaque document coché (bail, état des lieux, inventaire, reçu du dépôt). Relis chaque PDF avant.", ["gsig", "Signer tout en une fois"]];
+const grpBox = (mv, r) => `<label style="display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:10px 12px;border-radius:12px;background:rgba(14,107,92,.08)"><input type="checkbox" data-jjgrp="${mv}" ${r.grp ? "checked" : ""} style="width:22px;height:22px;flex:none;margin:0"><span><b>✍️ Signer tout à la fin, en une seule fois</b> (signature électronique)<br><span class="small muted">À chaque étape : tu remplis, tu relis le PDF, puis étape suivante. À la fin, une seule signature et un seul paraphe pour tous les documents, reportés sur chacun.</span></span></label>`;
 /* Après une étape : ouvre directement la suivante si c'est un document (état des lieux, inventaire, bail), sinon retour au pas à pas */
 function jjGoNext(bien, mv, r, warn){
   const nx = mvtCur(bien, mv, r), act = nx && nx[3] && nx[3][0], m = act && /^(edl|inv)-(e|s)$/.exec(act); r.upd = Date.now();
+  if (act === "gsig"){ r.jjCur = "gsig"; persist(); closeSheet(); V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); sheetGsig(mv); return; }
   if (m || act === "bail" || act === "recu"){ r.jjCur = nx[0]; persist(); toast("Étape suivante : " + nx[1] + (warn || ""));
     if (m) mvtOpenDoc(m[1], m[2] === "e" ? "entree" : "sortie"); else { V.doc = null; V.bsub = "loc"; render(); if (act === "bail") sheetBail(); else sheetLettre("recu"); } return; }
   persist(); closeSheet(); V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); toast((nx ? "Étape suivante : " + nx[1] : "Jour J terminé") + (warn || ""));
@@ -4736,6 +4768,9 @@ function jjGoNext(bien, mv, r, warn){
 function jjStepBox(bien, k, titre, lignes){
   const r = docList("docs").find(x => x.kind === "chk" && x.bien === bien && x.mv === "arr" && !x.del); if (!r || !r.jjStart || r.done[k]) return "";
   const nx = mvtJJ(bien, "arr", r).find(x => x[0] !== k && !r.done[x[0]]);
+  if (r.grp) return `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div class="small muted">Jour J · Arrivée · signature à la fin</div><div style="font-weight:700;margin:2px 0 6px">${esc(titre)}</div>
+    <ol style="margin:0 0 8px 20px;padding:0;font-size:14px">${lignes.slice(0, -1).map(l => `<li>${l}</li>`).join("")}<li><b>Ne signe pas maintenant</b> : la signature se fera à la fin, en une fois avec tous les documents.</li></ol>
+    <div class="btns"><button class="btn" style="flex:1" data-act="jj-relu" data-k="${k}">✓ Relu : passer à l'étape suivante</button></div></div>`;
   return `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div class="small muted">Jour J · Arrivée d'un locataire</div><div style="font-weight:700;margin:2px 0 6px">${esc(titre)}</div>
     <ol style="margin:0 0 8px 20px;padding:0;font-size:14px">${lignes.map(l => `<li>${l}</li>`).join("")}</ol>
     <div class="btns"><button class="btn" style="flex:1" data-act="jj-step" data-k="${k}">✓ Fait : ${nx ? "passer à l'étape suivante" : "finir le jour J"}</button></div></div>`;
@@ -4754,6 +4789,11 @@ function jjDocCard(e, kind){
   if (!r || !r.jjStart || r.done[kind]) return "";
   const cur = mvtDoc(e.bien, kind, e.type); if (!cur || cur.id !== e.id) return "";
   const nx = mvtJJ(e.bien, mv, r).find(x => x[0] !== kind && !r.done[x[0]] && !(x[0] === "sig" && mv === "dep" && jjSigOk(e.bien, kind))), nm = kind === "edl" ? "l'état des lieux" : "l'inventaire", t = sendTenant(e.bien);
+  if (r.grp && !e.sig) return `<div class="card" style="border:2px solid var(--accent,#0E6B5C);background:rgba(14,107,92,.06)"><div class="small muted">Jour J · ${esc(MVT[mv].titre)} · signature à la fin</div>
+    <div style="font-size:16px;font-weight:700;margin:2px 0 6px">Quand ${nm} est rempli : relis le PDF</div>
+    <div class="small muted" style="margin-bottom:8px"><b>Ne signe pas maintenant</b> : tous les documents seront signés à la fin, en une fois. Relis le PDF, puis passe à ${nx ? "l'étape suivante : <b>" + esc(nx[1]) + "</b>" : "la suite"}.</div>
+    <div class="btns"><button class="btn ghost" style="flex:1" data-act="dx-rel">👁 Relire le PDF</button><button class="btn" style="flex:1" data-act="jj-done" data-k="${kind}" data-mv="${mv}">✓ Relu : étape suivante</button></div>
+    <div class="btns"><button class="btn sm ghost" data-act="jj-back">‹ Revenir au pas à pas du jour J</button></div></div>`;
   return `<div class="card" style="border:2px solid var(--accent,#0E6B5C);background:rgba(14,107,92,.06)"><div class="small muted">Jour J · ${esc(MVT[mv].titre)}</div>
     <div style="font-size:16px;font-weight:700;margin:2px 0 6px">${e.sig ? "✅ Signé : passe à la suite" : "Quand " + nm + " est rempli et signé"}</div>
     <div class="small muted" style="margin-bottom:8px">Ce bouton ${t ? "range le PDF" + (e.sig ? " signé" : "") + " dans la fiche de " + esc(t.nom) + ", " : ""}coche cette étape et ${nx ? "ouvre directement la suivante : <b>" + esc(nx[1]) + "</b>" : "te ramène au pas à pas"}.${e.sig ? "" : " <b>Pas encore signé</b> : fais-le signer d'abord (« Faire signer sur l'écran » ou « Signer sur papier » plus haut)."}</div>
@@ -4761,7 +4801,9 @@ function jjDocCard(e, kind){
     <div class="btns"><button class="btn sm ghost" data-act="jj-back">‹ Revenir au pas à pas du jour J</button></div></div>`;
 }
 function jjTop(e, kind){
-  if (!jjDocCard(e, kind)) return ""; return `<div class="info" style="margin-bottom:8px">Jour J en cours : quand c'est fini et signé, le bouton <b>« ✓ Enregistrer et passer à l'étape suivante »</b> est tout en bas.</div>`;
+  if (!jjDocCard(e, kind)) return ""; const rr = docList("docs").find(x => x.kind === "chk" && x.bien === e.bien && x.mv === (e.type === "sortie" ? "dep" : "arr") && !x.del) || {};
+  if (rr.grp && !e.sig) return `<div class="info" style="margin-bottom:8px">Jour J · <b>signature à la fin</b> : remplis, puis tout en bas « 👁 Relire le PDF » et « ✓ Relu : étape suivante ». Ne signe pas ici.</div>`;
+  return `<div class="info" style="margin-bottom:8px">Jour J en cours : quand c'est fini et signé, le bouton <b>« ✓ Enregistrer et passer à l'étape suivante »</b> est tout en bas.</div>`;
 }
 /* Départ : la case Signatures se coche seule quand l'état des lieux (et l'inventaire en meublé) de sortie sont signés */
 function jjSigOk(bien, justDone){ return ["edl", "inv"].filter(x => mvtOk(bien, x)).every(x => { const d = mvtDoc(bien, x, "sortie"); return d && d.sig; }); }
@@ -4773,7 +4815,8 @@ function viewMvt(){
     const okE = e => mvtOk(id, e[0]);
     const grp = keys => keys.map(k => M.etapes.find(e => e[0] === k)).filter(e => e && okE(e));
     const pre = grp(P.pre), jj = mvtJJ(id, mv, r.jjStart || r.jjOrder ? r : null), post = grp(P.post), vis = pre.concat(jj, post), n = vis.filter(e => r.done[e[0]]).length;
-    const chipOf = k => { if ((k === "inv" || k === "edl") && mvtHas(id, k, type)) return r.done[k] ? ' <span class="chip ok">créé</span>' : ' <span class="chip warn">préparé : attend le jour J</span>';
+    const chipOf = k => { if (r.grp && r.pendSig && r.pendSig[k] && !r.done.gsig) return ' <span class="chip warn">relu · à signer à la fin</span>';
+      if ((k === "inv" || k === "edl") && mvtHas(id, k, type)) return r.done[k] ? ' <span class="chip ok">créé</span>' : ' <span class="chip warn">préparé : attend le jour J</span>';
       if (k === "sig" && mv === "arr" && r.relu) return ' <span class="chip warn">bail envoyé en pré-lecture le ' + frDate(r.relu) + " : attend la signature</span>"; return ""; };
     const row = ([k, ti, hint, act], dim, pick) => { const ok = !!r.done[k], btn = (pick && !ok ? `<button class="mini" data-act="mv-cur" data-mv="${mv}" data-k="${k}">▶ Faire maintenant</button>` : "") + (act ? `<button class="mini" data-act="mv-go" data-v="${act[0]}">${act[1]}</button>` : "");
       return `<div style="padding:10px 0;border-top:1px solid var(--line);${dim ? "opacity:.6" : ""}"><label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" data-mv="${mv}" data-k="${k}" ${ok ? "checked" : ""} style="margin-top:3px"><span><b style="font-size:14px">${esc(ti)}</b>${chipOf(k)}${ok ? ` <span class="small muted">· ${frDate(r.done[k])}</span>` : ""}</span></label>
@@ -4788,14 +4831,14 @@ function viewMvt(){
     const cur = mvtCur(id, mv, r), idx = cnt(jj) + 1;
     const started = !!r.jjStart || cnt(jj) > 0;
     const intro = `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700;margin-bottom:6px">Prêt pour le jour J ?</div><div class="small muted">L'appli te fait enchaîner ces ${jj.length} étapes, une à la fois. Pour chacune : un gros bouton ouvre le bon document, tu le remplis (avec photos, signature à l'écran), puis en bas du document « Enregistrer et passer à l'étape suivante » ouvre directement la suivante. <b>Range les étapes dans l'ordre que tu veux</b> avec ▲ ▼, puis démarre. En cours de route, « Faire maintenant » permet encore de sauter à une autre étape.</div>
-      <div style="margin:8px 0">${jj.map((e, i) => `<div class="row" style="padding:6px 0"><div class="main"><div class="t">${i + 1}. ${esc(e[1])}${chipOf(e[0])}</div></div><button class="mini" data-act="mv-ord" data-mv="${mv}" data-k="${e[0]}" data-v="-1" ${i ? "" : "disabled style=\"opacity:.3\""} aria-label="Monter">▲</button><button class="mini" data-act="mv-ord" data-mv="${mv}" data-k="${e[0]}" data-v="1" ${i < jj.length - 1 ? "" : "disabled style=\"opacity:.3\""} aria-label="Descendre">▼</button></div>`).join("")}</div><div class="small muted" style="margin-bottom:10px">À la fin, un gros bouton « Dossier d'envoi » rassemble tout en un seul PDF (bail, annexes, états des lieux, inventaires) : tu le relis, puis tu l'envoies.</div><div class="btns"><button class="btn" style="flex:1" data-act="mv-start" data-mv="${mv}">▶ Démarrer dans cet ordre</button></div></div>`;
+      <div style="margin:8px 0">${jj.map((e, i) => `<div class="row" style="padding:6px 0"><div class="main"><div class="t">${i + 1}. ${esc(e[1])}${chipOf(e[0])}</div></div>${e[0] === "gsig" ? '<span class="small muted">toujours à la fin</span>' : `<button class="mini" data-act="mv-ord" data-mv="${mv}" data-k="${e[0]}" data-v="-1" ${i ? "" : "disabled style=\"opacity:.3\""} aria-label="Monter">▲</button><button class="mini" data-act="mv-ord" data-mv="${mv}" data-k="${e[0]}" data-v="1" ${i < jj.length - 1 ? "" : "disabled style=\"opacity:.3\""} aria-label="Descendre">▼</button>`}</div>`).join("")}</div><div class="small muted" style="margin-bottom:10px">À la fin, un gros bouton « Dossier d'envoi » rassemble tout en un seul PDF (bail, annexes, états des lieux, inventaires) : tu le relis, puis tu l'envoies.</div><div class="btns"><button class="btn" style="flex:1" data-act="mv-start" data-mv="${mv}">▶ Démarrer dans cet ordre</button></div></div>`;
     const jjHtml = !started ? intro : jj.map(e => { if (e !== cur) return row(e, !r.done[e[0]], true); const [k, ti, hint, act] = e;
       return `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div class="small muted">Étape ${idx} sur ${jj.length} · en cours</div><div style="font-size:16px;font-weight:700;margin:2px 0 4px">${esc(ti)}${chipOf(k)}</div><div class="small muted" style="margin-bottom:10px">${esc(hint)}</div>
-        <div class="btns">${act ? `<button class="btn" style="flex:1" data-act="mv-go" data-v="${act[0]}">▶ ${act[1]}</button>` : ""}<button class="btn ${act ? "ghost" : ""}" style="flex:1" data-act="mv-next" data-mv="${mv}" data-k="${k}">✓ Fait, étape suivante</button></div></div>`; }).join("");
+        <div class="btns">${act ? `<button class="btn" style="flex:1" data-act="mv-go" data-v="${act[0]}">▶ ${act[1]}</button>` : ""}${k === "gsig" ? "" : `<button class="btn ${act ? "ghost" : ""}" style="flex:1" data-act="mv-next" data-mv="${mv}" data-k="${k}">✓ Fait, étape suivante</button>`}</div></div>`; }).join("");
     const fin = cur ? "" : `<div style="margin:10px 0;padding:12px;border:2px solid var(--accent,#0E6B5C);border-radius:14px;background:rgba(14,107,92,.06)"><div style="font-size:16px;font-weight:700">✅ Jour J terminé</div><div class="small muted" style="margin:4px 0 10px">Dernière étape : le dossier d'envoi. Tu relis, tu coches les pièces à joindre (bail, ERP et diagnostics, permis, états des lieux, inventaires) et tout part dans un seul PDF.</div><div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier d'envoi</button></div></div>`;
     return `<div class="card"><div class="top"><h2>${M.titre}</h2><span class="chip ${n === vis.length ? "ok" : "warn"}">${n}/${vis.length}</span></div>
       ${head("1 · Préparatif (avant le jour J)", cnt(pre), pre.length)}${pre.map(e => row(e)).join("")}${adv}
-      ${head("2 · Jour J, pas à pas", cnt(jj), jj.length)}${jjHtml}${started ? fin : ""}
+      ${head("2 · Jour J, pas à pas", cnt(jj), jj.length)}${r.done.gsig ? "" : grpBox(mv, r)}${jjHtml}${started ? fin : ""}
       ${post.length ? head("3 · Après", cnt(post), post.length) + post.map(e => row(e)).join("") : ""}</div>`; };
   return departCard(id) + `<div class="info">${t ? "Locataire actuel : " + esc(t.nom) + (t.debut ? " · depuis le " + frDate(t.debut) : "") : "Aucun locataire en cours pour ce bien : tu es dans la phase d'arrivée."} Coche les étapes au fur et à mesure ; les boutons ouvrent directement le bon document.</div>
     ${t ? `<div class="btns"><button class="btn" style="flex:1" data-act="tcl-open" data-id="${t.id}">🚪 Clôturer le locataire (fin de bail)</button><button class="btn ghost" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>` : `<div class="btns"><button class="btn ghost" style="flex:1" data-act="dk-open" data-id="${id}">📦 Dossier du bail</button></div>`}
@@ -4831,6 +4874,7 @@ document.addEventListener("click", async ev => {
       if (v === "docs" || v === "loc"){ V.bsub = v; render(); break; }
       if (v === "bail"){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "arr" && !x.del); if (r && r.jjStart && !r.done.sig){ r.jjCur = "sig"; persist(); }
         V.bsub = "loc"; render(); sheetBail(); break; }
+      if (v === "gsig"){ sheetGsig(docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "dep" && x.grp && x.jjStart && !x.done.gsig) ? "dep" : "arr"); break; }
       if (v === "recu"){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === "arr" && !x.del); if (r && r.jjStart && !r.done.dep){ r.jjCur = "dep"; persist(); } V.bsub = "loc"; render(); sheetLettre("recu"); break; }
       if (v === "impaye" || v === "depot" || v === "rappel"){ V.bsub = "loc"; render(); sheetLettre(v); break; }
       const m = /^(edl|inv)-(e|s)$/.exec(v); if (m){ const r = docList("docs").find(x => x.kind === "chk" && x.bien === V.bsel && x.mv === (m[2] === "e" ? "arr" : "dep") && !x.del);
@@ -4838,14 +4882,26 @@ document.addEventListener("click", async ev => {
         mvtOpenDoc(m[1], m[2] === "e" ? "entree" : "sortie"); }
       break; }
     case "mv-start": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjStart = todayIso(); if (b.dataset.k) r.jjCur = b.dataset.k; else delete r.jjCur; r.upd = Date.now(); persist(); render(); break; }
-    case "mv-ord": { const r = mvtRec(V.bsel, b.dataset.mv), L = mvtJJ(V.bsel, b.dataset.mv, r).map(e => e[0]), i = L.indexOf(b.dataset.k), j = i + Number(v);
+    case "mv-ord": { const r = mvtRec(V.bsel, b.dataset.mv), L = mvtJJ(V.bsel, b.dataset.mv, r).map(e => e[0]).filter(k => k !== "gsig"), i = L.indexOf(b.dataset.k), j = i + Number(v);
       if (i < 0 || j < 0 || j >= L.length) break; [L[i], L[j]] = [L[j], L[i]]; r.jjOrder = L; r.upd = Date.now(); persist(); keepScroll(() => {}); break; }
+    case "jj-relu": { const k = b.dataset.k, bien = V.bsel, r = mvtRec(bien, "arr"); r.drafts = r.drafts || {};
+      if (k === "sig"){ const o = bailRead(); if (!o.loc || !o.debut) return toast("Indique au moins le locataire et la date de prise d'effet"); if (o.lhc <= 0) return toast("Indique le loyer hors charges");
+        const mx = bkind(bien) === "vide" ? 1 : 2; if (o.dep > r2(o.lhc * mx) + 0.005) return toast("Le dépôt ne peut pas dépasser " + mx + " mois de loyer hors charges (" + eur(o.lhc * mx) + ")");
+        bailApply(o, bien); r.drafts.bail = o; }
+      if (k === "dep"){ const o = recuRead(); if (!(o.dep > 0)) return toast("Indique le montant reçu"); r.drafts.recu = o; }
+      r.pendSig = r.pendSig || {}; r.pendSig[k] = 1; r.done[k] = todayIso(); delete r.jjCur; closeSheet(); jjGoNext(bien, "arr", r, ""); break; }
+    case "gs-rel": { const it = V.gs && V.gs.items[+b.dataset.i]; if (!it) break; toast("Création du PDF de relecture…");
+      try { if (it.k === "consent"){ const its = V.gs.items.filter(x => x.k !== "consent" && !x.signed); await relectOpen("RELECTURE-accord-signature-electronique.pdf", letterPdf("consent", consentO(V.bsel, V.gs.mv, its.map(x => [x.titre, ""])))); break; }
+        const bytes = it.e ? await pdfRelect(() => it.k === "edl" ? edlPdf(it.e) : invPdf(it.e), it.e) : it.k === "bail" ? await pdfRelect(async () => bailPdf(it.o)) : letterPdf("recu", it.o);
+        await relectOpen("RELECTURE-" + cleanName(it.titre) + ".pdf", bytes); } catch(err){ toast("PDF impossible : " + err.message); } break; }
+    case "gs-go": await gsGo(); break;
     case "jj-step": { const r = mvtRec(V.bsel, "arr"); r.done[b.dataset.k] = todayIso(); delete r.jjCur; closeSheet(); jjGoNext(V.bsel, "arr", r, ""); break; }
     case "mv-cur": { const r = mvtRec(V.bsel, b.dataset.mv); r.jjCur = b.dataset.k; r.upd = Date.now(); persist(); render(); break; }
     case "mv-next": { const r = mvtRec(V.bsel, b.dataset.mv); r.done[b.dataset.k] = todayIso(); delete r.jjCur; r.upd = Date.now(); persist(); render(); window.scrollTo(0, 0); break; }
     case "jj-back": V.doc = null; V.bsub = "mvt"; render(); window.scrollTo(0, 0); break;
     case "jj-done": { const k = b.dataset.k, mv = b.dataset.mv, bien = V.bsel, t = sendTenant(bien); let warn = "";
-      if (e && t){ toast("Enregistrement du PDF…"); try { const bytes = k === "edl" ? await edlPdf(e) : invPdf(e), titre = (k === "edl" ? "État des lieux " : "Inventaire du mobilier ") + (e.type === "sortie" ? "de sortie" : "d'entrée");
+      const r0 = mvtRec(bien, mv); if (r0.grp && e && !e.sig){ r0.pendSig = r0.pendSig || {}; r0.pendSig[k] = 1; }
+      if (e && t && (e.sig || !r0.grp)){ toast("Enregistrement du PDF…"); try { const bytes = k === "edl" ? await edlPdf(e) : invPdf(e), titre = (k === "edl" ? "État des lieux " : "Inventaire du mobilier ") + (e.type === "sortie" ? "de sortie" : "d'entrée");
           await sendArchive({t, c:{bien, titre, date:e.date}, data:bytes, name:(k === "edl" ? "etat-des-lieux-" : "inventaire-") + e.type + "-" + e.bien + "-" + e.date + ".pdf", mime:"application/pdf"}, true); } catch(err){ warn = " (attention : PDF non rangé dans la fiche : " + err.message + ")"; } }
       const r = mvtRec(bien, mv); r.done[k] = todayIso(); delete r.jjCur;
       if (mv === "dep" && !r.done.sig && jjSigOk(bien)) r.done.sig = todayIso();
@@ -4914,6 +4970,57 @@ document.addEventListener("click", ev => {
     t.depart = v; t.upd = Date.now(); const r = mvtRec(t.bien, "dep"); if (!r.done.dat){ r.done.dat = todayIso(); r.upd = Date.now(); } persist(); closeSheet(); keepScroll(() => {}); toast("Date de départ notée : " + frDateLong(v)); return; }
   if (b.dataset.act === "dep-clear"){ closeSheet(); const t = S.locataires.find(x => x.id === b.dataset.id); if (t){ delete t.depart; t.upd = Date.now(); persist(); keepScroll(() => {}); } }
   if (b.dataset.act === "go-depart"){ V.tab = "bld"; V.bsel = b.dataset.bien; V.bsub = "mvt"; V.doc = null; render(); window.scrollTo(0, 0); }
+});
+
+/* ---------- Signature groupée du jour J : une signature + un paraphe pour tous les documents ---------- */
+function gsItems(bien, mv){
+  const r = mvtRec(bien, mv), type = mv === "arr" ? "entree" : "sortie", L = [];
+  if (mv === "arr" && r.drafts && r.drafts.bail) L.push({k:"bail", titre:"Bail de location", o:r.drafts.bail});
+  for (const k of ["edl", "inv"]){ if (!mvtOk(bien, k)) continue; const e = mvtDoc(bien, k, type); if (e) L.push({k, titre:(k === "edl" ? "État des lieux " : "Inventaire du mobilier ") + (mv === "arr" ? "d'entrée" : "de sortie"), e, signed:!!e.sig}); }
+  if (mv === "arr" && r.drafts && r.drafts.recu) L.push({k:"recu", titre:"Reçu du dépôt de garantie (" + eur(r.drafts.recu.dep) + ")", o:r.drafts.recu});
+  if (L.some(x => !x.signed)) L.unshift({k:"consent", titre:"Accord du locataire pour la signature électronique"});
+  return L;
+}
+/* Accord pour la signature électronique : contenu (docs = [[titre, référence]]) */
+function consentO(bien, mv, docs){ const t = sendTenant(bien), c = bailleurInfo(), r = mvtRec(bien, mv), bo = (r.drafts && r.drafts.bail) || {};
+  return {bail:c.nom || bo.bail || "", badr:c.adr || bo.badr || "", loc:(mv === "dep" && t ? t.nom : "") || bo.loc || (t && t.nom) || "", adr:bienAdr(bien) || bo.adr || "", ville:(S.cfg && S.cfg.ville) || bo.ville || "", mail:(t && t.email) || "", docs};
+}
+function sheetGsig(mv){
+  const bien = V.bsel, items = gsItems(bien, mv), r = mvtRec(bien, mv); V.gs = {mv, items};
+  const miss = mv === "arr" ? [!(r.drafts && r.drafts.bail) ? "le bail (étape « Bail », bouton « ✓ Relu »)" : "", !(r.drafts && r.drafts.recu) ? "le reçu du dépôt (étape « Dépôt de garantie », bouton « ✓ Relu »)" : ""].filter(Boolean) : [];
+  openSheet(`<h2>✍️ Signer tous les documents en une fois</h2><div class="small muted">Relis chaque document (👁), coche ceux à signer, puis : <b>le bailleur signe et paraphe, puis le locataire</b>. Le premier, l'<b>accord du locataire pour la signature électronique</b>, n'est pas obligatoire mais renforce la preuve : il liste les documents signés avec leur référence. La signature et le paraphe sont reportés sur chaque document, avec sa propre page de preuve.</div>
+    ${items.length ? items.map((it, i) => `<label style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)"><input type="checkbox" data-gs="${i}" ${it.signed ? "disabled" : "checked"} style="width:22px;height:22px;flex:none;margin:0"><span style="flex:1"><b style="font-size:14px">${esc(it.titre)}</b>${it.signed ? '<br><span class="small muted">déjà signé</span>' : ""}</span><button type="button" class="mini" data-act="gs-rel" data-i="${i}">👁 Relire</button></label>`).join("") : '<div class="empty">Aucun document à signer : fais d\'abord les étapes (état des lieux, inventaire' + (mv === "arr" ? ", bail, reçu" : "") + ').</div>'}
+    ${miss.length ? `<div class="info">Pas encore prêt : ${miss.join(" ; ")}.</div>` : ""}
+    <div class="btns"><button class="btn" style="flex:1" data-act="gs-go">✍️ Signer les documents cochés</button><button class="btn ghost" data-act="sheetclose">Plus tard</button></div>`);
+}
+async function gsGo(){
+  const G = V.gs; if (!G) return; const bien = V.bsel, mv = G.mv, sel = [...document.querySelectorAll("[data-gs]")].filter(c => c.checked && !c.disabled).map(c => G.items[+c.dataset.gs]);
+  if (!sel.filter(x => x.k !== "consent").length) return toast("Coche au moins un document");
+  const t = sendTenant(bien), first = sel.find(x => x.e) || {}, loc = (mv === "dep" && t ? t.nom : "") || (sel.find(x => x.o && x.o.loc) || {o:{}}).o.loc || (first.e && first.e.loc) || (t && t.nom) || "Locataire";
+  const fpOf = it => JSON.stringify(it.e ? Object.assign({}, it.e, {sig:null}) : it.o);
+  signFlow([{key:"bailleur", label:"Bailleur", name:bailleurInfo().nom || "Bailleur"}, {key:"locataire", label:"Locataire", name:loc}], async res => {
+    toast("Signature reportée sur " + sel.length + " document(s)…");
+    const done = [], cons = sel.find(x => x.k === "consent");
+    for (const it of sel.filter(x => x.k !== "consent")){
+      const one = Object.assign({}, res, {hash:await sha256Hex(JSON.stringify({ctx:fpOf(it), ts:res.ts, groupe:res.hash})), groupe:sel.map(x => x.titre)});
+      if (it.e){ it.e.sig = one; it.e.upd = Date.now();
+        if (t) try { const bytes = it.k === "edl" ? await edlPdf(it.e) : invPdf(it.e); await sendArchive({t, c:{bien, titre:it.titre, date:it.e.date}, data:bytes, name:(it.k === "edl" ? "etat-des-lieux-" : "inventaire-") + it.e.type + "-" + bien + "-" + it.e.date + ".pdf", mime:"application/pdf"}, true); } catch(e){} }
+      else if (it.k === "bail") await bailSignedSave(it.o, one, bien, true);
+      else if (it.k === "recu") await recuSignedSave(it.o, one, bien, true);
+      done.push([it.titre, refFmt(one.hash)]);
+    }
+    if (cons){ const o = consentO(bien, mv, done), one = Object.assign({}, res, {hash:await sha256Hex(JSON.stringify({ctx:o, ts:res.ts, groupe:res.hash})), groupe:sel.map(x => x.titre)}), pdf = letterPdf("consent", o, one), fid = uid(), name = "Accord signature electronique signe " + res.ts.slice(0, 10) + ".pdf";
+      await flPut(fid, {name, type:"application/pdf", buf:pdf.buffer}); docList("docs").push({id:fid, bien, kind:"bail", sub:"consent", nom:"Accord pour la signature électronique (signé le " + frDate(res.ts.slice(0, 10)) + ")", fname:name, date:res.ts.slice(0, 10), type:"application/pdf", size:pdf.length, upd:Date.now()}); persist(); }
+    const r = mvtRec(bien, mv), all = G.items.every(x => x.signed || x.k === "consent" || sel.includes(x)); if (all){ r.done.gsig = todayIso(); r.pendSig = {}; } if (mv === "dep") r.done.sig = todayIso(); delete r.jjCur; r.upd = Date.now(); persist(); render();
+    openSheet(`<h2>✅ ${sel.length} document(s) signé(s) en une fois</h2><div class="small muted">Signature et paraphe reportés sur :</div><ul style="margin:6px 0 10px 18px;padding:0">${sel.map(x => `<li>${esc(x.titre)}</li>`).join("")}</ul>
+      <div class="small muted">Chaque PDF signé est rangé (bail et reçu avec le bail, états des lieux et inventaires dans le dossier du locataire${t ? " " + esc(t.nom) : ""}). Le dossier d'envoi les rassemble en un seul PDF.</div>
+      <div class="btns"><button class="btn" style="flex:1" data-act="dk-open" data-id="${bien}">📦 Dossier d'envoi</button><button class="btn ghost" data-act="sheetclose">Continuer le jour J</button></div>`);
+  }, "ces " + sel.length + " documents", JSON.stringify(sel.map(fpOf)));
+}
+document.addEventListener("change", ev => {
+  const el = ev.target; if (!el || !el.dataset || !el.dataset.jjgrp) return;
+  const r = mvtRec(V.bsel, el.dataset.jjgrp); r.grp = el.checked; if (!el.checked) delete r.jjCur; r.upd = Date.now(); persist(); keepScroll(() => {});
+  toast(el.checked ? "Signature à la fin : relis chaque document, tout sera signé en une fois à la dernière étape" : "Signature document par document");
 });
 
 /* ============ Reprendre une liste depuis un PDF ou un texte collé (inventaire, état des lieux) ============ */
@@ -5918,6 +6025,7 @@ async function dkList(tid){
 /* classement des pièces selon le moment : entrée (nouveau bail) ou sortie (fin de bail) */
 function dkInfo(f, mode){
   const sortie = /sortie/i.test(f.nom), d = f.dir.replace(/^\d+ /, ""), n = f.nom;
+  if (/^01/.test(f.dir) && /accord/i.test(n)) return {on:true, lvl:"con", tag:"Conseillé", why:"accord signé du locataire pour la signature électronique : renforce la preuve"};
   if (/^01/.test(f.dir) && /re[çc]u/i.test(n)) return {on:true, lvl:"con", tag:"Conseillé", why:mode === "sortie" ? "reçu signé du dépôt : montant à restituer" : "reçu signé du dépôt de garantie : preuve du versement"};
   if (/^01/.test(f.dir)) return {on:true, lvl:"obl", tag:"Obligatoire", why:mode === "sortie" ? "le contrat de référence pour solder le dossier" : "le contrat lui-même"};
   if (/^02/.test(f.dir) || /^03/.test(f.dir)){
