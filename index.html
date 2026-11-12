@@ -1503,7 +1503,7 @@ document.addEventListener("change", ev => {
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
 const APP_VERSION = "1.7.78";
 const CHANGELOG = [
-  {v:"1.7.78", date:"2026-11-12", titre:"Modèles vierges de mes logements", items:["Biens › Documents : nouvelle carte « Modèles vierges de mes logements », juste sous « Modèles vierges à imprimer ». Pour chaque appartement : état des lieux vierge, inventaire vierge (meublé) et bail, avec « prêt » ou « à créer ». « ☆ Créer le modèle vierge » le fait d'un coup à partir du dernier document du logement (sans les états) ; « 📄 PDF vierge » l'imprime ; « ✏️ Modifier » ouvre la liste ; pour le bail, « ➕ Créer le modèle de bail » ou « 👁 Aperçu »."]},
+  {v:"1.7.78", date:"2026-11-12", titre:"Candidatures connectées (serveur perso) et réponse type Leboncoin", items:["Location › Candidats : nouvelle réception connectée, au choix. Avec ton propre serveur Cloudflare (gratuit), le candidat remplit le formulaire et sa candidature ou son dossier arrive tout seul dans l'appli, avec ses pièces, marqué 🆕. Plus de mail à recopier.","Sécurité : tout est chiffré sur le téléphone du candidat ; seule ton appli a la clé pour lire. Le serveur ne voit rien de lisible, chaque envoi est effacé dès qu'il est récupéré, et au plus tard au bout de 30 jours.","La réception par e-mail reste la méthode par défaut et marche toujours. Réglages de la réception connectée : bouton « Découvrir » ou « Réglages » dans la carte Formulaire de candidature (guide pas à pas et code du serveur à télécharger).","Annonce : boutons « Copier le titre » et « Copier le prix », lien de ton annonce enregistré pour chaque site, et une « Réponse type aux messages » à coller dans la messagerie Leboncoin avec le lien de ton formulaire."]},
   {v:"1.7.77", date:"2026-11-12", titre:"CAF : ton lien vers l'espace bailleur, effacer la fin du bail", items:["Biens › Locataires › CAF : le bouton ouvre maintenant l'espace partenaires de la CAF (partenaires.caf.fr). Tu peux coller ton propre lien (copié depuis ton espace bailleur, par exemple la page du locataire dans ta CAF) : le bouton devient « Ouvrir mon espace CAF de … ». Le lien reste dans tes données et n'est accepté que s'il est sur caf.fr.","Fiche du locataire : « Effacer la date » (fin du bail, etc.) marche vraiment sur iPhone et iPad. Le bouton était dans le libellé du champ : le toucher rouvrait le calendrier qui remettait une date. Il est maintenant sous le champ. En effaçant la fin du bail puis « Enregistrer », le locataire redevient « en cours » (même s'il avait été clôturé par erreur)."]},
   {v:"1.7.76", date:"2026-11-12", titre:"Bail plus clair, modèles de bail dans Mes modèles, ancien bail à comparer", items:["Documents › Comparer › Original / Retranscrit › Bail : à gauche, « 📥 Choisir l'ancien bail (PDF ou photo) » ou « Mettre ici » un bail déjà rangé dans le logement. Il est seulement affiché pour comparer ; « Remplacer l'ancien bail » pour en changer.","Mes modèles (Biens › Documents) : les modèles de bail apparaissent aussi, un par logement, avec « Utiliser (nouveau bail) », « 👁 Aperçu », « ↔ Comparer à l'ancien » et ×.","Bail (PDF) : nouvelle mise en page aérée. Les parties dans deux cartes côte à côte ; le logement, la durée et l'argent dans des tableaux clairs (prise d'effet, total mensuel et dépôt surlignés) ; un petit titre devant chaque règle (congé, révision, restitution du dépôt, obligations, clause résolutoire) ; les annexes dans un tableau « Jointe : Oui / — ». Le texte juridique ne change pas."]},
   {v:"1.7.75", date:"2026-11-12", titre:"Modèle de bail par logement, e-mail de la veille en attente de réponse, candidat sans détour, corrections jour J", items:["Préparatif › « Prévenir le locataire de la signature électronique » : une fois l'e-mail ouvert dans Outlook ou Mail (ou le texte copié), l'étape n'est plus cochée d'office : un gros encadré orange « ⏳ En attente de la réponse du locataire » s'affiche, avec « 📎 Il a répondu : ajouter sa réponse », « Renvoyer l'e-mail » et « Pas de réponse : continuer sans ». Le rappel orange s'affiche aussi dans le jour J.","Dès que sa réponse est rangée (PDF, capture d'écran ou .eml), l'étape se coche toute seule et indique « ✓ Réponse rangée avec le bail ». Le bouton pour choisir le fichier est plus gros.","Jour J avec signature à la fin : après « Relu : signé à la fin », l'écran revient sur l'étape en cours (Signer tout en une fois…) au lieu de remonter tout en haut.","Signature groupée : si tu modifies le décompte du dépôt après l'avoir relu (retenue ajoutée, « Enregistrer le décompte »), la lettre relue et signée à la fin reprend bien la dernière version.","Location › Candidats : « + Candidat » ouvre directement la fiche du candidat (avant, la fenêtre du permis de louer s'ouvrait d'abord). Le permis de louer reste rappelé en orange en haut de la fiche, avec un bouton pour l'ouvrir.","Bail : « ☆ Enregistrer le modèle de bail de ce logement » garde tout sauf le locataire, la date d'effet et ses coordonnées ; le prochain bail de ce logement est prérempli pareil. Quand tu lis un ancien bail (« 📥 Lire un bail existant »), l'original est gardé.","Documents › Comparer › Original / Retranscrit : nouvel onglet « Bail » qui montre l'ancien bail importé à côté du bail refait par l'appli (ton modèle), avec « ✏️ Corriger / nouveau bail »."]},
@@ -1733,6 +1733,8 @@ const HELP = {
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
     "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
+    "Réception connectée (facultative) : avec ton propre serveur Cloudflare gratuit, les candidatures et dossiers arrivent tout seuls dans l'appli (🆕), chiffrés sur le téléphone du candidat ; le serveur ne peut pas les lire et les efface dès réception (30 jours au plus). « Découvrir » dans la carte Formulaire de candidature.",
+    "Annonce : « Réponse type aux messages » à copier dans la messagerie Leboncoin / PAP, avec le lien du formulaire ; boutons Copier le titre / le prix et lien de ton annonce par site.",
     "Permis de louer : si ton logement est dans une commune qui l'impose (Istres, centre ancien), active-le dans Réglages › Biens › Permis de louer. Un gros rappel s'affiche avant d'ajouter un candidat et avant de créer le locataire.",
     "3. Visite : note la date et l'heure. L'appli te propose aussitôt de l'envoyer vers AgenDam ou vers le calendrier du téléphone, avec le maximum d'infos (bouton « Visite vers un agenda » pour le refaire). « Écrire au candidat » propose toujours le bon courrier suivant ; après la visite il contient le 2e lien, le formulaire « dossier complet ».",
     "4. Dossier complet : le candidat y dépose chaque pièce (identité, domicile, contrat de travail, bulletins, avis d'imposition, garant…). Les fichiers portent leur vrai nom. Enregistre-les dans Fichiers, puis colle le texte « DOSSIER » et joins les fichiers : les pièces se cochent toutes seules.",
@@ -1775,7 +1777,6 @@ const HELP = {
     "Original / Retranscrit : quand la lecture est bonne, « Valider la retranscription » prépare la sortie en attente (même si le locataire ne part pas) ; « Corriger » ouvre le document, « Relire » refait la lecture.",
     "Comparer (Biens › Documents) : « Entrée / Sortie » montre les différences ligne par ligne ; « Original / Retranscrit » vérifie qu'un document importé a été bien lu ; bouton PDF pour garder le comparatif.",
     "Factures du bien : « Scanner / ajouter » (photo ou plusieurs fichiers), vignettes à cocher, puis « Envoyer » pour envoyer plusieurs factures en un seul PDF.",
-    "Modèles vierges de mes logements (Biens › Documents) : pour chaque appartement, son état des lieux, son inventaire et son bail types au même endroit ; « ☆ Créer le modèle vierge » le fait à partir du dernier document du logement.",
     "Modèles vierges à imprimer : bail, état des lieux, inventaire (meublé) et lettres types, sans aucune donnée, à remplir à la main.",
     "Mes modèles : tes propres listes d'état des lieux et d'inventaire, avec le nom de ton choix (ex. « État des lieux vierge T2 »). On les crée depuis un document (« ☆ Enregistrer comme modèle »), on les retrouve ici pour les utiliser, les imprimer vierges, les renommer ou les supprimer ; le modèle d'un logement est proposé d'office à la création.",
     "Pièces à joindre au bail : importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail.",
@@ -4113,7 +4114,6 @@ function viewDocs(){
   <div class="card"><h2>Modèles vierges à imprimer</h2><div class="small muted">Documents types sans aucune donnée, à imprimer et remplir à la main. Pour un document rempli avec un locataire, va dans l'onglet Locataires.</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="bail">${vide ? "Bail logement vide" : "Bail meublé"}</button><button class="btn sm ghost" data-act="blank" data-v="edl">État des lieux</button>${vide ? "" : '<button class="btn sm ghost" data-act="blank" data-v="inv">Inventaire du mobilier</button>'}</div>
     <div class="btns"><button class="btn sm ghost" data-act="blank" data-v="impaye">Lettre de loyer impayé</button><button class="btn sm ghost" data-act="blank" data-v="attest">Attestation de loyer</button><button class="btn sm ghost" data-act="blank" data-v="depot">Restitution du dépôt</button><button class="btn sm ghost" data-act="blank" data-v="rappel">Rappel avant état de sortie</button></div></div>
-  ${typeof vlogCard === "function" ? vlogCard(id) : ""}
   ${annexOverview()}
   <div class="card" id="pj-card"><h2>Pièces à joindre au bail</h2><div class="small muted">Importe chaque pièce une fois ; elle est cochée ici et dans l'annexe du bail. La date d'édition de chaque pièce sert à voir d'un coup d'œil si elle est à jour, bientôt périmée ou à refaire ; ⚙ règle la durée de validité.</div>
     ${annexRows(id)}</div>
@@ -5333,31 +5333,6 @@ document.addEventListener("click", async ev => {
   }
 });
 
-/* ---------- Modèles vierges par logement : état des lieux, inventaire et bail de chaque appartement, au même endroit ---------- */
-function vlogCard(cur){
-  const ids = bienIds().slice().sort((a, b) => (a === cur ? -1 : b === cur ? 1 : 0));
-  const row = (ic, lab, ok, sub, btns) => `<div class="row" style="flex-wrap:wrap;padding:8px 0"><div class="main" style="min-width:60%"><div class="t">${ic} ${lab} ${ok ? '<span class="chip ok">prêt</span>' : '<span class="chip warn">à créer</span>'}</div><div class="s">${sub}</div></div><div class="btns" style="width:100%;margin:4px 0 0">${btns}</div></div>`;
-  const kindRow = (bien, kind) => { const m = dmods(kind).find(x => x.bien === bien), last = docList(kind).filter(x => x.bien === bien && !x.del).sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0], lab = kind === "edl" ? "État des lieux vierge" : "Inventaire du mobilier vierge";
-    return row(kind === "edl" ? "🏠" : "🛋", lab, !!m, m ? esc(m.nom) + " · " + dmodSize(m) : last ? "Peut être créé d'un coup à partir du dernier " + (kind === "edl" ? "état des lieux" : "inventaire") + " (" + frDate(last.date) + "), sans les états." : "Pas encore de document pour ce logement : crée-en un (ou importe un ancien fichier), puis reviens ici.",
-      m ? `<button class="mini" data-act="dm-pdf" data-id="${m.id}">📄 PDF vierge</button><button class="mini" data-act="vl-edit" data-id="${m.id}">✏️ Modifier</button>${last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">↻ Reprendre le dernier</button>` : ""}<button class="mini" data-act="dm-ren" data-id="${m.id}">✎ Renommer</button>`
-        : last ? `<button class="mini" data-act="vl-make" data-bien="${bien}" data-k="${kind}">☆ Créer le modèle vierge</button>` : `<button class="mini" data-act="vl-new" data-bien="${bien}" data-k="${kind}">➕ Créer ${kind === "edl" ? "l'état des lieux" : "l'inventaire"}</button>`); };
-  const bailRow = bien => { const M = bailModel(bien); return row("📜", "Bail", !!M, M ? "Modèle enregistré le " + frDate(M.date) + " : le prochain bail est prérempli." : "Ouvre le bail, « 📥 Lire un bail existant » si tu en as un, relis, puis « ☆ Enregistrer le modèle ».",
-    M ? `<button class="mini" data-act="bm-pdf" data-id="${bien}">👁 Aperçu</button><button class="mini" data-act="bm-use" data-id="${bien}">✏️ Modifier</button>` : `<button class="mini" data-act="bm-use" data-id="${bien}">➕ Créer le modèle de bail</button>`); };
-  return `<div class="card"><h2>Modèles vierges de mes logements</h2><div class="small muted">Pour chaque appartement, son état des lieux, son inventaire et son bail types, tous rangés ici. Ils servent de point de départ à chaque nouveau locataire et s'impriment vierges.</div>
-    ${ids.map(bien => `<div style="margin-top:12px;padding:10px 12px;border-radius:14px;border:2px solid ${bien === cur ? "var(--accent,#0E6B5C)" : "var(--line)"}"><div style="font-weight:800;font-size:16px">${esc(bienName(bien))}${bkind(bien) === "vide" ? ' <span class="small muted">(logement vide)</span>' : ""}</div>
-      ${kindRow(bien, "edl")}${bkind(bien) === "vide" ? "" : kindRow(bien, "inv")}${bailRow(bien)}</div>`).join("")}</div>`;
-}
-document.addEventListener("click", ev => {
-  const b = ev.target.closest("[data-act^=vl-]"); if (!b) return; const a = b.dataset.act, bien = b.dataset.bien, kind = b.dataset.k;
-  if (a === "vl-make"){ const last = docList(kind).filter(x => x.bien === bien && !x.del).sort((x, y) => (y.date || "").localeCompare(x.date || ""))[0]; if (!last) return;
-    S.dmods = S.dmods || []; let m = dmods(kind).find(x => x.bien === bien); if (!m){ m = {id:uid(), kind, nom:dmodLab(kind) + " vierge " + bienName(bien), bien}; S.dmods.push(m); }
-    Object.assign(m, dmodFrom(last, kind), {src:last.id, upd:Date.now()}); persist(); keepScroll(() => {}); toast("☆ " + m.nom + " : prêt (" + dmodSize(m) + ")"); return; }
-  if (a === "vl-new"){ V.bsel = bien; V.bsub = "loc"; V.doc = null; render(); sheetNewDoc(kind, "entree"); toast("Remplis la liste (ou importe un ancien fichier), puis « ☆ Enregistrer comme modèle » en bas"); return; }
-  if (a === "vl-edit"){ const m = (S.dmods || []).find(x => x.id === b.dataset.id); if (!m) return; const src = m.src && docGet(m.kind, m.src);
-    if (src && !src.del){ V.bsel = src.bien; V.bsub = "loc"; V.doc = {kind:m.kind, id:src.id, open:{}}; render(); window.scrollTo(0, 0); toast("Modifie la liste, puis « ☆ Enregistrer comme modèle » › Mettre à jour le modèle"); }
-    else toast("Le document d'origine n'existe plus : ouvre un état des lieux ou un inventaire de ce logement, puis « ☆ Enregistrer comme modèle »"); }
-});
-
 /* ============ Mise en location : annonce par bien + candidatures (sans serveur, échanges par e-mail) ============ */
 /* Données : S.annonces = {bien: {...}} et S.cand = [{...}]. Pièces jointes : IndexedDB "f:<id>" (cet appareil seulement). */
 const CAND_ST = [["dem", "Demande reçue"], ["vis", "Visite"], ["dos", "Dossier à vérifier"], ["ret", "Retenu"], ["ref", "Refusé"]];
@@ -5413,13 +5388,19 @@ function annGen(bien){
   L.push("Pour candidater, écrivez-moi" + (a.mail ? " à " + a.mail : "") + (a.tel ? " ou appelez le " + a.tel : "") + " en indiquant : votre nom, un numéro de téléphone, votre situation professionnelle, vos revenus mensuels, le nombre d'occupants, votre date d'emménagement souhaitée et, si vous en avez un, votre garant. Les pièces justificatives vous seront demandées ensuite.");
   return L.join("\n");
 }
+function annReply(bien){
+  const a = annOf(bien), link = candLink(bien), qui = (S.cfg && S.cfg.bailleur) || "", t = a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : ""));
+  return ["Bonjour,", "", "Merci pour votre intérêt pour " + (t ? "le logement « " + t.trim() + " »" : "mon logement") + ".", "",
+    link ? "Pour proposer votre candidature, remplissez ce court formulaire (2 minutes, depuis votre téléphone) :\n" + link : "Pour proposer votre candidature, indiquez-moi : votre nom, un numéro de téléphone, votre situation professionnelle, vos revenus mensuels, le nombre d'occupants, la date d'emménagement souhaitée et, si vous en avez un, votre garant.",
+    "", "Je reviens vers vous rapidement pour organiser une visite.", "", "Cordialement," + (qui ? "\n" + qui : "")].join("\n");
+}
 function annChecks(bien){
   const a = annOf(bien), w = [];
   if (!a.loyer) w.push("Indique le loyer.");
   if (!a.surf) w.push("Indique la surface (obligatoire dans l'annonce).");
   if (!a.dpe) w.push("La classe énergie (DPE) doit figurer dans l'annonce.");
   if (a.dpe === "G") w.push("Un logement classé G ne peut plus être loué en résidence principale.");
-  if (!a.mail) w.push("Indique l'e-mail où recevoir les candidatures.");
+  if (!a.mail && !cnxOn()) w.push("Indique l'e-mail où recevoir les candidatures.");
   if (!a.loc) w.push("Indique le quartier ou la ville (évite l'adresse exacte dans l'annonce).");
   return w;
 }
@@ -5434,11 +5415,11 @@ function viewRent(){
 }
 function viewAnnonce(bien){
   const a = annOf(bien), w = annChecks(bien), txt = annText(bien), lbl = {brouillon:"Brouillon", publiee:"Publiée", louee:"Louée"}[a.statut] || "Brouillon";
-  const sites = SITES_ANN.map(([k, n, u]) => { const d = a.pub && a.pub[k]; return `<div class="row"><label style="display:flex;gap:10px;align-items:center;flex:1"><input type="checkbox" data-pub="${k}" ${d ? "checked" : ""}><span><b style="font-size:14px">${esc(n)}</b>${d ? ` <span class="small muted">· publiée le ${frDate(d)}</span>` : ""}</span></label>${u ? `<a class="mini" target="_blank" rel="noopener" href="${u}">Ouvrir</a>` : ""}</div>`; }).join("");
+  const sites = SITES_ANN.map(([k, n, u]) => { const d = a.pub && a.pub[k]; return `<div class="row"><label style="display:flex;gap:10px;align-items:center;flex:1"><input type="checkbox" data-pub="${k}" ${d ? "checked" : ""}><span><b style="font-size:14px">${esc(n)}</b>${d ? ` <span class="small muted">· publiée le ${frDate(d)}</span>` : ""}</span></label>${u ? `<a class="mini" target="_blank" rel="noopener" href="${u}">Ouvrir</a>` : ""}</div>${d ? `<div class="dxi" style="display:flex;gap:6px;margin:-2px 0 6px 30px"><input data-publink="${k}" inputmode="url" autocapitalize="off" placeholder="Lien de ton annonce (pour la retrouver)" value="${esc((a.lien || {})[k] || "")}" style="flex:1;min-width:0">${/^https?:\/\//.test((a.lien || {})[k] || "") ? `<a class="mini" target="_blank" rel="noopener" href="${esc(a.lien[k])}">Voir</a>` : ""}</div>` : ""}`; }).join("");
   return `<div class="card"><div class="top"><h2>Annonce · ${esc(bienName(bien))}</h2><span class="chip ${a.statut === "publiee" ? "ok" : a.statut === "louee" ? "" : "warn"}">${lbl}</span></div>
     ${w.length ? `<div class="info" style="background:var(--warn-soft)">${w.map(x => "• " + esc(x)).join("<br>")}</div>` : ""}
     <label class="f" style="margin-top:8px">${a.perso && a.perso.trim() ? "Ton texte (utilisé tel quel)" : "Texte prêt à publier"}<textarea id="an-txt" readonly style="min-height:240px">${esc(txt)}</textarea></label>
-    <div class="btns"><button class="btn" data-act="an-edit">Modifier l'annonce</button><button class="btn ghost" data-act="an-copy">Copier le texte</button><button class="btn ghost" data-act="an-share">Partager</button></div>
+    <div class="btns"><button class="btn" data-act="an-edit">Modifier l'annonce</button><button class="btn ghost" data-act="an-copy">Copier le texte</button><button class="btn ghost sm" data-act="an-copyx" data-v="t">Copier le titre</button><button class="btn ghost sm" data-act="an-copyx" data-v="p">Copier le prix</button><button class="btn ghost" data-act="an-share">Partager</button></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="an-pdf">Créer le PDF de l'annonce</button></div>
     <div class="small muted">Le PDF reprend le texte et tes photos : envoie-le par Mail ou Messages. Pour les sites d'annonces, ajoute aussi les photos sur le site. Vérifie les mentions obligatoires sur le site choisi et, si ta commune est en zone d'encadrement des loyers, le loyer de référence.</div></div>
     <div class="card"><div class="top"><h2>Photos de l'annonce</h2><span class="small muted">${(a.photos || []).length} / ${ANN_MAX_PH}</span></div>
@@ -5448,7 +5429,11 @@ function viewAnnonce(bien){
     <div class="small muted">La première photo sert de couverture. Les photos restent sur cet appareil ; elles sont dans la sauvegarde complète (.zip), pas dans le .json.</div></div>
     <div class="card"><h2>Où l'annonce est publiée</h2><div class="rows">${sites}</div>
     <div class="btns"><button class="btn sm ghost" data-act="an-state" data-v="${a.statut === "louee" ? "brouillon" : "louee"}">${a.statut === "louee" ? "Remettre en recherche" : "Logement loué : fermer l'annonce"}</button></div>
-    <div class="small muted">Quand tu retiens un candidat, l'annonce passe automatiquement en « Louée ». Pense à la retirer des sites.</div></div>`;
+    <div class="small muted">Quand tu retiens un candidat, l'annonce passe automatiquement en « Louée ». Pense à la retirer des sites.</div></div>
+    <div class="card"><h2>Réponse type aux messages</h2><div class="small muted">Sur Leboncoin, PAP… les intéressés t'écrivent par la messagerie du site. Copie cette réponse et colle-la : elle contient le lien de ton formulaire de candidature.</div>
+    <label class="f"><textarea id="an-rep" readonly style="min-height:190px">${esc(annReply(bien))}</textarea></label>
+    <div class="btns"><button class="btn sm" data-act="an-rep-copy">Copier la réponse</button></div>
+    <div class="small muted">Les sites d'annonces n'ouvrent pas la publication automatique aux particuliers : publie toi-même avec « Copier le titre », « Copier le texte », « Copier le prix » et tes photos, puis colle ici le lien de l'annonce.</div></div>`;
 }
 function viewCands(bien){
   const all = candList().filter(c => c.bien === bien && !c.del), flt = V.lflt || "all";
@@ -5458,7 +5443,7 @@ function viewCands(bien){
   const list = all.filter(c => flt === "all" || c.statut === flt).sort((a, b) => ord(a.statut) - ord(b.statut) || (b.dateDem || "").localeCompare(a.dateDem || ""));
   const next = all.filter(c => c.visite && c.visite >= todayIso() && c.statut !== "ref" && c.statut !== "ret").sort((a, b) => a.visite.localeCompare(b.visite));
   const row = c => { const s = candScore(c), p = candPieces(c);
-    return `<button class="rowbtn" style="width:100%;text-align:left" data-act="cd-open" data-id="${c.id}"><div class="kv"><span><b>${esc(c.nom)}</b> <span class="chip ${c.statut === "ret" ? "ok" : c.statut === "dos" ? "warn" : ""}">${candStLabel(c.statut)}</span></span><span class="small muted">${p.n}/${p.m} pièces</span></div>
+    return `<button class="rowbtn" style="width:100%;text-align:left" data-act="cd-open" data-id="${c.id}"><div class="kv"><span>${c.nouv ? '<span class="chip warn">🆕</span> ' : ""}<b>${esc(c.nom)}</b> <span class="chip ${c.statut === "ret" ? "ok" : c.statut === "dos" ? "warn" : ""}">${candStLabel(c.statut)}</span></span><span class="small muted">${p.n}/${p.m} pièces</span></div>
       <div class="small muted">${s ? `<span class="chip ${s.lvl}">${esc(s.txt)}</span> ` : ""}${c.visite ? "Visite " + fmtVisite(c.visite) : c.dateDem ? "Demande du " + frDate(c.dateDem) : ""}</div></button>`; };
   const refus = all.filter(c => c.statut === "ref").length;
   return `<div class="card"><div class="top"><h2>Candidats · ${esc(bienName(bien))}</h2><button class="btn sm" data-act="cd-new">+ Candidat</button></div>
@@ -5586,6 +5571,9 @@ document.addEventListener("click", async ev => {
       S.annonces = S.annonces || {}; S.annonces[V.lsel] = Object.assign(cur, {titre:dxV("an-titre"), type:dxV("an-type") || "Appartement", surf:dxV("an-surf"), loc:dxV("an-loc"), loyer:num("an-loyer"), charges:num("an-chg"), depot:num("an-depot"), dispo:dxV("an-dispo"), dpe:$("#an-dpe").value, ges:$("#an-ges").value, equip:$("#an-equip").value.trim(), perso:$("#an-perso").value.trim(), mail:dxV("an-mail"), tel:dxV("an-tel"), upd:Date.now()});
       S.cfg = S.cfg || {bailleur:"", adr:{}}; if (S.annonces[V.lsel].mail) S.cfg.candMail = S.annonces[V.lsel].mail;
       persist(); closeSheet(); render(); break; }
+    case "an-copyx": { const a = annOf(V.lsel), cc = (Number(a.loyer) || 0) + (Number(a.charges) || 0), t = v === "p" ? String(Math.round(cc)) : (a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : ""))).trim();
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast((v === "p" ? "Prix" : "Titre") + " copié : " + t)).catch(() => toast(t)); break; }
+    case "an-rep-copy": { const t = annReply(V.lsel); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Réponse copiée")).catch(() => { const x = $("#an-rep"); if (x){ x.select(); } toast("Sélectionnée : copie-la"); }); break; }
     case "an-copy": { const t = annText(V.lsel); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Texte copié")).catch(() => { const e = $("#an-txt"); if (e){ e.removeAttribute("readonly"); e.select(); } toast("Sélectionné : copie-le"); }); break; }
     case "an-share": { const t = annText(V.lsel); try { if (navigator.share) await navigator.share({title:"Annonce " + bienName(V.lsel), text:t}); else toast("Utilise « Copier le texte »"); } catch(e){} break; }
     case "an-pdf": { const w = annChecks(V.lsel).filter(x => !/e-mail|quartier/.test(x)); toast("Création du PDF…"); try { const bytes = await annoncePdf(V.lsel); saveFile("annonce-" + V.lsel + ".pdf", bytes, "application/pdf"); if (w.length) toast("PDF créé. À compléter : " + w[0]); } catch(err){ toast("PDF impossible : " + err.message); } break; }
@@ -5599,14 +5587,12 @@ document.addEventListener("click", async ev => {
     case "cd-paste": sheetPaste(); break;
     case "cd-paste-read": { try { const t = await navigator.clipboard.readText(); $("#cp-txt").value = t; } catch(e){ toast("Colle le texte à la main dans la zone"); } break; }
     case "cd-paste-ok": { const fl = [...($("#cp-files") ? $("#cp-files").files : [])], tf = fl.find(f => /\.txt$/i.test(f.name) || f.type === "text/plain"), others = fl.filter(f => f !== tf);
-      let txt = $("#cp-txt").value; if (!txt.trim() && tf) txt = await tf.text(); const o = parseCandText(txt); if (!o) return toast("Texte non reconnu : il doit contenir « Nom : … »");
-      const isDos = /^\s*DOSSIER\b/i.test(txt); const c = candFromParsed(o); if (isDos){ c.statut = "dos"; c.src = "dossier"; c.note = c.note.replace(/^Pièces annoncées[^\n]*\n?/m, "").trim(); }
-      const dup = candList().find(x => !x.del && x.bien === c.bien && ((c.email && x.email && x.email.toLowerCase() === c.email.toLowerCase()) || x.nom.toLowerCase() === c.nom.toLowerCase()));
-      if (dup){ const n = await candAttach(dup, others); if (isDos && (dup.statut === "dem" || dup.statut === "vis")) dup.statut = "dos"; dup.upd = Date.now(); persist(); V.lsel = dup.bien; V.lsub = "cand"; render(); toast(n ? n + " pièce(s) ajoutée(s) à la fiche de " + dup.nom : "Ce candidat est déjà dans la liste"); sheetCand(dup.id); break; }
-      candList().push(c); const n = await candAttach(c, others); persist(); V.lsel = c.bien; V.lsub = "cand"; render(); sheetCand(c.id); toast("Fiche créée" + (n ? " avec " + n + " pièce(s)" : "") + " : vérifie les informations"); break; }
+      let txt = $("#cp-txt").value; if (!txt.trim() && tf) txt = await tf.text(); const r = await candImport(txt, others); if (!r) return toast("Texte non reconnu : il doit contenir « Nom : … »");
+      persist(); V.lsel = r.c.bien; V.lsub = "cand"; render(); sheetCand(r.c.id);
+      toast(r.dup ? (r.n ? r.n + " pièce(s) ajoutée(s) à la fiche de " + r.c.nom : "Ce candidat est déjà dans la liste") : "Fiche créée" + (r.n ? " avec " + r.n + " pièce(s)" : "") + " : vérifie les informations"); break; }
     case "cd-new": sheetCand(""); break;
     case "cd-permis": sheetPermis(V.lsel, "page"); break;
-    case "cd-open": sheetCand(id); break;
+    case "cd-open": { const cc = candGet(id); if (cc && cc.nouv){ delete cc.nouv; persist(); } sheetCand(id); break; }
     case "cd-save": { const prev = id ? ((candGet(id) || {}).visite || "") : ""; const c = cdSave(id); if (!c) break; closeSheet(); render(); toast("Candidat enregistré"); if (c.visite && c.visite !== prev && c.statut !== "ref" && c.statut !== "ret") setTimeout(() => sheetVisite(c.id), 400); break; }
     case "cd-mail": { const c = cdSave(id); if (!c) break; sheetMail(id, ""); break; }
     case "cm-send": { const c = candGet(id); if (!c) break; location.href = "mailto:" + encodeURIComponent(c.email).replace(/%40/g, "@") + "?subject=" + encodeURIComponent($("#cm-sub").value) + "&body=" + encodeURIComponent($("#cm-msg").value); break; }
@@ -5640,6 +5626,7 @@ document.addEventListener("click", async ev => {
 async function cdErase(id){ const i = candList().findIndex(x => x.id === id); if (i < 0) return; const fs = candList()[i].fichiers || []; candList().splice(i, 1); for (const f of fs) await flDel(f.fid); }
 document.addEventListener("change", async ev => {
   const t = ev.target; if (!t) return;
+  if (t.dataset && t.dataset.publink){ const cur = annOf(V.lsel); cur.lien = cur.lien || {}; const v = t.value.trim(); if (v) cur.lien[t.dataset.publink] = v; else delete cur.lien[t.dataset.publink]; cur.upd = Date.now(); S.annonces = S.annonces || {}; S.annonces[V.lsel] = cur; persist(); render(); return; }
   if (t.dataset && t.dataset.pub){ const cur = annOf(V.lsel); cur.pub = cur.pub || {}; if (t.checked) cur.pub[t.dataset.pub] = todayIso(); else delete cur.pub[t.dataset.pub]; if (Object.keys(cur.pub).length && cur.statut === "brouillon") cur.statut = "publiee"; cur.upd = Date.now(); S.annonces = S.annonces || {}; S.annonces[V.lsel] = cur; persist(); render(); return; }
   if (t.id === "cm-tpl"){ const c = candGet(V.mailFor || ""); if (c){ const m = candMail(t.value, c); $("#cm-sub").value = m.s; $("#cm-msg").value = m.b; } return; }
   if (t.id === "an-doc" && t.files && t.files[0]){
@@ -5709,11 +5696,12 @@ async function annoncePdf(bien){
 
 /* ---------- Formulaire de candidature en ligne (page statique) et réception dans l'appli ---------- */
 function candLink(bien, page, nom){
-  const a = annOf(bien); if (!a.mail) return "";
+  const a = annOf(bien), cx = cnxOn() ? cnxCfg() : null; if (!a.mail && !cx) return "";
   const u = new URL(page || "candidature.html", location.href); u.search = ""; u.hash = "";
-  u.searchParams.set("m", a.mail); u.searchParams.set("r", bien); u.searchParams.set("t", a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : "")));
+  if (a.mail) u.searchParams.set("m", a.mail); u.searchParams.set("r", bien); u.searchParams.set("t", a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : "")));
   if (nom) u.searchParams.set("n", nom);
-  const cc = loyerCC(bien); if (cc && !page) u.searchParams.set("l", String(Math.round(cc))); return u.toString();
+  const cc = loyerCC(bien); if (cc && !page) u.searchParams.set("l", String(Math.round(cc)));
+  if (cx){ u.searchParams.set("s", cx.srv); u.searchParams.set("b", cx.box); u.searchParams.set("k", cx.pub); } return u.toString();
 }
 const dosLink = c => candLink(c.bien, "dossier.html", c.nom);
 /* Pièces reçues par le formulaire « dossier » : le nom du fichier commence par le code de la case (id-1.jpg, gbul-2.pdf…) */
@@ -5742,6 +5730,14 @@ function candFromParsed(o){
   const pj = o.pj && !/^aucune/i.test(o.pj) ? "Pièces annoncées : " + o.pj : "";
   return {id:uid(), bien:ref, nom:o.nom, tel:o.tel || "", email:o.email || "", statut:"dem", dateDem:todayIso(), contrat:ct, rev:num(o.rev), occ:(o.occ || "").replace(/\D/g, ""), entree:ent, garant, grev:num(o.grev), visite:"", note:[(o.message || "").trim(), pj, ct === "Autre" && o.contrat && o.contrat !== "Autre" ? "Situation indiquée : " + o.contrat : ""].filter(Boolean).join("\n"), pieces:{}, fichiers:[], src:"formulaire", upd:Date.now()};
 }
+/* Crée (ou complète) une fiche candidat à partir du texte d'un formulaire et de ses pièces. Utilisé par « Coller » et par la réception connectée. */
+async function candImport(txt, files, opt){
+  opt = opt || {}; let o = parseCandText(txt); if (!o && opt.src && String(txt || "").trim()) o = {nom:"Candidat (en ligne)", message:String(txt).trim()}; if (!o) return null;
+  const isDos = /^\s*DOSSIER\b/i.test(txt), c = candFromParsed(o); if (isDos){ c.statut = "dos"; c.src = "dossier"; c.note = c.note.replace(/^Pièces annoncées[^\n]*\n?/m, "").trim(); } else if (opt.src) c.src = opt.src;
+  const dup = candList().find(x => !x.del && x.bien === c.bien && ((c.email && x.email && x.email.toLowerCase() === c.email.toLowerCase()) || x.nom.toLowerCase() === c.nom.toLowerCase()));
+  if (dup){ const n = await candAttach(dup, files || []); if (isDos && (dup.statut === "dem" || dup.statut === "vis")) dup.statut = "dos"; dup.upd = Date.now(); return {c:dup, n, dup:true, isDos}; }
+  candList().push(c); const n = await candAttach(c, files || []); return {c, n, dup:false, isDos};
+}
 function sheetPaste(){
   openSheet(`<h2>Coller une candidature reçue</h2><div class="info">Les formulaires (candidature ou dossier) envoient un e-mail à ton adresse. Pour une candidature : copie le texte (de « CANDIDATURE » au message) et colle-le ici. Pour un dossier : enregistre les pièces jointes dans Fichiers, puis choisis-les toutes ci-dessous avec dossier.txt.</div>
     <label class="f">Texte reçu<textarea id="cp-txt" style="min-height:220px" placeholder="CANDIDATURE – …&#10;Nom : …"></textarea></label>
@@ -5754,9 +5750,10 @@ function sheetPaste(){
 function candCard(bien){
   const link = candLink(bien);
   return `<div class="card"><h2>Formulaire de candidature</h2>
-    <div class="small muted">Quand quelqu'un te contacte, envoie-lui ce lien : il remplit ses informations et son e-mail t'arrive tout préparé. Tu colles ensuite le texte reçu ici et la fiche se remplit toute seule.</div>
+    <div class="small muted">${cnxOn() ? "Quand quelqu'un te contacte, envoie-lui ce lien : il remplit ses informations et sa candidature arrive toute seule ici, avec ses pièces." : "Quand quelqu'un te contacte, envoie-lui ce lien : il remplit ses informations et son e-mail t'arrive tout préparé. Tu colles ensuite le texte reçu ici et la fiche se remplit toute seule."}</div>
+    ${cnxBlock(bien)}
     ${link ? `<label class="f">Lien à envoyer<input id="cd-link" readonly value="${esc(link)}"></label>
-    <div class="btns"><button class="btn sm" data-act="cd-link-copy">Copier le lien</button><button class="btn sm ghost" data-act="cd-link-share">Partager le lien</button></div>` : '<div class="info" style="background:var(--warn-soft)">Indique d\'abord ton e-mail dans « Annonce › Modifier » : le formulaire envoie les candidatures à cette adresse.</div>'}
+    <div class="btns"><button class="btn sm" data-act="cd-link-copy">Copier le lien</button><button class="btn sm ghost" data-act="cd-link-share">Partager le lien</button></div>` : '<div class="info" style="background:var(--warn-soft)">Indique d\'abord ton e-mail dans « Annonce › Modifier » (ou active la réception connectée) : le formulaire envoie les candidatures à cette adresse.</div>'}
     <div class="small muted">Après la visite, le courrier « Demande du dossier » contient un 2e formulaire (une case par pièce : identité, domicile, contrat, bulletins, avis d'imposition, garant).</div>
     <div class="btns"><button class="btn sm ghost" data-act="cd-paste">Coller une candidature ou un dossier reçu</button></div></div>`;
 }
@@ -5969,6 +5966,102 @@ async function docTextOf(f){
   }
   throw new Error("texte introuvable dans ce fichier");
 }
+
+const CNX_WORKER = "/* Gestion Locative Facile : boîte aux lettres des candidatures (Cloudflare Worker + KV lié sous le nom CAND).\n   Le serveur ne voit que des données chiffrées dans le navigateur du candidat : seule l'appli du propriétaire peut les lire.\n   Chaque dépôt est effacé dès que l'appli l'a récupéré, et au plus tard au bout de 30 jours. */\nconst MAX = 20 * 1024 * 1024, MAXN = 60, TTL = 30 * 86400;\nconst H = {\"Access-Control-Allow-Origin\": \"*\", \"Access-Control-Allow-Methods\": \"GET,POST,DELETE,OPTIONS\", \"Access-Control-Allow-Headers\": \"Content-Type,X-Tok\", \"Access-Control-Max-Age\": \"86400\"};\nconst J = (o, s) => new Response(JSON.stringify(o), {status: s || 200, headers: Object.assign({\"Content-Type\": \"application/json\"}, H)});\nconst b64u = u8 => { let s = \"\"; for (const c of u8) s += String.fromCharCode(c); return btoa(s).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\"); };\nasync function boxOf(tok){\n  if (!/^[A-Za-z0-9_-]{43}$/.test(tok || \"\")) return null;\n  return b64u(new Uint8Array(await crypto.subtle.digest(\"SHA-256\", new TextEncoder().encode(tok)))).slice(0, 22);\n}\nexport default {\n  async fetch(req, env){\n    if (req.method === \"OPTIONS\") return new Response(null, {headers: H});\n    const p = new URL(req.url).pathname.split(\"/\").filter(Boolean);\n    if (!env.CAND) return J({err: \"Stockage KV « CAND » non relié au Worker\"}, 500);\n    if (p[0] === \"ping\") return J({ok: true, v: 1});\n    if (p[0] === \"d\" && req.method === \"POST\"){\n      const box = p[1]; if (!/^[A-Za-z0-9_-]{22}$/.test(box || \"\")) return J({err: \"boîte invalide\"}, 400);\n      if ((+req.headers.get(\"Content-Length\") || 0) > MAX) return J({err: \"envoi trop gros\"}, 413);\n      const buf = await req.arrayBuffer(); if (buf.byteLength < 90 || buf.byteLength > MAX) return J({err: \"taille refusée\"}, 413);\n      const L = await env.CAND.list({prefix: \"b:\" + box + \":\"}); if (L.keys.length >= MAXN) return J({err: \"boîte pleine\"}, 429);\n      const id = Date.now().toString(36) + \"-\" + b64u(crypto.getRandomValues(new Uint8Array(6)));\n      await env.CAND.put(\"b:\" + box + \":\" + id, buf, {expirationTtl: TTL, metadata: {t: Date.now(), n: buf.byteLength}});\n      return J({ok: true, id});\n    }\n    const box = await boxOf(req.headers.get(\"X-Tok\")); if (!box) return J({err: \"clé absente\"}, 401);\n    if (p[0] === \"l\" && req.method === \"GET\"){\n      const L = await env.CAND.list({prefix: \"b:\" + box + \":\"});\n      return J({items: L.keys.map(k => ({id: k.name.split(\":\")[2], t: (k.metadata || {}).t || 0, n: (k.metadata || {}).n || 0}))});\n    }\n    if (p[0] === \"g\" && /^[a-z0-9]+-[A-Za-z0-9_-]{8}$/.test(p[1] || \"\")){\n      const k = \"b:\" + box + \":\" + p[1];\n      if (req.method === \"GET\"){ const v = await env.CAND.get(k, \"arrayBuffer\"); return v ? new Response(v, {headers: Object.assign({\"Content-Type\": \"application/octet-stream\"}, H)}) : J({err: \"absent\"}, 404); }\n      if (req.method === \"DELETE\"){ await env.CAND.delete(k); return J({ok: true}); }\n    }\n    return J({err: \"adresse inconnue\"}, 404);\n  }\n};\n";
+/* ============ Candidatures connectées : serveur Cloudflare personnel + chiffrement de bout en bout ============
+   S.cfg.cnx = {on, srv, tok, box, pub, priv (JWK), done:[ids importés], last}. Le formulaire chiffre (ECDH P-256 + AES-GCM) avec la clé publique ;
+   seule cette appli (clé privée) peut lire. Chaque dépôt est effacé du serveur après import, et le serveur l'efface lui-même au bout de 30 jours. */
+const cnxCfg = () => (S && S.cfg && S.cfg.cnx) || null;
+const cnxOn = () => { const c = cnxCfg(); return !!(c && c.on && c.srv && c.box && c.pub && c.priv && c.tok); };
+const b64uE = u8 => { let s = ""; for (const c of u8) s += String.fromCharCode(c); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const cnxSrvOk = u => /^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(u) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(u);
+async function cnxPing(srv){ try { const r = await fetch(srv + "/ping", {cache:"no-store"}); const j = await r.json(); return !!(r.ok && j.ok); } catch(e){ return false; } }
+async function cnxSetup(srv){
+  const P = {name:"ECDH", namedCurve:"P-256"}, kp = await crypto.subtle.generateKey(P, true, ["deriveKey"]);
+  const pub = b64uE(new Uint8Array(await crypto.subtle.exportKey("raw", kp.publicKey))), priv = await crypto.subtle.exportKey("jwk", kp.privateKey);
+  const tok = b64uE(crypto.getRandomValues(new Uint8Array(32))), box = b64uE(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(tok)))).slice(0, 22);
+  S.cfg = S.cfg || {}; S.cfg.cnx = {on:true, srv, tok, box, pub, priv, done:[], last:0}; persist();
+}
+async function cnxOpen(priv, u){
+  if (u[0] !== 1 || u.length < 100) throw new Error("format");
+  const P = {name:"ECDH", namedCurve:"P-256"}, epk = await crypto.subtle.importKey("raw", u.slice(1, 66), P, false, []);
+  const key = await crypto.subtle.deriveKey({name:"ECDH", public:epk}, priv, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const pl = new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv:u.slice(66, 78)}, key, u.slice(78)));
+  const hl = new DataView(pl.buffer).getUint32(0), h = JSON.parse(new TextDecoder().decode(pl.slice(4, 4 + hl))); let o = 4 + hl;
+  const files = (h.files || []).slice(0, 40).map(f => { const n = Math.max(0, +f.n || 0), b = pl.slice(o, o + n); o += n; return new File([b], String(f.name || "piece").slice(0, 120), {type:String(f.type || "").slice(0, 60)}); });
+  return {text:String(h.text || "").slice(0, 20000), kind:h.kind, files};
+}
+let CNX_BUSY = false;
+async function cnxPull(silent){
+  if (!cnxOn() || CNX_BUSY || DEMO) return 0;
+  CNX_BUSY = true; const c = cnxCfg(), H = {"X-Tok":c.tok}; let n = 0, bad = 0;
+  try {
+    const r = await fetch(c.srv + "/l", {headers:H, cache:"no-store"}); if (!r.ok) throw new Error("réponse " + r.status);
+    const L = ((await r.json()).items || []).sort((a, b) => (a.t || 0) - (b.t || 0));
+    const priv = L.length ? await crypto.subtle.importKey("jwk", c.priv, {name:"ECDH", namedCurve:"P-256"}, false, ["deriveKey"]) : null;
+    for (const it of L){
+      if (!(c.done || []).includes(it.id)){
+        try { const g = await fetch(c.srv + "/g/" + it.id, {headers:H, cache:"no-store"}); if (!g.ok) continue;
+          const d = await cnxOpen(priv, new Uint8Array(await g.arrayBuffer())), res = await candImport(d.text, d.files, {src:"en ligne"});
+          if (!res) { bad++; continue; } res.c.nouv = 1; res.c.upd = Date.now(); n++;
+          c.done = (c.done || []).concat(it.id).slice(-200); persist();
+        } catch(e){ bad++; continue; } }
+      try { await fetch(c.srv + "/g/" + it.id, {method:"DELETE", headers:H}); } catch(e){}
+    }
+    c.last = Date.now(); persist(); if (n || !silent) render();
+    if (n) toast("📥 " + n + (n > 1 ? " candidatures reçues" : " candidature reçue") + " en ligne");
+    else if (!silent) toast(bad ? bad + " envoi(s) illisible(s), laissé(s) sur le serveur" : "Aucune nouvelle candidature");
+  } catch(e){ if (!silent) toast("Serveur injoignable : " + (e.message || e)); }
+  finally { CNX_BUSY = false; }
+  return n;
+}
+function cnxBlock(bien){
+  if (!cnxOn()) return `<div class="small muted" style="margin-top:4px">🔒 Nouveau : recevoir les candidatures <b>directement dans l'appli</b>, chiffrées, grâce à ton propre serveur (gratuit). <button class="mini" data-act="cnx-cfg">Découvrir</button></div>`;
+  const c = cnxCfg(), nv = candList().filter(x => x.bien === bien && x.nouv && !x.del).length;
+  return `<div class="info" style="margin-top:6px">🔒 <b>Réception connectée active</b> : les candidatures et dossiers arrivent tout seuls ici, chiffrés de bout en bout.${nv ? ` <b>${nv} nouveau${nv > 1 ? "x" : ""}</b>.` : ""}<br><span class="small muted">Dernier relevé : ${c.last ? new Date(c.last).toLocaleString("fr-FR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) : "jamais"}</span>
+    <div class="btns" style="margin-top:6px"><button class="btn sm" data-act="cnx-pull">📥 Relever maintenant</button><button class="btn sm ghost" data-act="cnx-cfg">Réglages</button></div></div>`;
+}
+function sheetCnx(){
+  const c = cnxCfg() || {}, on = cnxOn();
+  openSheet(`<h2>Candidatures connectées</h2>
+    <div class="info">Le candidat remplit le formulaire. Sa candidature et ses pièces sont <b>chiffrées sur son téléphone</b>, déposées sur <b>ton</b> serveur Cloudflare, puis récupérées par l'appli et <b>effacées du serveur</b>. Le serveur ne peut pas les lire ; ce qui n'est pas récupéré s'efface au bout de 30 jours. Sans serveur, la réception par e-mail continue de marcher.</div>
+    <label class="f">Adresse de ton serveur<input id="cx-srv" inputmode="url" autocapitalize="off" placeholder="https://glf-cand.mon-compte.workers.dev" value="${esc(c.srv || "")}"></label>
+    <div class="btns"><button class="btn sm ghost" data-act="cnx-test">Tester la connexion</button><button class="btn sm" style="flex:1" data-act="cnx-save">${on ? "Enregistrer" : "Activer la réception connectée"}</button></div>
+    ${on ? `<div class="btns"><button class="btn sm ghost" data-act="cnx-off">Revenir à l'e-mail seul</button><button class="btn sm danger" data-act="cnx-rekey">Changer de clé</button></div>
+    <div class="small muted">« Changer de clé » rend les liens déjà envoyés inutilisables (à faire si un lien a circulé là où il ne fallait pas). Relève d'abord les candidatures en attente.</div>` : ""}
+    <div class="small muted"><b>Important</b> : la clé de lecture est sur cet appareil, dans tes données (et dans ta sauvegarde .json). Si tu effaces l'appli sans sauvegarde, les candidatures en attente sur le serveur deviennent illisibles.</div>
+    <details class="card" style="padding:10px;background:var(--bg)"><summary style="font-weight:700;cursor:pointer">Créer mon serveur (gratuit, environ 10 minutes)</summary>
+      <ol class="small" style="margin:6px 0;padding-left:18px;line-height:1.5">
+        <li>Sur dash.cloudflare.com (compte gratuit) : <b>Workers et Pages › Créer › Worker</b>, nomme-le <b>glf-cand</b>, puis Déployer.</li>
+        <li>Menu <b>Stockage › KV</b> : crée un espace nommé <b>glf-cand</b>.</li>
+        <li>Dans le Worker : <b>Paramètres › Liaisons › Ajouter › Espace de noms KV</b>, nom de la variable <b>CAND</b>, espace <b>glf-cand</b>.</li>
+        <li>Bouton <b>Modifier le code</b> : remplace tout par le code téléchargé ci-dessous, puis Déployer.</li>
+        <li>Copie l'adresse du Worker (…workers.dev) dans le champ au-dessus, puis « Tester ».</li></ol>
+      <button class="btn sm ghost" data-act="cnx-code">Télécharger le code du serveur</button></details>
+    <div class="btns"><button class="btn ghost" data-act="sheetclose">Fermer</button></div>`);
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-act^='cnx-']"); if (!b) return; const a = b.dataset.act;
+  if (a === "cnx-cfg") return sheetCnx();
+  if (a === "cnx-pull") return cnxPull(false);
+  if (a === "cnx-code") return saveFile("glf-cand.js", CNX_WORKER, "text/javascript");
+  if (a === "cnx-test" || a === "cnx-save"){
+    const srv = ($("#cx-srv").value || "").trim().replace(/\/+$/, "");
+    if (!cnxSrvOk(srv)) return toast("Adresse invalide : elle doit commencer par https://");
+    if (!(window.crypto && crypto.subtle)) return toast("Ce navigateur ne permet pas le chiffrement");
+    toast("Test du serveur…"); const ok = await cnxPing(srv);
+    if (!ok) return toast("Le serveur ne répond pas correctement : vérifie l'adresse et la liaison KV « CAND »");
+    if (a === "cnx-test") return toast("✅ Serveur joignable");
+    if (DEMO) return toast("Mode démo : rien n'est enregistré");
+    const c = cnxCfg(); if (c && c.priv && c.srv === srv){ c.on = true; persist(); } else await cnxSetup(srv);
+    closeSheet(); render(); toast("🔒 Réception connectée activée : envoie le lien du formulaire aux candidats"); return;
+  }
+  if (a === "cnx-off"){ const c = cnxCfg(); if (c){ c.on = false; persist(); } closeSheet(); render(); toast("Réception par e-mail seulement"); return; }
+  if (a === "cnx-rekey"){ const c = cnxCfg(); if (!c) return; await cnxPull(true); await cnxSetup(c.srv); closeSheet(); render(); toast("Nouvelle clé : renvoie le nouveau lien aux candidats"); return; }
+});
+/* relevé automatique : à l'ouverture, puis au retour sur l'appli (au plus toutes les 2 minutes) */
+setTimeout(() => cnxPull(true), 2500);
+document.addEventListener("visibilitychange", () => { const c = cnxCfg(); if (document.visibilityState === "visible" && c && Date.now() - (c.last || 0) > 120000) cnxPull(true); });
 
 /* ============ Envoyer au locataire : le PDF part par partage, e-mail ou SMS, avec les coordonnées déjà connues ============ */
 let SEND = null, PEND = null, PV = false;

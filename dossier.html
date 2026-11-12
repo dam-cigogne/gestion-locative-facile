@@ -68,15 +68,47 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
     <div class="muted" id="how"></div>
   </form>
   <div class="card" id="prev" hidden><h2>Ton dossier est prêt</h2><pre id="pre"></pre><div class="muted">Envoie-le à <b id="dest"></b>. Le bouton « Partager » joint toutes tes pièces : choisis Mail et vérifie le destinataire.</div><button type="button" id="sh">Partager avec mes pièces</button><a id="ml" class="btn" href="#">Ouvrir mon e-mail (sans pièces)</a><button type="button" class="ghost" id="cp">Copier le texte</button></div>
+  <div class="card" id="done" hidden><h2>✅ Dossier envoyé</h2><div>Ton dossier a été transmis directement au propriétaire, chiffré : lui seul peut le lire. Il reviendra vers toi par téléphone ou par e-mail.</div><div class="muted">Tu peux fermer cette page.</div></div>
 </main>
+<script>/* Envoi chiffré vers le serveur du propriétaire (lien avec s = serveur, b = boîte, k = clé publique). Rien n'est lisible sur le serveur. */
+window.GLFC = (function(){
+  const q = new URLSearchParams(location.search), srv = (q.get("s") || "").replace(/\/+$/, ""), box = q.get("b") || "", pk = q.get("k") || "";
+  const okSrv = /^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(srv) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(srv);
+  const ok = okSrv && /^[A-Za-z0-9_-]{22}$/.test(box) && /^[A-Za-z0-9_-]{87}$/.test(pk) && !!(window.crypto && crypto.subtle && window.fetch);
+  const unb = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+  function shrink(f){ return new Promise(res => {
+    if (!/^image\/(jpeg|png|webp)/.test(f.type || "") || f.size < 1.2e6) return res(f);
+    const u = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { try { const k = Math.min(1, 2000 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      c.toBlob(b => res(b && b.size < f.size ? new File([b], f.name.replace(/\.[A-Za-z0-9]{1,5}$/, "") + ".jpg", {type:"image/jpeg"}) : f), "image/jpeg", 0.82); } catch(e){ res(f); } };
+    im.onerror = () => { URL.revokeObjectURL(u); res(f); }; im.src = u; }); }
+  async function send(kind, text, files){
+    files = await Promise.all((files || []).map(shrink));
+    const bufs = await Promise.all(files.map(f => f.arrayBuffer())), tot = bufs.reduce((a, b) => a + b.byteLength, 0);
+    if (tot > 19e6) throw new Error("Tes pièces sont trop lourdes (" + Math.round(tot / 1e6) + " Mo pour 19 Mo maximum) : retire des photos ou joins des PDF plus légers.");
+    const head = new TextEncoder().encode(JSON.stringify({v:1, kind, text, t:Date.now(), files:files.map((f, i) => ({name:f.name, type:f.type || "", n:bufs[i].byteLength}))}));
+    const plain = new Uint8Array(4 + head.length + tot); new DataView(plain.buffer).setUint32(0, head.length); plain.set(head, 4);
+    let o = 4 + head.length; for (const b of bufs){ plain.set(new Uint8Array(b), o); o += b.byteLength; }
+    const P = {name:"ECDH", namedCurve:"P-256"}, pub = await crypto.subtle.importKey("raw", unb(pk), P, false, []), eph = await crypto.subtle.generateKey(P, true, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({name:"ECDH", public:pub}, eph.privateKey, {name:"AES-GCM", length:256}, false, ["encrypt"]);
+    const iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, plain)), epk = new Uint8Array(await crypto.subtle.exportKey("raw", eph.publicKey));
+    const body = new Uint8Array(78 + ct.length); body[0] = 1; body.set(epk, 1); body.set(iv, 66); body.set(ct, 78);
+    let r; try { r = await fetch(srv + "/d/" + box, {method:"POST", body, headers:{"Content-Type":"application/octet-stream"}}); } catch(e){ throw new Error("Pas de connexion avec le serveur du propriétaire. Vérifie ta connexion Internet et réessaie."); }
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error("Envoi refusé par le serveur (" + (j.err || r.status) + ")."); return true;
+  }
+  return {ok, send};
+})();
+</script>
 <script>
 (function(){
   "use strict";
   const q = new URLSearchParams(location.search), $ = id => document.getElementById(id);
   const to = (q.get("m") || "").trim(), ref = (q.get("r") || "").slice(0, 60), titre = (q.get("t") || "Logement à louer").slice(0, 140), nomQ = (q.get("n") || "").slice(0, 80);
-  const mailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to);
+  const mailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to), cnx = !!(window.GLFC && GLFC.ok); let viaMail = !cnx;
   $("titre").textContent = titre; document.title = "Dossier · " + titre; if (nomQ) $("nom").value = nomQ;
-  if (!mailOk) $("top").textContent = "Le lien est incomplet : l'adresse du propriétaire manque. Demande-lui de t'envoyer un nouveau lien.";
+  if (cnx){ const it = document.querySelector(".info"); if (it) it.textContent = "Ajoute tes pièces case par case : ton dossier est chiffré sur ton téléphone puis envoyé directement au propriétaire. Lui seul peut le lire ; il est effacé du serveur dès qu'il l'a reçu (au plus tard sous 30 jours)."; $("go").textContent = "Envoyer mon dossier"; }
+  if (!mailOk && !cnx) $("top").textContent = "Le lien est incomplet : l'adresse du propriétaire manque. Demande-lui de t'envoyer un nouveau lien.";
   const NOMS = {id:"Pièce identité", dom:"Justificatif domicile", act:"Contrat de travail", bul:"Bulletin de salaire", imp:"Avis imposition", res:"Autres ressources", gid:"Garant - Pièce identité", gdom:"Garant - Justificatif domicile", gact:"Garant - Contrat de travail", gbul:"Garant - Bulletin de salaire", gimp:"Garant - Avis imposition"};
   const clean = s => String(s || "").replace(/\s*\n+\s*/g, " ").trim();
   const ext = n => { const m = /\.[A-Za-z0-9]{1,5}$/.exec(n || ""); return m ? m[0].toLowerCase() : ".jpg"; };
@@ -95,7 +127,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
     if (!clean($("nom").value)) return "Indique ton nom et prénom.";
     if (!files.length) return "Ajoute au moins un document.";
     if (!$("ok").checked) return "Coche la case d'accord pour envoyer ton dossier.";
-    if (!mailOk) return "Le lien est incomplet : l'adresse du propriétaire manque.";
+    if (viaMail && !mailOk) return "Le lien est incomplet : l'adresse du propriétaire manque.";
     return "";
   }
   window.__build = () => build(collect());
@@ -110,6 +142,9 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
     try {
       const files = collect(), e = check(files); $("err").textContent = e; if (e) return;
       const text = build(files), subject = "Dossier – " + titre; window.__last = text; window.__files = files;
+      if (!viaMail){ $("go").disabled = true; $("go").textContent = "Envoi en cours…";
+        try { await GLFC.send("dos", text, files); $("f").hidden = true; $("done").hidden = false; try { $("done").scrollIntoView({behavior:"smooth", block:"start"}); } catch(_){} return; }
+        catch(err){ $("go").disabled = false; viaMail = mailOk; $("go").textContent = viaMail ? "Préparer mon e-mail" : "Réessayer l'envoi"; $("err").textContent = ((err && err.message) || err) + (mailOk ? " Tu peux aussi l'envoyer par e-mail : appuie de nouveau sur le bouton." : ""); return; } }
       $("pre").textContent = text; $("dest").textContent = to; $("prev").hidden = false; $("ml").href = mailto(text, subject); $("sh").hidden = !navigator.share;
       $("how").textContent = "Dossier prêt : " + files.length + " pièce(s).";
       try { $("prev").scrollIntoView({behavior:"smooth", block:"start"}); } catch(_){}
