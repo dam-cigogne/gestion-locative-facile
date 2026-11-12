@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Créer mon serveur de candidatures · Gestion Locative Facile</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#F3F1EC;--card:#fff;--tx:#1B2430;--mu:#5B6670;--ac:#0E6B5C;--acs:#E3F1EE;--line:#DAD6CC;--red:#D7263D;--ok:#1E8E3E;--warn:#C77D00}
+@media(prefers-color-scheme:dark){:root{--bg:#101615;--card:#18201F;--tx:#E8EEEC;--mu:#9AA7A4;--ac:#3CC2A6;--acs:#173430;--line:#2C3735}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 14px calc(40px + env(safe-area-inset-bottom))}
+main{max-width:760px;margin:0 auto}
+h1{font-size:24px;margin:18px 0 4px}h2{font-size:21px;margin:0 0 6px}
+.mu{color:var(--mu);font-size:15px}
+.bar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin:10px 0 4px}.bar i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}.dots button{border:0;border-radius:20px;padding:5px 10px;font:600 14px inherit;font-family:inherit;background:var(--card);color:var(--mu);cursor:pointer}
+.dots button.on{background:var(--ac);color:#fff}.dots button.done{background:var(--acs);color:var(--ac)}
+.card{background:var(--card);border-radius:16px;padding:16px;margin:0 0 14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sub{display:flex;gap:10px;align-items:flex-start;margin:16px 0 8px}.sub b.n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+.type{display:inline-block;font:700 17px ui-monospace,Menlo,Consolas,monospace;background:#FFF3C4;color:#1B2430;border:2px dashed #C9A400;border-radius:8px;padding:1px 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:13px 18px;font:700 17px inherit;font-family:inherit;background:var(--ac);color:#fff;cursor:pointer;min-height:48px;text-decoration:none}
+.btn.gh{background:var(--card);color:var(--ac);border:2px solid var(--ac)}.btn:disabled{opacity:.4}
+.nav{display:flex;gap:10px;margin:18px 0}.nav .btn{flex:1}
+.tip{background:var(--acs);border-radius:12px;padding:10px 12px;font-size:15px;margin:10px 0}
+.warn{background:rgba(242,184,75,.18);border-left:4px solid var(--warn);border-radius:10px;padding:10px 12px;font-size:15px;margin:10px 0}
+details{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:12px}summary{font-weight:700;cursor:pointer}details li{margin:6px 0;font-size:15px}
+input.f{width:100%;font:17px inherit;font-family:inherit;padding:12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--tx);margin:6px 0}
+#res{margin-top:10px;border-radius:12px;padding:12px;font-size:16px;display:none}#res.ok{display:block;background:rgba(30,142,62,.12);border:2px solid var(--ok)}#res.ko{display:block;background:rgba(215,38,61,.08);border:2px solid var(--red)}
+/* ---- dessins des écrans Cloudflare (simplifiés) ---- */
+.mk{border:1px solid #C9CDD2;border-radius:10px;overflow:hidden;background:#fff;color:#1F2933;font:13px/1.35 -apple-system,"Segoe UI",Roboto,sans-serif;margin:8px 0 4px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.mk .ub{background:#E9ECEF;padding:6px 8px;display:flex;align-items:center;gap:6px}.mk .ub i{width:9px;height:9px;border-radius:50%;background:#C3C8CE;display:inline-block}
+.mk .ub span{flex:1;background:#fff;border-radius:6px;padding:3px 8px;color:#55606B;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk .in{display:flex;min-height:150px}.mk .sd{width:34%;max-width:190px;background:#F6F7F8;border-right:1px solid #E1E4E8;padding:8px 6px}
+.mk .sd div{padding:5px 6px;border-radius:6px;color:#3D4852;font-size:12px;overflow-wrap:anywhere}.mk .sd div.hi{overflow:visible}.mk .sd div.ch{padding-left:16px;font-size:12px}.mk .sd div.cur{background:#E4E7EB;font-weight:600}
+.mk .mn{flex:1;padding:10px;min-width:0}.mk .t{font-weight:700;font-size:15px;margin-bottom:8px}
+.mk .b{display:inline-block;background:#2B6CB0;color:#fff;border-radius:6px;padding:5px 10px;font-weight:600;margin:3px 4px 3px 0}.mk .b.g{background:#fff;color:#2B6CB0;border:1px solid #9FB3C8}
+.mk .fl{margin:6px 0}.mk .fl small{display:block;color:#55606B}.mk .fl div{border:1px solid #C9CDD2;border-radius:6px;padding:5px 8px;background:#fff;min-height:26px}
+.mk .tb{display:flex;flex-wrap:wrap;gap:2px 4px;border-bottom:1px solid #E1E4E8;margin-bottom:8px;padding-top:4px}.mk .tb span{padding:5px 8px;color:#55606B;white-space:nowrap}.mk .tb span.cur{border-bottom:2px solid #2B6CB0;color:#1F2933;font-weight:600}
+.mk .cd{border:1px solid #E1E4E8;border-radius:8px;padding:8px;margin:5px 0}.mk .code{background:#1E2430;color:#A9E1C2;font:11px/1.5 ui-monospace,Menlo,monospace;padding:8px;border-radius:6px;min-height:70px}
+.mk .row{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.hi{outline:3px solid var(--red)!important;outline-offset:2px;position:relative;border-radius:6px;animation:pu 1.4s infinite}
+.hi::after{content:attr(data-n);position:absolute;top:-13px;right:-12px;background:var(--red);color:#fff;font:700 12px/22px sans-serif;min-width:22px;height:22px;border-radius:11px;text-align:center;padding:0 4px;z-index:2}
+@keyframes pu{50%{outline-color:rgba(215,38,61,.35)}}
+.cap{font-size:13px;color:var(--mu);margin-bottom:6px}
+</style></head>
+<body><main>
+<h1>🔒 Créer mon serveur de candidatures</h1>
+<div class="mu">Guide pas à pas · Gestion Locative Facile 1.7.87</div>
+<div class="bar"><i id="bar"></i></div>
+<div class="dots" id="dots"></div>
+<div id="step"></div>
+</main>
+<script>
+const WORKER = "/* Gestion Locative Facile : boîte aux lettres des candidatures (Cloudflare Worker + KV lié sous le nom CAND).\n   Le serveur ne voit que des données chiffrées dans le navigateur du candidat : seule l'appli du propriétaire peut les lire.\n   Chaque dépôt est effacé dès que l'appli l'a récupéré, et au plus tard au bout de 30 jours.\n   Version 2 : notification sur le téléphone à chaque dépôt (Web Push chiffré, RFC 8291 + VAPID), message générique sans aucune donnée du candidat. */\nconst MAX = 20 * 1024 * 1024, MAXN = 60, TTL = 30 * 86400;\nconst H = {\"Access-Control-Allow-Origin\": \"*\", \"Access-Control-Allow-Methods\": \"GET,POST,DELETE,OPTIONS\", \"Access-Control-Allow-Headers\": \"Content-Type,X-Tok\", \"Access-Control-Max-Age\": \"86400\"};\nconst J = (o, s) => new Response(JSON.stringify(o), {status: s || 200, headers: Object.assign({\"Content-Type\": \"application/json\"}, H)});\nconst ub64 = s => { s = String(s || \"\").replace(/-/g, \"+\").replace(/_/g, \"/\"); while (s.length % 4) s += \"=\"; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };\nconst cat = (...a) => { const o = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let i = 0; for (const x of a){ o.set(x, i); i += x.length; } return o; };\nconst te = s => new TextEncoder().encode(s);\nasync function hkdf(salt, ikm, info, n){ const k = await crypto.subtle.importKey(\"raw\", ikm, \"HKDF\", false, [\"deriveBits\"]); return new Uint8Array(await crypto.subtle.deriveBits({name: \"HKDF\", hash: \"SHA-256\", salt, info}, k, n * 8)); }\nasync function pushSend(n, msg){   // n = {sub:{endpoint, keys:{p256dh, auth}}, vpub, vpriv}\n  const P = {name: \"ECDH\", namedCurve: \"P-256\"}, ua = ub64(n.sub.keys.p256dh), au = ub64(n.sub.keys.auth);\n  const kp = await crypto.subtle.generateKey(P, true, [\"deriveBits\"]), as = new Uint8Array(await crypto.subtle.exportKey(\"raw\", kp.publicKey));\n  const sh = new Uint8Array(await crypto.subtle.deriveBits({name: \"ECDH\", public: await crypto.subtle.importKey(\"raw\", ua, P, false, [])}, kp.privateKey, 256));\n  const ikm = await hkdf(au, sh, cat(te(\"WebPush: info\\0\"), ua, as), 32), salt = crypto.getRandomValues(new Uint8Array(16));\n  const cek = await hkdf(salt, ikm, te(\"Content-Encoding: aes128gcm\\0\"), 16), nonce = await hkdf(salt, ikm, te(\"Content-Encoding: nonce\\0\"), 12);\n  const ct = new Uint8Array(await crypto.subtle.encrypt({name: \"AES-GCM\", iv: nonce}, await crypto.subtle.importKey(\"raw\", cek, \"AES-GCM\", false, [\"encrypt\"]), cat(te(JSON.stringify(msg)), new Uint8Array([2]))));\n  const rs = new Uint8Array(4); new DataView(rs.buffer).setUint32(0, 4096);\n  const body = cat(salt, rs, new Uint8Array([65]), as, ct), u = new URL(n.sub.endpoint);\n  const hd = b64u(te(JSON.stringify({typ: \"JWT\", alg: \"ES256\"}))), cl = b64u(te(JSON.stringify({aud: u.origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: \"https://dam-cigogne.github.io/gestion-locative-facile/\"})));\n  const sk = await crypto.subtle.importKey(\"jwk\", n.vpriv, {name: \"ECDSA\", namedCurve: \"P-256\"}, false, [\"sign\"]);\n  const sig = new Uint8Array(await crypto.subtle.sign({name: \"ECDSA\", hash: \"SHA-256\"}, sk, te(hd + \".\" + cl)));\n  return fetch(n.sub.endpoint, {method: \"POST\", body, headers: {\"Authorization\": \"vapid t=\" + hd + \".\" + cl + \".\" + b64u(sig) + \", k=\" + n.vpub, \"TTL\": \"86400\", \"Urgency\": \"high\", \"Content-Encoding\": \"aes128gcm\", \"Content-Type\": \"application/octet-stream\"}});\n}\nasync function notify(env, box, force){\n  const n = await env.CAND.get(\"n:\" + box, \"json\"); if (!n || !n.sub) return {ok: false, err: \"aucun appareil abonné\"};\n  if (!force && n.last && Date.now() - n.last < 30000) return {ok: true, skip: true};\n  const r = await pushSend(n, {title: \"Gestion Locative Facile\", body: force ? \"🔔 Test : les notifications fonctionnent.\" : \"📬 Nouveau candidat ou nouveau dossier pour ta location. Ouvre l'appli pour le lire.\"});\n  if (r.status === 404 || r.status === 410){ await env.CAND.delete(\"n:\" + box); return {ok: false, err: \"abonnement expiré\", st: r.status}; }\n  n.last = Date.now(); await env.CAND.put(\"n:\" + box, JSON.stringify(n));\n  return {ok: r.status < 300, st: r.status};\n}\nconst b64u = u8 => { let s = \"\"; for (const c of u8) s += String.fromCharCode(c); return btoa(s).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\"); };\nasync function boxOf(tok){\n  if (!/^[A-Za-z0-9_-]{43}$/.test(tok || \"\")) return null;\n  return b64u(new Uint8Array(await crypto.subtle.digest(\"SHA-256\", new TextEncoder().encode(tok)))).slice(0, 22);\n}\nexport default {\n  async fetch(req, env, ctx){\n    if (req.method === \"OPTIONS\") return new Response(null, {headers: H});\n    const p = new URL(req.url).pathname.split(\"/\").filter(Boolean);\n    if (!env.CAND) return J({err: \"Stockage KV « CAND » non relié au Worker\"}, 500);\n    if (p[0] === \"ping\") return J({ok: true, v: 2});\n    if (p[0] === \"d\" && req.method === \"POST\"){\n      const box = p[1]; if (!/^[A-Za-z0-9_-]{22}$/.test(box || \"\")) return J({err: \"boîte invalide\"}, 400);\n      if ((+req.headers.get(\"Content-Length\") || 0) > MAX) return J({err: \"envoi trop gros\"}, 413);\n      const buf = await req.arrayBuffer(); if (buf.byteLength < 90 || buf.byteLength > MAX) return J({err: \"taille refusée\"}, 413);\n      const L = await env.CAND.list({prefix: \"b:\" + box + \":\"}); if (L.keys.length >= MAXN) return J({err: \"boîte pleine\"}, 429);\n      const id = Date.now().toString(36) + \"-\" + b64u(crypto.getRandomValues(new Uint8Array(6)));\n      await env.CAND.put(\"b:\" + box + \":\" + id, buf, {expirationTtl: TTL, metadata: {t: Date.now(), n: buf.byteLength}});\n      const w = notify(env, box).catch(() => null); if (ctx && ctx.waitUntil) ctx.waitUntil(w); else await w;\n      return J({ok: true, id});\n    }\n    const box = await boxOf(req.headers.get(\"X-Tok\")); if (!box) return J({err: \"clé absente\"}, 401);\n    if (p[0] === \"n\"){   // abonnement aux notifications de cet appareil\n      if (req.method === \"POST\" && p[1] === \"test\") return J(await notify(env, box, true));\n      if (req.method === \"POST\"){ const o = await req.json().catch(() => null);\n        if (!o || !o.sub || !/^https:\\/\\//.test(o.sub.endpoint || \"\") || !o.sub.keys || !o.sub.keys.p256dh || !o.sub.keys.auth || !o.vpub || !o.vpriv) return J({err: \"abonnement invalide\"}, 400);\n        await env.CAND.put(\"n:\" + box, JSON.stringify({sub: {endpoint: o.sub.endpoint, keys: {p256dh: o.sub.keys.p256dh, auth: o.sub.keys.auth}}, vpub: o.vpub, vpriv: o.vpriv, last: 0})); return J({ok: true}); }\n      if (req.method === \"DELETE\"){ await env.CAND.delete(\"n:\" + box); return J({ok: true}); }\n      if (req.method === \"GET\"){ const n = await env.CAND.get(\"n:\" + box, \"json\"); return J({on: !!(n && n.sub)}); }\n    }\n    if (p[0] === \"l\" && req.method === \"GET\"){\n      const L = await env.CAND.list({prefix: \"b:\" + box + \":\"});\n      return J({items: L.keys.map(k => ({id: k.name.split(\":\")[2], t: (k.metadata || {}).t || 0, n: (k.metadata || {}).n || 0}))});\n    }\n    if (p[0] === \"g\" && /^[a-z0-9]+-[A-Za-z0-9_-]{8}$/.test(p[1] || \"\")){\n      const k = \"b:\" + box + \":\" + p[1];\n      if (req.method === \"GET\"){ const v = await env.CAND.get(k, \"arrayBuffer\"); return v ? new Response(v, {headers: Object.assign({\"Content-Type\": \"application/octet-stream\"}, H)}) : J({err: \"absent\"}, 404); }\n      if (req.method === \"DELETE\"){ await env.CAND.delete(k); return J({ok: true}); }\n    }\n    return J({err: \"adresse inconnue\"}, 404);\n  }\n};\n";
+const N = 8;
+let st = 0; try { st = Math.min(N - 1, +localStorage.getItem("glf-guide-step") || 0); } catch(e){}
+let done = {}; try { done = JSON.parse(localStorage.getItem("glf-guide-done") || "{}"); } catch(e){}
+const T = s => `<span class="type">${s}</span>`;
+/* petit outil de dessin : un faux navigateur avec menu à gauche */
+const mk = (url, side, body) => `<div class="mk"><div class="ub"><i></i><i></i><i></i><span>${url}</span></div><div class="in">${side ? `<div class="sd">${side}</div>` : ""}<div class="mn">${body}</div></div></div>`;
+const H = (n, html, tag) => `<${tag || "span"} class="hi" data-n="${n}">${html}</${tag || "span"}>`;
+const SIDE = (open, cur, n) => {
+  const g = (lab, kids, k) => `<div>${lab}</div>` + (open === k ? kids.map(x => x === cur ? `<div class="ch cur hi" data-n="${n}">${x}</div>` : `<div class="ch">${x}</div>`).join("") : "");
+  return `<div>🏠 Accueil du compte</div><div>Domaines</div>` + g("▸ Calculer (Workers)", ["Workers et Pages", "Observabilité"], "w") + g("▸ Stockage et bases de données", ["Workers KV", "D1", "R2"], "kv") + `<div>Gérer le compte</div>`;
+};
+const STEPS = [
+  { t:"Avant de commencer", h:() => `
+    <p>Ce serveur permet aux candidats d'envoyer leur candidature et leurs pièces <b>directement dans ton appli</b>, chiffrées : personne d'autre ne peut les lire, même pas Cloudflare.</p>
+    <div class="tip">⏱ Environ <b>15 minutes</b>, à faire <b>une seule fois</b>.<br>💶 <b>Gratuit</b> : aucune carte bancaire n'est demandée.<br>💻 Fais-le de préférence <b>sur un ordinateur</b> : les écrans de Cloudflare sont faits pour ça.</div>
+    <p><b>Comment faire :</b> ouvre ce guide sur ton ordinateur, et Cloudflare dans un autre onglet à côté. Suis les étapes une par une. Les cadres rouges numérotés sur les dessins montrent <b>où cliquer, dans l'ordre</b>.</p>
+    <div class="warn">Les dessins sont <b>simplifiés</b> : la vraie page de Cloudflare a plus de choses autour, et ses couleurs ou le nom de ses menus peuvent changer un peu. Cherche le <b>mot en gras</b>, il reste presque toujours le même. Si Cloudflare s'affiche en anglais, le mot anglais est donné entre parenthèses.</div>
+    <p>Pour ouvrir ce guide sur l'ordinateur :</p>
+    <div class="nav" style="margin:6px 0"><button class="btn gh" data-a="link">📋 Copier le lien du guide</button><button class="btn gh" data-a="share">📤 Me l'envoyer</button></div>` },
+  { t:"Créer ton compte Cloudflare", h:() => `
+    <div class="sub"><b class="n">1</b><div>Va sur ${T("dash.cloudflare.com/sign-up")} et remplis ton <b>e-mail</b> et un <b>mot de passe</b>, puis <b>S'inscrire</b> (<i>Sign up</i>).</div></div>
+    ${mk("dash.cloudflare.com/sign-up", "", `<div class="t">Créer un compte</div><div class="fl">${H(1, `<small>E-mail</small><div>ton.adresse@exemple.fr</div>`, "div")}</div><div class="fl">${H(2, `<small>Mot de passe</small><div>••••••••••</div>`, "div")}</div>${H(3, `<span class="b">S'inscrire</span>`)}`)}
+    <div class="sub"><b class="n">2</b><div>Ouvre ta boîte mail : Cloudflare t'envoie un e-mail. Clique sur le lien <b>Vérifier mon e-mail</b> (<i>Verify email</i>).</div></div>
+    <div class="sub"><b class="n">3</b><div>Si Cloudflare te propose d'<b>ajouter un domaine</b> ou un <b>abonnement</b> : ignore, va simplement sur l'<b>Accueil du compte</b>. Tu n'as besoin ni de domaine ni d'abonnement payant.</div></div>`,
+    f:["Je ne reçois pas l'e-mail : regarde dans les spams, ou redemande l'envoi depuis la page Cloudflare.", "Cloudflare demande une carte bancaire : tu es sur une offre payante. Reviens en arrière et choisis l'offre gratuite (Free)."] },
+  { t:"Créer le stockage (KV)", h:() => `
+    <p class="mu">C'est la « boîte aux lettres » où les candidatures attendent (chiffrées) que ton appli vienne les chercher.</p>
+    <div class="sub"><b class="n">1</b><div>Menu de gauche : <b>Stockage et bases de données</b> (<i>Storage &amp; Databases</i>) › <b>Workers KV</b>.</div></div>
+    ${mk("dash.cloudflare.com › Workers KV", SIDE("kv", "Workers KV", 1), `<div class="row"><div class="t">Workers KV</div>${H(2, `<span class="b">+ Créer</span>`)}</div><div class="cd" style="color:#8A939C">Aucun espace de noms pour l'instant</div>`)}
+    <div class="sub"><b class="n">2</b><div>Bouton <b>Créer</b> (<i>Create</i> ou <i>Create instance</i>).</div></div>
+    <div class="sub"><b class="n">3</b><div>Nom : tape exactement ${T("glf-cand")} puis <b>Créer</b> (<i>Create</i>).</div></div>
+    ${mk("dash.cloudflare.com › Workers KV › Créer", "", `<div class="t">Créer un espace de noms</div><div class="fl">${H(3, `<small>Nom de l'espace de noms</small><div>glf-cand</div>`, "div")}</div>${H(4, `<span class="b">Créer</span>`)}`)}
+    <div class="tip">✅ C'est bon quand <b>glf-cand</b> apparaît dans la liste de Workers KV.</div>`,
+    f:["Je ne trouve pas « Stockage et bases de données » : cherche « KV » dans la barre de recherche en haut du tableau de bord.", "Le nom existe déjà : tu l'as déjà créé, c'est très bien, passe à l'étape suivante."] },
+  { t:"Créer le serveur (Worker)", h:() => `
+    <div class="sub"><b class="n">1</b><div>Menu de gauche : <b>Calculer</b> (<i>Compute</i>) › <b>Workers et Pages</b> (<i>Workers &amp; Pages</i>), puis bouton <b>Créer</b> (<i>Create</i>).</div></div>
+    ${mk("dash.cloudflare.com › Workers et Pages", SIDE("w", "Workers et Pages", 1), `<div class="row"><div class="t">Workers et Pages</div>${H(2, `<span class="b">Créer</span>`)}</div><div class="cd" style="color:#8A939C">Aucune application</div>`)}
+    <div class="sub"><b class="n">2</b><div>Choisis <b>Commencer avec Hello World</b> (<i>Start with Hello World!</i>). Ne choisis pas « importer un dépôt » ni un modèle.</div></div>
+    ${mk("dash.cloudflare.com › Créer une application", "", `<div class="t">Créer une application</div><div class="cd">Importer un dépôt Git</div><div class="cd">Choisir un modèle</div>${H(3, `<div class="cd" style="margin:0">👋 Commencer avec Hello World</div>`, "div")}`)}
+    <div class="sub"><b class="n">3</b><div>Nom du Worker : efface ce qui est proposé et tape ${T("glf-cand")}, puis <b>Déployer</b> (<i>Deploy</i>).</div></div>
+    ${mk("dash.cloudflare.com › Nouveau Worker", "", `<div class="fl">${H(4, `<small>Nom du Worker</small><div>glf-cand</div>`, "div")}</div><div class="fl"><small>Adresse</small><div style="color:#55606B">glf-cand.<b>ton-sous-domaine</b>.workers.dev</div></div>${H(5, `<span class="b">Déployer</span>`)}`)}
+    <div class="warn"><b>La première fois</b>, Cloudflare te demande de choisir ton <b>sous-domaine</b> (par exemple ton prénom ou ton nom de famille, sans espace ni accent). Ton adresse de serveur sera alors :<br>${T("https://glf-cand.TON-SOUS-DOMAINE.workers.dev")}<br>Note-la, elle sert à l'étape 6.</div>`,
+    f:["Il refuse le nom glf-cand : il existe déjà dans ton compte. Ouvre celui qui existe (dans Workers et Pages) et passe à l'étape suivante.", "J'ai cliqué sur un modèle au lieu de Hello World : pas grave, le code sera remplacé à l'étape 5. Garde juste le nom glf-cand."] },
+  { t:"Relier le stockage au serveur", h:() => `
+    <p class="mu">Le serveur doit savoir où ranger les candidatures : on le relie à la boîte glf-cand créée à l'étape 2.</p>
+    <div class="sub"><b class="n">1</b><div>Ouvre ton Worker <b>glf-cand</b> (Workers et Pages › glf-cand), puis l'onglet <b>Liaisons</b> (<i>Bindings</i>). S'il n'y a pas cet onglet, va dans <b>Paramètres</b> (<i>Settings</i>) › section <b>Liaisons</b>.</div></div>
+    ${mk("dash.cloudflare.com › glf-cand", "", `<div class="t">glf-cand</div><div class="tb"><span>Vue d'ensemble</span><span>Métriques</span><span>Déploiements</span>${H(1, `<span class="cur">Liaisons</span>`)}<span>Paramètres</span></div>${H(2, `<span class="b">+ Ajouter une liaison</span>`)}`)}
+    <div class="sub"><b class="n">2</b><div><b>+ Ajouter une liaison</b> (<i>Add binding</i>), puis choisis <b>Espace de noms KV</b> (<i>KV namespace</i>) › <b>Ajouter</b>.</div></div>
+    ${mk("dash.cloudflare.com › Ajouter une liaison", "", `<div class="t">Ajouter une liaison</div><div class="cd">Base de données D1</div>${H(3, `<div class="cd" style="margin:0">🗄 Espace de noms KV</div>`, "div")}<div class="cd">Compartiment R2</div>${H(4, `<span class="b">Ajouter</span>`)}`)}
+    <div class="sub"><b class="n">3</b><div>Nom de la variable : ${T("CAND")} (<b>en majuscules</b>, exactement). Espace de noms KV : choisis <b>glf-cand</b> dans la liste. Puis <b>Ajouter une liaison</b> (<i>Add binding</i>).</div></div>
+    ${mk("dash.cloudflare.com › Liaison KV", "", `<div class="fl">${H(5, `<small>Nom de la variable</small><div>CAND</div>`, "div")}</div><div class="fl">${H(6, `<small>Espace de noms KV</small><div>glf-cand ▾</div>`, "div")}</div>${H(7, `<span class="b">Ajouter une liaison</span>`)}`)}
+    <div class="tip">✅ C'est bon quand la liste des liaisons affiche : <b>CAND</b> → <b>glf-cand</b>.</div>`,
+    f:["J'ai tapé « cand » en minuscules : supprime la liaison et refais-la avec CAND en majuscules.", "glf-cand n'apparaît pas dans la liste : l'étape 2 n'est pas finie. Crée l'espace de noms KV, puis reviens ici."] },
+  { t:"Mettre le code du serveur", h:() => `
+    <div class="sub"><b class="n">1</b><div>Copie le code (bouton ci-dessous). Tu n'as rien à lire ni à modifier dedans.</div></div>
+    <div class="nav" style="margin:6px 0"><button class="btn" data-a="copy">📋 Copier le code du serveur</button><button class="btn gh" data-a="dl">Télécharger (.js)</button></div>
+    <div class="sub"><b class="n">2</b><div>Dans ton Worker <b>glf-cand</b>, bouton <b>Modifier le code</b> (<i>Edit code</i>), en haut à droite.</div></div>
+    ${mk("dash.cloudflare.com › glf-cand", "", `<div class="row"><div class="t">glf-cand</div>${H(1, `<span class="b g">&lt;/&gt; Modifier le code</span>`)}</div><div class="tb"><span class="cur">Vue d'ensemble</span><span>Métriques</span><span>Liaisons</span></div><div class="cd" style="color:#8A939C">…</div>`)}
+    <div class="sub"><b class="n">3</b><div>L'éditeur s'ouvre avec le code « Hello World ». <b>Clique dans le code</b>, sélectionne tout avec ${T("Ctrl+A")} (sur Mac ${T("Cmd+A")}), puis colle avec ${T("Ctrl+V")} (sur Mac ${T("Cmd+V")}). L'ancien code est remplacé.</div></div>
+    <div class="sub"><b class="n">4</b><div>Bouton <b>Déployer</b> (<i>Deploy</i>), en haut à droite, puis confirme si on te le redemande.</div></div>
+    ${mk("dash.cloudflare.com › glf-cand › Éditeur", "", `<div class="row"><div class="t">worker.js</div>${H(3, `<span class="b">Déployer</span>`)}</div>${H(2, `<div class="code">/* Gestion Locative Facile : serveur personnel… */<br>const H = {"Access-Control-Allow-Origin": "*", …<br>…</div>`, "div")}`)}
+    <div class="tip">Tu avais déjà un serveur et tu veux juste le <b>mettre à jour</b> (pour les notifications) ? Seule cette étape est à refaire.</div>`,
+    f:["Le code colle à la suite de l'ancien : tout n'était pas sélectionné. Refais Ctrl+A (Cmd+A) en ayant d'abord cliqué dans le code, puis colle.", "La copie ne marche pas : utilise « Télécharger (.js) », ouvre le fichier avec le Bloc-notes (TextEdit sur Mac), copie tout et colle dans Cloudflare."] },
+  { t:"Tester ton serveur", h:() => `
+    <div class="sub"><b class="n">1</b><div>Retrouve l'adresse de ton serveur : sur la page de ton Worker glf-cand, elle se termine par <b>.workers.dev</b> (rubrique <b>Domaines et itinéraires</b>, <i>Domains &amp; Routes</i>, ou en haut de la page).</div></div>
+    ${mk("dash.cloudflare.com › glf-cand", "", `<div class="t">glf-cand</div><div class="tb"><span class="cur">Vue d'ensemble</span><span>Métriques</span><span>Liaisons</span></div><div class="cd"><small style="color:#55606B">Domaines et itinéraires</small><br>${H(1, `<span style="color:#2B6CB0">glf-cand.ton-sous-domaine.workers.dev</span>`)}</div>`)}
+    <div class="sub"><b class="n">2</b><div>Colle-la ici (avec ou sans https://), puis <b>Tester mon serveur</b>.</div></div>
+    <input class="f" id="srv" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="https://glf-cand.ton-sous-domaine.workers.dev">
+    <button class="btn" style="width:100%" data-a="test">🧪 Tester mon serveur</button>
+    <div id="res"></div>` },
+  { t:"Activer dans l'appli", h:() => { const s = srvGet(); return `
+    <p>Dernière étape, sur <b>le téléphone (ou la tablette) où tu gères tes candidats</b>. Fais-la sur <b>un seul appareil</b> : c'est lui qui gardera la clé pour lire les candidatures.</p>
+    ${s ? `<div class="tip">Ton adresse : <b style="word-break:break-all">${esc(s)}</b><div class="nav" style="margin:8px 0 0"><button class="btn gh" data-a="copysrv">📋 Copier l'adresse</button><button class="btn gh" data-a="sharesrv">📤 Me l'envoyer</button></div><div class="mu" style="margin-top:6px">Tu fais ce guide sur l'ordinateur ? Envoie-toi l'adresse (par SMS ou e-mail) pour la coller sur le téléphone.</div></div>` : `<div class="warn">Fais d'abord le test de l'étape 6 : l'adresse sera prête à copier ici.</div>`}
+    <div class="sub"><b class="n">1</b><div>Ouvre l'appli <b>Gestion Locative Facile</b> › onglet <b>Location</b> › <b>Candidats</b>.</div></div>
+    <div class="sub"><b class="n">2</b><div>Dans la carte <b>Formulaire de candidature</b>, bouton <b>Découvrir</b> (ou <b>Réglages</b>).</div></div>
+    <div class="sub"><b class="n">3</b><div>Colle l'adresse dans <b>Adresse de ton serveur</b>, puis <b>Activer la réception connectée</b>.</div></div>
+    <div class="sub"><b class="n">4</b><div>Appuie sur <b>🧪 Test complet</b> : tout doit être ✅. C'est fini ! Le lien du formulaire que tu envoies aux candidats fait maintenant arriver leurs candidatures directement dans l'appli.</div></div>
+    <div class="tip">Plus tard, pour passer de l'iPhone à l'iPad (ou l'inverse), ne réactive pas une deuxième fois : utilise <b>📲 Transférer sur un autre appareil</b> dans les mêmes réglages.</div>
+    <a class="btn gh" style="width:100%" href="./index.html">Ouvrir l'appli</a>`; } }
+];
+const FIX = {
+  net:"Le serveur ne répond pas. Vérifie l'adresse (elle se termine par <b>.workers.dev</b>, sans faute de frappe). Si tu viens de créer le Worker, attends 1 minute et réessaie. Sinon, refais le <b>Déployer</b> de l'étape 3.",
+  kv:"Le serveur répond, mais le stockage n'est <b>pas relié</b>. Refais l'<b>étape 4</b> : nom de variable <b>CAND</b> en majuscules, espace de noms <b>glf-cand</b>.",
+  hello:"Le serveur répond « Hello World » : le code de l'appli <b>n'est pas encore en place</b>. Refais l'<b>étape 5</b> (copier, Modifier le code, tout remplacer, Déployer).",
+  old:"Le serveur marche, mais c'est une <b>ancienne version</b> (sans les notifications). Refais l'<b>étape 5</b> pour la mettre à jour. La réception des candidatures fonctionne quand même.",
+  other:"Le serveur répond, mais pas comme prévu. Refais l'<b>étape 5</b> (copier le code, tout remplacer, Déployer), puis teste à nouveau."
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function srvGet(){ try { return localStorage.getItem("glf-guide-srv") || ""; } catch(e){ return ""; } }
+function srvNorm(v){ v = String(v || "").trim().replace(/\/ping\/?$/, "").replace(/\/+$/, ""); if (v && !/^https?:\/\//i.test(v)) v = "https://" + v; return v.replace(/^http:/i, "https:"); }
+function save(){ try { localStorage.setItem("glf-guide-step", st); localStorage.setItem("glf-guide-done", JSON.stringify(done)); } catch(e){} }
+function toast(m){ const d = document.createElement("div"); d.textContent = m; d.style.cssText = "position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1B2430;color:#fff;padding:10px 16px;border-radius:12px;font-size:15px;z-index:9;max-width:90%;text-align:center"; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function show(){
+  const S = STEPS[st];
+  document.getElementById("bar").style.width = (st / (N - 1) * 100) + "%";
+  document.getElementById("dots").innerHTML = STEPS.map((x, i) => `<button class="${i === st ? "on" : done[i] ? "done" : ""}" data-go="${i}">${i === 0 ? "Début" : (done[i] ? "✓ " : "") + i}</button>`).join("");
+  document.getElementById("step").innerHTML = `<div class="card"><div class="mu">${st ? "Étape " + st + " sur " + (N - 1) : "Introduction"}</div><h2>${S.t}</h2>${S.h()}
+    ${S.f ? `<details><summary>🛟 Ça ne marche pas ?</summary><ul>${S.f.map(x => `<li>${x}</li>`).join("")}</ul></details>` : ""}</div>
+    <div class="nav">${st ? `<button class="btn gh" data-a="prev">‹ Retour</button>` : ""}${st < N - 1 ? `<button class="btn" data-a="next">${st ? "✅ C'est fait, étape suivante" : "Commencer"}</button>` : ""}</div>`;
+  const i = document.getElementById("srv"); if (i) i.value = srvGet();
+}
+async function test(){
+  const r = document.getElementById("res"), srv = srvNorm(document.getElementById("srv").value);
+  if (!/^https:\/\/[^\s/]+\.[^\s/]+/.test(srv)) { r.className = "ko"; r.innerHTML = "Colle d'abord l'adresse de ton serveur (elle se termine par <b>.workers.dev</b>)."; return; }
+  r.className = "ok"; r.style.background = "var(--bg)"; r.style.borderColor = "var(--line)"; r.textContent = "Test en cours…";
+  let txt = "", ok = false;
+  try { const ctl = new AbortController(); setTimeout(() => ctl.abort(), 12000); const res = await fetch(srv + "/ping", {cache:"no-store", signal:ctl.signal}); txt = await res.text(); ok = true; } catch(e){}
+  r.style.background = r.style.borderColor = "";
+  let j = null; try { j = JSON.parse(txt); } catch(e){}
+  const why = !ok ? "net" : j && j.ok ? (j.v >= 2 ? "" : "old") : j && /CAND/.test(j.err || "") ? "kv" : /hello/i.test(txt) ? "hello" : "other";
+  if (!why || why === "old"){ try { localStorage.setItem("glf-guide-srv", srv); } catch(e){} done[6] = 1; save(); }
+  r.className = !why ? "ok" : why === "old" ? "ok" : "ko";
+  r.innerHTML = !why ? `✅ <b>Ton serveur marche !</b><br>Adresse : <b style="word-break:break-all">${esc(srv)}</b><br>Passe à l'étape 7 pour l'activer dans l'appli.` : (why === "old" ? "⚠️ " : "❌ ") + FIX[why];
+}
+document.addEventListener("click", async e => {
+  const g = e.target.closest("[data-go]"); if (g){ st = +g.dataset.go; save(); show(); scrollTo(0, 0); return; }
+  const b = e.target.closest("[data-a]"); if (!b) return; const a = b.dataset.a;
+  if (a === "next"){ if (st) done[st] = 1; st = Math.min(N - 1, st + 1); save(); show(); scrollTo(0, 0); }
+  else if (a === "prev"){ st = Math.max(0, st - 1); save(); show(); scrollTo(0, 0); }
+  else if (a === "test") test();
+  else if (a === "copy"){ try { await navigator.clipboard.writeText(WORKER); toast("✅ Code copié : colle-le dans l'éditeur Cloudflare"); } catch(x){ toast("Copie impossible ici : utilise « Télécharger (.js) »"); } }
+  else if (a === "dl"){ const u = URL.createObjectURL(new Blob([WORKER], {type:"text/javascript"})), l = document.createElement("a"); l.href = u; l.download = "glf-cand.js"; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+  else if (a === "link" || a === "share" || a === "copysrv" || a === "sharesrv"){
+    const isSrv = a.endsWith("srv"), v = isSrv ? srvGet() : location.href.split("#")[0].split("?")[0];
+    if ((a === "share" || a === "sharesrv") && navigator.share){ try { await navigator.share(isSrv ? {title:"Adresse de mon serveur", text:v} : {title:"Guide : créer mon serveur de candidatures", url:v}); } catch(x){} return; }
+    try { await navigator.clipboard.writeText(v); toast(isSrv ? "Adresse copiée" : "Lien du guide copié : ouvre-le sur ton ordinateur"); } catch(x){ prompt("Copie ceci :", v); }
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "srv") test(); });
+show();
+</script>
+</body></html>
