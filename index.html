@@ -1525,8 +1525,10 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.7.95";
+const APP_VERSION = "1.7.97";
 const CHANGELOG = [
+  {v:"1.7.97", date:"2026-11-13", titre:"Import de l'échéancier : toutes les banques", items:["Emprunt › « Importer l'échéancier de la banque » : l'appli reconnaît maintenant l'ordre des colonnes de chaque banque. Par exemple, chez CIC et Crédit Mutuel : capital en début de période, capital de l'échéance, intérêts, assurance, terme remboursé. Avant, ce type de tableau donnait « Lecture impossible : trop peu de lignes lisibles (0) ». Le capital emprunté est aussi mieux repris : c'est le capital dû avant la première échéance.", "Bruit des aérodromes : les explications conseillent d'abord la mairie (service urbanisme). Sur cartes.gouv.fr, la carte seule affiche « pas de données » tant qu'on n'a pas ajouté la carte du plan d'exposition au bruit."]},
+  {v:"1.7.96", date:"2026-11-13", titre:"Vérification par une IA : diagnostics et bruit des aérodromes", items:["« Mettre à jour les règles avec une IA » vérifie maintenant aussi les durées des diagnostics : plomb 6 ans si présence ou sans limite, amiante (évaluation tous les 3 ans s'il y en a), électricité, gaz, DPE, ERP et bruit. Elle vérifie aussi la règle « valables à la signature du bail, pas pendant le bail », l'état des nuisances sonores aériennes et l'adresse de la carte (cartes.gouv.fr a remplacé Géoportail). Les sources officielles correspondantes sont ajoutées à la liste."]},
   {v:"1.7.95", date:"2026-11-12", titre:"Bruit des aérodromes : le formulaire à remplir soi-même", items:["Biens › Documents › Bruit des aérodromes (zone PEB) : nouveau bouton « 📝 Remplir le formulaire ». Il explique que ce document ne concerne que les logements situés dans une zone du plan d'exposition au bruit d'un aérodrome. Un bouton ouvre cartes.gouv.fr (qui remplace Géoportail) pour vérifier, et « Mon logement n'est dans aucune zone » passe la ligne en « Non concerné ». Sinon, tu recopies l'aérodrome, l'arrêté préfectoral et la zone (A à D). L'appli fait le document d'après le modèle officiel MTES/DGAC de juin 2020 et le range dans les pièces à joindre (valable 6 mois). Il te reste à le signer."]},
   {v:"1.7.94", date:"2026-11-12", titre:"Bouton « Dossier de diagnostics du bail » plus visible", items:["Le bouton « 🩺 Dossier de diagnostics du bail (valables seulement) » est maintenant un grand bouton en haut de Biens › Documents. On le trouve aussi dans le cadre « Dossier du bail », sous « Préparer et envoyer le dossier du bail »."]},
   {v:"1.7.93", date:"2026-11-12", titre:"Dossier de diagnostics propre, « À faire maintenant », amiante liste A / liste B", items:["Nouveau cadre rouge « 🚨 À faire maintenant », au-dessus des documents à renouveler. Il montre ce qui est obligatoire même pendant le bail en cours : par exemple l'évaluation périodique de l'amiante quand il y en a, avec depuis combien de temps elle est en retard. Le bouton « ✅ Fait » note la date du contrôle, et les 3 ans repartent de cette date.", "Documents à renouveler : « périmé depuis 8 mois », « depuis 2 ans et 3 mois »… et le rappel que ces diagnostics se refont avant la prochaine signature de bail, pas pendant le bail en cours.", "Nouveau : « 🩺 Dossier de diagnostics du bail (valables seulement) » dans Biens › Documents. Il assemble un seul PDF propre avec une page de garde : uniquement les diagnostics valables, en reprenant seulement les bonnes pages du gros dossier découpé. La page de garde liste ce qui manque ou est à refaire. L'amiante n'est pas annexé (il est tenu à disposition du locataire). Dans « Dossier du bail », ce PDF remplace le gros dossier et les diagnostics séparés.", "Lecture du rapport amiante : quand il dit « liste A : il n'a pas été repéré… » mais « liste B : il a été repéré… des matériaux contenant de l'amiante », l'appli retient « Présence d'amiante ». Avant, elle laissait « à préciser ».", "Amiante présent et 3 ans dépassés : la ligne précise qu'il s'agit de faire faire l'évaluation périodique de l'état des matériaux, pas forcément un nouveau repérage complet."]},
@@ -2739,6 +2741,23 @@ const ECH_N = /-?\d{1,3}(?:[   ]\d{3})*,\d{2}|-?\d+,\d{2}/g, echNum = x => pa
 const echIso = d => { const m = String(d).match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/); if (m) return m[3] + "-" + pad(+m[2]) + "-" + pad(+m[1]); const k = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return k ? k[0] : ""; };
 const echAdd = (iso, k) => { const y0 = +iso.slice(0, 4), m0 = +iso.slice(5, 7) - 1 + k, y = y0 + Math.floor(m0 / 12), m = ((m0 % 12) + 12) % 12; return y + "-" + pad(m + 1) + "-" + iso.slice(8, 10); };
 const echMo = iso => +iso.slice(0, 4) * 12 + +iso.slice(5, 7) - 1;
+/* dispositions de colonnes connues (après la date) ; « avant » = capital dû en début de période */
+const ECH_LAYOUTS = [
+  ["it", "ass", "acc", "cap", "ech", "crd"],          /* ex. Crédit Agricole */
+  ["avant", "cap", "it", "ass", "ech"],               /* ex. CIC / Crédit Mutuel : capital début, capital, intérêts, assurance, terme */
+  ["avant", "cap", "it", "ass", "acc", "ech"],
+  ["avant", "it", "cap", "ass", "ech"],
+  ["avant", "cap", "it", "ech"],
+  ["avant", "ech", "cap", "it", "ass"],
+  ["ech", "cap", "it", "ass", "crd"],
+  ["ech", "it", "cap", "ass", "crd"],
+  ["cap", "it", "ass", "ech", "crd"],
+  ["it", "cap", "ass", "ech", "crd"],
+  ["cap", "it", "ech", "crd"],
+  ["it", "cap", "ech", "crd"],
+  ["ech", "cap", "it", "crd"],
+  ["ech", "it", "cap", "crd"]
+];
 /* lignes de texte (PDF ou scan) -> {rows, hdr} ; une ligne = date + intérêts, assurances, accessoires, capital amorti, échéance, capital restant dû... */
 function echParseLines(lines){
   const rows = [], hdr = {}, all = lines.join("\n");
@@ -2746,11 +2765,21 @@ function echParseLines(lines){
   m = all.match(/DATE\s+DE\s+REALISATION\D{0,8}(\d{2}\/\d{2}\/\d{4})/i); if (m) hdr.real = echIso(m[1]);
   m = all.match(/DUREE\s+TOTALE\D{0,6}(\d{2,3})/i); if (m) hdr.duree = +m[1];
   m = all.match(/MONTANT\s+DU\s+PRET\D{0,6}(\d[\d  ]*,\d{2})/i); if (m) hdr.capital = echNum(m[1]);
+  /* chaque banque range ses colonnes à sa façon : on essaie plusieurs dispositions et on garde celle où
+     intérêts + capital + assurance = échéance, et où le capital restant baisse du capital remboursé d'une ligne à l'autre */
+  const raw = [];
   for (let l of lines){
     l = l.replace(/[€|_;]+/g, " "); const d = l.match(/(\d{2}\/\d{2}\/\d{4})/); if (!d) continue;
-    const v = (l.slice(l.indexOf(d[1]) + 10).match(ECH_N) || []).map(echNum); if (v.length < 6) continue;
-    rows.push({date:echIso(d[1]), it:v[0], ass:v[1], acc:v[2], cap:v[3], ech:v[4], crd:v[5]});
+    const v = (l.slice(l.indexOf(d[1]) + 10).match(ECH_N) || []).map(echNum); if (v.length >= 4) raw.push({date:echIso(d[1]), v});
   }
+  let best = null;
+  for (const L of ECH_LAYOUTS){
+    const R = raw.filter(x => x.v.length >= L.length).map(x => { const o = {date:x.date, it:0, ass:0, acc:0, cap:0, ech:0, crd:0}; L.forEach((k, i) => { o[k] = x.v[i]; }); if (L.includes("avant")) o.crd = r2(o.avant - o.cap); if (!L.includes("ech")) o.ech = r2(o.it + o.cap + o.ass + o.acc); delete o.avant; return o; });
+    let ok = 0; R.forEach((r, i) => { const sumOk = Math.abs(r.it + r.cap + r.ass + r.acc - r.ech) <= 0.03 && r.crd >= 0 && r.it <= r.ech; const p = R[i - 1], chain = !p || Math.abs(p.crd - r.cap - r.crd) <= 0.03 || r.date.slice(0, 7) === (p.date || "").slice(0, 7); if (sumOk && chain) ok++; });
+    if (!best || ok > best.ok) best = {ok, R, L};
+  }
+  if (best && best.ok >= 3) best.R.forEach(r => rows.push(r));
+  hdr.layout = best ? best.L.join(",") : "";
   return {rows, hdr};
 }
 /* tableau (Excel / CSV) -> lignes complètes : colonnes reconnues par leur titre */
@@ -2770,7 +2799,7 @@ function echBuild(parsed, hdr){
   hdr = hdr || {}; const good = parsed.filter(r => r.it >= 0 && r.crd >= 0 && (Math.abs(r.it + r.ass + r.cap - r.ech) <= 0.03 || (r.cap === 0 && Math.abs(r.it + r.ass - r.ech) <= 0.03)) && r.ech > 0), amo = good.filter(r => r.cap > 0);
   if (good.length < 3) throw new Error("trop peu de lignes lisibles (" + good.length + ")");
   const rd = r2, cnt = {}; amo.forEach(r => cnt[r.ech] = (cnt[r.ech] || 0) + 1);
-  const mens = +(Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || good[0].ech), cap0 = r2(Math.max(...good.map(r => r.crd)));
+  const mens = +(Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || good[0].ech), cap0 = r2(Math.max(...good.map(r => r.crd + r.cap)));
   /* taux : médiane de intérêts / capital dû avant paiement */
   const rt = amo.filter(r => r.crd + r.cap > 0).map(r => r.it / (r.crd + r.cap) * 1200).sort((a, b) => a - b), est = rt.length ? Math.round(rt[Math.floor(rt.length / 2)] * 100) / 100 : 0;
   const taux = hdr.taux && Math.abs(hdr.taux - est) < 0.06 ? hdr.taux : est;
@@ -7892,7 +7921,7 @@ function sheetEnsa(bien){
   const o = Object.assign({aero:"", arr:"", arrd:"", zone:"", lieu:""}, (S.cfg && S.cfg.ensa && S.cfg.ensa[bien]) || {});
   openSheet(`<h2>Bruit des aérodromes</h2>
     <div class="info">Ce document ne concerne <b>que</b> les logements situés dans une zone du <b>plan d'exposition au bruit</b> (PEB) d'un aéroport ou d'un aérodrome. Tu le remplis toi-même, sans diagnostiqueur, puis il part avec les autres diagnostics à chaque nouveau bail (moins de 6 mois).</div>
-    <div class="small" style="margin:6px 0"><b>1. Vérifie si ton adresse est dans une zone</b> : sur cartes.gouv.fr (qui remplace Géoportail), appuie sur « Accéder aux cartes », cherche ton adresse, puis ajoute la carte « Plan d'exposition au bruit » (recherche « bruit » dans les données). Si tu ne la trouves pas, le plus simple : demande au service urbanisme de ta mairie.</div>
+    <div class="small" style="margin:6px 0"><b>1. Vérifie si ton adresse est dans une zone</b>. Le plus sûr : demande au <b>service urbanisme de ta mairie</b> si ton adresse est dans une zone d'un plan d'exposition au bruit (ce plan est annexé au plan local d'urbanisme). Sur cartes.gouv.fr, il faut ajouter la bonne carte (couche) : la carte seule affiche « pas de données » et ne prouve rien.</div>
     <div class="btns"><a class="btn ghost" style="flex:1;text-decoration:none" href="${GEOPORTAIL}" target="_blank" rel="noopener">🗺 Ouvrir cartes.gouv.fr</a><button class="btn ghost" style="flex:1" data-act="ensa-none" data-b="${esc(bien)}">Mon logement n'est dans aucune zone</button></div>
     <div class="small" style="margin:10px 0 4px"><b>2. Si oui, recopie les informations du plan</b> (elles figurent sur la carte ou en mairie) :</div>
     <label class="f">Aérodrome<input id="en-aero" value="${esc(o.aero)}" placeholder="Nom de l'aéroport ou de l'aérodrome"></label>
@@ -8702,7 +8731,7 @@ document.addEventListener("click", async ev => {
 });
 
 /* ---------- Mise à jour des règles avec une IA (export Word → réponse de l'IA → import validé ligne par ligne) ---------- */
-const RULE_HOSTS = ["legifrance.gouv.fr", "service-public.fr", "impots.gouv.fr", "bofip.impots.gouv.fr", "anil.org", "economie.gouv.fr", "urssaf.fr", "vie-publique.fr", "ampmetropole.fr"];
+const RULE_HOSTS = ["legifrance.gouv.fr", "service-public.fr", "ecologie.gouv.fr", "georisques.gouv.fr", "cartes.gouv.fr", "impots.gouv.fr", "bofip.impots.gouv.fr", "anil.org", "economie.gouv.fr", "urssaf.fr", "vie-publique.fr", "ampmetropole.fr"];
 const RULES = [
   {id:"seuilMicroFoncier", prop:"seuilMicro", div:1, titre:"Seuil du micro-foncier (revenus bruts annuels de location vide)", unite:"€", def:15000, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
   {id:"abattMicroFoncier", prop:"abattMicro", div:100, titre:"Abattement forfaitaire du micro-foncier", unite:"%", def:30, src:"BOFiP BOI-RFPI-DECLA-10", url:"https://bofip.impots.gouv.fr/bofip/3973-PGP.html/identifiant=BOI-RFPI-DECLA-10-20250306"},
@@ -8736,6 +8765,11 @@ const RG_SRC = [
   ["Facture électronique : calendrier et obligations (décret n° 2024-266 du 25 mars 2024 ; articles 289 bis et 1737 du CGI)", "economie.gouv.fr · impots.gouv.fr (fiche loueurs en meublé)", "https://www.impots.gouv.fr/facturation-electronique-et-plateformes-partenaires", 1],
   ["Permis de louer : formulaire de dépôt en ligne de la Métropole (communes concernées, pièces demandées)", "Métropole Aix-Marseille-Provence", "https://formulaire.ampmetropole.fr/formulaire-permis-de-louer/", 1],
   ["Permis de louer : liste de communes (pour comprendre, à confirmer en mairie)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/permis-de-louer/", 0],
+  ["Diagnostics à joindre au bail : liste et durées (DPE, plomb, amiante, électricité, gaz, ERP, bruit)", "service-public.fr · recherche « diagnostics location »", "https://www.service-public.fr/particuliers/recherche?keyword=diagnostics%20location", 1],
+  ["Plomb (CREP) : 6 ans si présence, sans limite si absence (article R1334-11 du code de la santé publique)", "Légifrance · recherche R1334-11", "https://www.legifrance.gouv.fr/search/all?query=R1334-11%20code%20de%20la%20sant%C3%A9%20publique", 1],
+  ["Amiante : évaluation périodique de l'état des matériaux (code de la santé publique, articles R1334-20 et suivants)", "Légifrance · recherche R1334-20", "https://www.legifrance.gouv.fr/search/all?query=R1334-20%20code%20de%20la%20sant%C3%A9%20publique", 1],
+  ["Bruit des aérodromes : état des nuisances sonores aériennes (article L. 112-11 du code de l'urbanisme) et modèle officiel", "ecologie.gouv.fr · Bruit : organiser l'urbanisation autour des aéroports", "https://www.ecologie.gouv.fr/politiques-publiques/bruit-organiser-lurbanisation-autour-aeroports", 1],
+  ["Carte des plans d'exposition au bruit (Géoportail a fermé : remplacé par cartes.gouv.fr)", "cartes.gouv.fr", "https://cartes.gouv.fr/", 1],
   ["Facture électronique et LMNP (explications, à confirmer sur la fiche de l'administration)", "jedeclaremonmeuble.com (non officiel)", "https://www.jedeclaremonmeuble.com/facturation-electronique-lmnp-obligations/", 0]
 ];
 const RG_POINTS = [
@@ -8746,6 +8780,8 @@ const RG_POINTS = [
   ["texte-permis-de-louer", "Permis de louer : dans le centre ancien d'Istres, une autorisation préalable de mise en location est obligatoire pour les logements de plus de 15 ans loués comme résidence principale ; elle doit être obtenue avant la signature du bail, pour chaque nouveau locataire ; dossier : Cerfa 15652*01, DPE et diagnostics, plan ; instruction d'environ un mois avec visite de contrôle ; amende de 5 000 à 15 000 € ; périmètre et application aux meublés à confirmer avec la mairie."],
   ["texte-lien-permis-depot", "Permis de louer : adresse du formulaire de dépôt en ligne de la Métropole Aix-Marseille-Provence = https://formulaire.ampmetropole.fr/formulaire-permis-de-louer/ ; communes concernées : Aix-en-Provence, Aubagne, Auriol, Gardanne, Istres, La Ciotat, Marignane, Martigues, Port-de-Bouc, Pertuis, Septèmes-les-Vallons ; pièces obligatoires : DPE, constat de risque d'exposition au plomb (avant 1949), diagnostic amiante, état des installations électriques et gaz, état des risques et pollutions, attestation de surface habitable. Vérifie que cette adresse répond toujours et donne la nouvelle adresse officielle si elle a changé."],
   ["texte-liste-conformite-permis", () => "Liste de conformité cochée par l'application pour chaque logement (permis de louer, décence) : " + plChk().map(k => k[1]).join(" ; ") + ". Pour chacun de ces éléments, indique s'il est exigé par un texte officiel (article ou rubrique) et si le seuil est exact ; explique aussi ce que signifie « DGPC ». Si la liste doit changer (élément à ajouter, retirer ou corriger), réponds avec statut: modifié et, dans « nouveau: », la liste COMPLÈTE à jour, éléments séparés par « ; » (reprends tels quels les éléments qui ne changent pas). Si tu ne trouves pas de source officielle, réponds statut: doute."],
+  ["texte-durees-diagnostics", () => "Durées de validité des documents utilisées par l'application pour la location (en mois ; 0 = sans limite) : " + ["dpe", "plomb", "amiante", "elec", "gaz", "erp", "bruit", "boutin"].map(k => avLab(k) + " = " + (ANNEX_VAL[k] || {}).m).join(" ; ") + ". Règles appliquées : plomb (CREP) 6 ans s'il révèle du plomb au-delà du seuil, sans limite sinon ; amiante : sans limite si aucun matériau amianté (rapport après le 1er avril 2013), évaluation périodique de l'état des matériaux tous les 3 ans s'il y en a, obligatoire même pendant un bail en cours ; le rapport amiante n'est pas annexé au bail mais tenu à disposition du locataire ; électricité et gaz 6 ans ; DPE 10 ans (avec les anciennes règles de validité des DPE réalisés avant le 1er juillet 2021) ; état des risques (ERP) et bruit des aérodromes 6 mois. Les diagnostics doivent être valables le jour de la signature ou du renouvellement du bail ; ils n'ont pas à être refaits pendant un bail en cours (sauf l'évaluation périodique de l'amiante). Vérifie chaque durée et chaque règle."],
+  ["texte-bruit-aerodromes", "Bruit des aérodromes : l'état des nuisances sonores aériennes (article L. 112-11 du code de l'urbanisme, obligatoire depuis le 1er juin 2020) n'est exigé que si le logement est dans une zone (A, B, C ou D) d'un plan d'exposition au bruit ; il est rempli par le bailleur lui-même d'après le modèle MTES/DGAC de juin 2020, joint au dossier de diagnostic technique, et l'application le considère valable 6 mois. Le plan est consultable en ligne sur cartes.gouv.fr (Géoportail a fermé) et en mairie. Vérifie : obligation toujours en vigueur, durée de 6 mois, modèle officiel en vigueur, adresse de la carte, et cas des aérodromes seulement militaires (comme Istres, base aérienne 125)."],
   ["texte-facture-electronique", "Facture électronique : depuis le 1er septembre 2026, les loueurs en meublé (avec un numéro SIREN, même exonérés de TVA) doivent pouvoir recevoir les factures électroniques de leurs fournisseurs professionnels via une plateforme agréée et déclarer leur adresse de réception dans l'annuaire ; l'émission obligatoire ne concerne que les loueurs soumis à la TVA, à partir du 1er septembre 2027 ; les loyers d'habitation facturés à des particuliers ne sont pas concernés ; sanction pour défaut de réception : mise en demeure de trois mois puis amende de 500 €, puis 1 000 €."]
 ];
 function rgPrompt(){
@@ -8757,7 +8793,7 @@ function rgPrompt(){
 "",
 "MISSION : vérifier, point par point, chaque règle et chaque chiffre des parties « POINTS CHIFFRÉS » et « TEXTES DU GUIDE » ci-dessous, et dire s'il est encore exact aujourd'hui.",
 "",
-"SOURCES AUTORISÉES (uniquement) : legifrance.gouv.fr, service-public.fr, impots.gouv.fr, bofip.impots.gouv.fr, anil.org, economie.gouv.fr, urssaf.fr, vie-publique.fr, ampmetropole.fr (permis de louer de la Métropole Aix-Marseille-Provence). Une liste de pages à consulter en priorité, par sujet, figure dans la partie « SOURCES À CONSULTER EN PRIORITÉ » du document.",
+"SOURCES AUTORISÉES (uniquement) : legifrance.gouv.fr, service-public.fr, ecologie.gouv.fr, georisques.gouv.fr, cartes.gouv.fr, impots.gouv.fr, bofip.impots.gouv.fr, anil.org, economie.gouv.fr, urssaf.fr, vie-publique.fr, ampmetropole.fr (permis de louer de la Métropole Aix-Marseille-Provence). Une liste de pages à consulter en priorité, par sujet, figure dans la partie « SOURCES À CONSULTER EN PRIORITÉ » du document.",
 "INTERDIT : blogs, forums, agences immobilières, sites de comptables ou commerciaux, articles de presse, autres IA, ta mémoire sans source.",
 "",
 "MÉTHODE (obligatoire, dans cet ordre) :",
