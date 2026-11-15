@@ -154,6 +154,9 @@ body.side #main{padding-right:46px}body.side .seg.rail{position:fixed;right:0;to
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13.5px}
 .seg button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.seg.bsegs{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.seg button.bsb{border:2px solid var(--bc);color:var(--bc);font-weight:700;background:color-mix(in srgb,var(--bc) 10%,var(--surface))}
+.seg button.bsb.on{background:var(--bc);color:#fff;border-color:var(--bc);box-shadow:0 4px 10px -4px var(--bc)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 label.f input,label.f select,label.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;color:var(--ink);font-size:16px;width:100%;min-width:0}
 label.f textarea{min-height:110px;resize:vertical}
@@ -238,6 +241,9 @@ body.welcome{padding-bottom:40px}
 .ot.an td:first-child b{white-space:nowrap}.anw{position:sticky;left:0;width:min(100%,calc(100vw - 100px));box-sizing:border-box}@media(max-width:700px){.anw .grid2{grid-template-columns:1fr}}.ot.an tr.fut td{opacity:.55}.ot.an tr.nx td{background:var(--accent-soft);font-weight:600}.anit{padding:8px 0;border-bottom:1px solid var(--line)}.anit:last-child{border-bottom:0}.anop .small{line-height:1.35}.anx{margin-top:4px}.anx summary{cursor:pointer;color:var(--accent)}.ot.an tr.clk.hot td{background:var(--warn-soft)}.anl{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .ot.an tr.clk{cursor:pointer}.ot.an tr.clk:active{background:var(--accent-soft)}.ot.an tr.hot td{background:var(--warn-soft)}.ot.an tr.tot td{border-top:2px solid var(--line)}.ot.an td.why{font-size:12.5px;color:var(--muted)}@media(max-width:760px){.ot.an th.why,.ot.an td.why{display:none}.kpi .v{font-size:19px}}
 .hswipe{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0}.hswipe::-webkit-scrollbar{display:none}
+.hero-mois{background:linear-gradient(145deg,#2E6B4F 0%,#123524 100%)!important;color:#fff}.permo{font-size:.45em;font-weight:600;opacity:.85}
+.bswp{gap:0;border-bottom:1px solid var(--line)}.bswp>.bsl{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;min-width:0;box-sizing:border-box}
+.hdots.sm{margin:4px 0 2px}.hdots.sm i{width:6px;height:6px}.hdots.sm i.on{width:14px}
 .hswipe>.hero{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;min-width:0}
 .hero-rev{background:linear-gradient(145deg,#34406B 0%,#151B33 100%)!important;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 28px -14px #151B33!important}
 .hdots{display:flex;justify-content:center;gap:7px;margin:-4px 0 4px}.hdots i{width:8px;height:8px;border-radius:50%;background:var(--line,#ccc);transition:all .2s}.hdots i.on{width:22px;border-radius:4px;background:var(--accent)}
@@ -726,7 +732,7 @@ function topbar(title, nav, mid){
 const kv = (l, v, cl) => `<div class="kv"><span>${l}</span><span class="num ${cl || ""}">${v}</span></div>`;
 const signCl = v => v < 0 ? "neg" : "";
 function bienSeg(act, sel, withAll){
-  return `<div class="seg rail">${withAll ? `<button class="${sel==="all"?"on":""}" data-act="${act}" data-v="all">Tous</button>` : ""}${bienIds().map(id => `<button class="${sel===id?"on":""}" data-act="${act}" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  return `<div class="seg rail bsegs">${withAll ? `<button class="${sel==="all"?"on":""}" data-act="${act}" data-v="all">Tous</button>` : ""}${bienIds().map(id => `<button class="bsb${sel===id?" on":""}" style="--bc:${BIEN_COL[id] || "var(--accent)"}" data-act="${act}" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
 }
 const chipJ = (j, st) => st === "À pointer" ? `<span class="chip warn">${isIn(j) ? "À recevoir" : "Non pointé"}</span>` : chipFor(st);
 const chipFor = st => `<span class="chip ${st==="En retard"?"bad":st==="À pointer"?"warn":st==="Pointé"?"ok":""}">${st}</span>`;
@@ -750,7 +756,12 @@ function heroRev(ids){
     <div class="glass">${ids.map(id => { const r = revBien(id); return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(r.tot)}</span></div>${r.d0 ? `<div class="small" style="opacity:.85;text-align:right;margin:-4px 0 6px">depuis le ${frDate(r.d0)}${r.loy !== r.tot ? " · dont loyers " + eur(r.loy) : ""}</div>` : ""}`; }).join("")}
       <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Recettes encaissées (pointées), <b>sans les dépenses</b> : ce que tes biens ont rapporté.</div></div></div>`;
 }
-document.addEventListener("scroll", ev => { const h = ev.target; if (!h || h.id !== "hswipe") return; const i = Math.round(h.scrollLeft / Math.max(1, h.clientWidth)); document.querySelectorAll("#hdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, true);
+document.addEventListener("scroll", ev => { const h = ev.target; if (!h || !h.classList || !h.classList.contains("hswipe")) return; const i = Math.round(h.scrollLeft / Math.max(1, h.clientWidth)), dt = h.nextElementSibling; if (dt && dt.classList.contains("hdots")) dt.querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k === i)); }, true);
+/* Cash flow mensuel : moyenne de l'année (encaissé + prévu) ÷ 12, et la même chose sans le crédit */
+function cfMois(id, y){
+  const s = stats(id, y), cr = r2(sum(J().filter(j => (id == null || j.bien === id) && yr(j) === y && !HC(j) && j.type === "Dépense" && j.cat === "Crédit (mensualité)").map(j => N(j.montant))));
+  return {an:s.cf, m:r2(s.cf / 12), rec:r2(s.rec / 12), dep:r2(s.dep / 12), cr:r2(cr / 12), hc:r2((s.cf + cr) / 12)};
+}
 function viewHome(){
   const y = now0.getFullYear(), ids = bienIds(), c = counts(y), st = stats(null, y);
   const tot = r2(sum(ids.map(id => soldeBien(id))));
@@ -1263,11 +1274,19 @@ function viewBilan(){
   const mx = Math.max(1, ...months.map(m => Math.max(m.rec, m.dep)));
   let cum = 0; const cumBy = {}; for (const yy of years){ cum += stats(null, yy).bourse; cumBy[yy] = cum; }
   return topbar("Bilan", yearNav()) + `
-  <div class="card hero"><div class="lbl">Cash flow ${y} (2 biens)</div><div class="big num">${eur(st.cf)}</div>
-    <div class="sub">Loyers ${eur(st.rec)} − charges ${eur(st.dep)}. Encaissé à ce jour : ${eur(st.benef)}.</div></div>
+  ${(() => { const T = cfMois(null, y); return `<div class="hswipe" id="bswipe" aria-label="Glisse vers la gauche pour voir le cash flow par mois"><div class="card hero"><div class="lbl">Cash flow ${y} (${ids.length} bien${ids.length > 1 ? "s" : ""})</div><div class="big num">${eur(st.cf)}</div>
+    <div class="sub">Loyers ${eur(st.rec)} − charges ${eur(st.dep)}. Encaissé à ce jour : ${eur(st.benef)}.</div><div class="glass" style="margin-top:8px">${ids.map(id => `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(stats(id, y).cf)}</span></div>`).join("")}</div><div class="small" style="opacity:.8;text-align:right;margin-top:6px">Glisse pour voir par mois ›</div></div>
+    <div class="card hero hero-mois"><div class="lbl">Cash flow par mois · ${y}</div><div class="big num">${eur(T.m)}<span class="permo"> /mois</span></div>
+    <div class="glass">${ids.map(id => { const M = cfMois(id, y); return `<div class="accbig" style="border-left-color:${BIEN_COL[id] || "#fff"}"><span>${bienPill(id)}</span><span class="v num">${eur(M.m)}</span></div>`; }).join("")}
+      <div class="small" style="opacity:.85;text-align:right;margin-top:4px">Sans le crédit (une fois remboursé) : <b>${eur(T.hc)} /mois</b></div></div>
+    <div class="sub">Moyenne de l'année : loyers ${eur(T.rec)} − charges ${eur(T.dep)} par mois, crédit compris (encaissé + prévu). Avant impôt sur le revenu et prélèvements sociaux.</div></div></div>
+  <div class="hdots" aria-hidden="true"><i class="on"></i><i></i></div>`; })()}
   <div class="btns"><button class="btn ghost sm" data-act="export-open">Exporter (biens, mois ou années au choix · Excel / PDF)</button></div>
-  <div class="card"><h2>Par bien</h2>${ids.map(id => { const s = stats(id, y); return `<div class="env" style="padding:6px 0"><div class="top"><b>${esc(bienName(id))}</b><span class="num ${signCl(s.cf)}">${eur(s.cf)}</span></div>
-    <div class="small muted">Loyers ${eur(s.rec)} · charges ${eur(s.dep)} · solde fin d'année ${eur(soldeBien(id, y))}</div></div>`; }).join("")}
+  <div class="card"><h2>Par bien</h2><div class="small muted">Glisse un bien vers la gauche pour voir ce qu'il rapporte par mois, tout déduit.</div>${ids.map(id => { const s = stats(id, y), M = cfMois(id, y); return `<div class="hswipe bswp" aria-label="Glisse pour voir par mois"><div class="env bsl" style="padding:6px 0 6px 10px;border-left:4px solid ${BIEN_COL[id] || "var(--accent)"}"><div class="top"><span>${bienPill(id)} <span class="small muted">· année</span></span><span class="num ${signCl(s.cf)}">${eur(s.cf)}</span></div>
+    <div class="small muted">Loyers ${eur(s.rec)} · charges ${eur(s.dep)} · solde fin d'année ${eur(soldeBien(id, y))}</div></div>
+    <div class="env bsl" style="padding:6px 0 6px 10px;border-left:4px solid ${BIEN_COL[id] || "var(--accent)"}"><div class="top"><span>${bienPill(id)} <span class="small muted">· par mois</span></span><span class="num ${signCl(M.m)}">${eur(M.m)} /mois</span></div>
+    <div class="small muted">Loyers ${eur(M.rec)} − charges ${eur(M.dep)} (dont crédit ${eur(M.cr)}) · sans le crédit : <b>${eur(M.hc)} /mois</b></div></div></div>
+    <div class="hdots sm" aria-hidden="true"><i class="on"></i><i></i></div>`; }).join("")}
     ${kv("Argent mis en épargne cette année (net)", eur(st.ep), "muted")}</div>
   ${perfCard()}
   <div class="card"><h2>Mois par mois</h2>${months.map(m => `<div class="mrow"><span>${m.nm}</span><div class="bars"><div class="bar"><i style="width:${Math.round(m.rec/mx*100)}%"></i></div><div class="bar"><i class="warn" style="width:${Math.round(m.dep/mx*100)}%"></i></div></div><span class="num small ${signCl(m.rec-m.dep)}">${eur(m.rec - m.dep)}</span></div>`).join("")}
@@ -1569,8 +1588,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.8.2";
+const APP_VERSION = "1.8.3";
 const CHANGELOG = [
+  {v:"1.8.3", date:"2026-11-15", titre:"Bilan : cash flow par mois, au total et par bien", items:["Bilan : glisse le grand cadre « Cash flow » vers la gauche pour voir le cash flow par mois (moyenne de l'année ÷ 12, crédit compris, encaissé + prévu), avec le détail de chaque bien.","Par bien : glisse un bien vers la gauche pour voir ce qu'il rapporte par mois, tout déduit, et combien il rapporterait sans le crédit (une fois remboursé).","Les chiffres sont avant impôt sur le revenu et prélèvements sociaux : ils ne sont pas saisis dans l'appli.","Biens et Compta : les boutons des biens (Studio, T2…) prennent la couleur de chaque bien, comme sur l'accueil, et sont séparés des onglets par un trait : on les repère tout de suite.","Bilan › Par bien : chaque bien a aussi son étiquette et un trait de sa couleur."]},
   {v:"1.8.2", date:"2026-11-13", titre:"Profil du logement : réponses proposées en lisant tes documents", items:["Dans « 🏠 Profil du logement », le bouton « 🔎 Lire mes diagnostics et mon ERP pour répondre » lit les documents déjà importés pour ce logement : année de construction, constat plomb, repérage amiante, diagnostics électricité et gaz, copropriété, plan d'exposition au bruit de l'ERP, permis de louer, Anah. Il propose les réponses, surlignées en jaune avec la raison. Tu vérifies, puis tu enregistres. Ce qu'il ne trouve pas reste à choisir à la main."]},
   {v:"1.8.1", date:"2026-11-13", titre:"Profil du logement : chaque document rangé selon TON logement", items:["Nouveau : « 🏠 Profil du logement », en haut de Biens › Documents. Une dizaine de questions simples : date du permis de construire, électricité de plus de 15 ans, gaz, copropriété, permis de louer, zone de bruit, Anah, grille de vétusté, garant, charges, CAF. Selon tes réponses, chaque document se range tout seul en « obligatoire » ou « non concerné », pour ce logement seulement. « Je ne sais pas » le laisse « à vérifier ». Le permis de louer passe « à refaire à chaque location » quand la commune l'impose.", "Les documents « selon le logement » se rangent maintenant tout seuls, logement par logement. Ceux qui le concernent (déjà importés, ou marqués « 📌 À faire faire ») montent dans « 🔴 Obligatoires pour ce logement », avec le DPE, l'ERP et la surface. Ceux réglés « Non concerné » vont dans « ⚫ Non concernés par ce logement ». Les autres restent dans « 🟠 À vérifier selon le logement » jusqu'à ce que tu choisisses.", "Convention Anah : la ligne explique ce que c'est (Loc'Avantages : loyer plafonné contre réduction d'impôt) et quand elle ne te concerne pas. Ce point est aussi dans la vérification par une IA."]},
   {v:"1.8.0", date:"2026-11-13", titre:"Ligne fine pour le garde-fou entre appareils, pièces à joindre repliées", items:["Pièces à joindre : chaque groupe (Obligatoires pour tout bail, Obligatoires selon le logement, Suivi du propriétaire, Documents de la location…) est replié par défaut sur une seule ligne de sa couleur, avec son bilan (à jour, à refaire, à préciser, manquants). Un appui l'ouvre, un autre le referme.", "Accueil : l'état de l'appareil tient sur une seule ligne fine, dans la barre du haut sur iPad et juste sous le titre sur iPhone. Elle affiche : ✏️ dernières modifs, 💾 dernière sauvegarde, et ✅ sauvegardé ou ⚠️ à sauvegarder. Un appui ouvre le détail, avec le bouton de sauvegarde complète.", "Le relevé automatique des candidatures ne compte plus comme une modification (avant, il pouvait faire croire à des changements non sauvegardés)."]},
@@ -1896,6 +1916,7 @@ const HELP = {
     "Lignes « Pas dans l'appli » : case « Hors compta » par ligne, « Tout ajouter en hors compta », et groupe « Caution » (reçue / rendue) dans la liste des catégories. Importer un relevé : choisis le bien, puis le ou les fichiers de la banque (PDF, Excel, CSV, OFX ; plusieurs d'un coup pour une remise à niveau depuis le début) ou colle les lignes. L'appli liste ce qui n'est pas pointé et ce qui manque ; pour chaque ligne manquante, « Ajouter » (elle est créée et pointée) ou « Ignorer ». Si les signes sont inversés, bouton « Inverser les signes »."]},
   chart:{t:"Bilan", p:"Les chiffres de l'année.", l:[
     "Le cash flow = loyers − charges (encaissé + prévu).",
+    "Glisse le grand cadre vers la gauche : cash flow par mois (moyenne de l'année), au total et par bien, et ce que ça donnerait sans le crédit. Glisse aussi chaque bien de « Par bien » pour voir son cash flow mensuel. Avant impôt sur le revenu et prélèvements sociaux.",
     "« Par bien » compare le Studio et le T2. « Mois par mois » : bleu = loyers, orange = charges.",
     "« Toutes les années » : résultats, soldes et bourse versée cumulée.",
     "« Pourquoi mes années sont différentes ? » : choisis deux années (et un bien si tu veux), touche « Ouvrir l'analyse détaillée » : une page dédiée avec la synthèse, le tableau par catégorie, le mois par mois et le détail par bien.",
@@ -2745,7 +2766,7 @@ function viewComptaOld(parts){
   const posteAll = {}; for (const d of D) for (const p of d.postes){ const o = posteAll[p.n] || (posteAll[p.n] = {n:p.n, v:0}); o.v = r2(o.v + p.v); }
   const rows = Object.values(posteAll).sort((a, b) => b.v - a.v);
   const aSaisir = T("aSaisir"), nFact = sum(D.map(d => d.fact.filter(f => !f.jdmm).length));
-  const seg = `<div class="seg rail"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="${sel===id?"on":""}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
+  const seg = `<div class="seg rail"><button class="${sel==="all"?"on":""}" data-act="csel" data-v="all">Tous</button>${ids.map(id => `<button class="bsb${sel===id?" on":""}" style="--bc:${BIEN_COL[id] || "var(--accent)"}" data-act="csel" data-v="${esc(id)}">${esc(bienName(id))}</button>`).join("")}</div>`;
   const emp = D.map(d => { const b = S.biens.find(x => x.id === d.id) || {}; return `<div class="env" style="padding:8px 0;gap:4px"><div class="top"><div>${bienPill(d.id)}</div><div class="btns" style="gap:6px">${empOf(d.id) ? `<button class="mini" data-act="ec-open" data-id="${esc(d.id)}">Échéancier complet</button>` : ""}<button class="mini" data-act="emp-open" data-id="${esc(d.id)}">${d.ey || empOf(d.id) ? "Modifier" : "Renseigner"}</button></div></div>
     ${empOf(d.id) ? `<div class="small muted">${eur(empOf(d.id).capital)} à ${String(empOf(d.id).taux).replace(".", ",")} % sur ${empOf(d.id).duree} mois, depuis ${frDate(empOf(d.id).debut)}</div>
       ${(() => { const q = ecData(d.id); return q ? `<div class="small muted" style="padding:5px 0;overflow-wrap:anywhere">Remboursé à ce jour : <b>${eur(r2(q.e.capital - q.crdNow))}</b> sur ${eur(q.e.capital)}. Il reste ${q.nbF} échéances (fin ${frDate(q.fin)}).</div>` : ""; })()}${d.ey ? kv("Intérêts " + y, eur(d.ey.it)) + kv("Capital remboursé " + y, eur(d.ey.kap)) + kv("Assurance emprunteur " + y, eur(d.ey.assur)) + kv("Capital restant dû fin " + y, eur(d.ey.crd)) : ""}`
