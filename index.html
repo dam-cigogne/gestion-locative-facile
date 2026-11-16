@@ -1588,8 +1588,9 @@ document.addEventListener("change", ev => {
 
 /* ============ Extras : thèmes, nouveautés, aide, confort, exports ============ */
 /* RÈGLE : à chaque nouvelle fonction, mettre à jour CHANGELOG (ci-dessous), le mode d'emploi HELP ET la fiche publique src/fiche.html (et, pour une grosse nouveauté, les affiches : voir src/affiches/README.txt). */
-const APP_VERSION = "1.8.4";
+const APP_VERSION = "1.8.5";
 const CHANGELOG = [
+  {v:"1.8.5", date:"2026-11-16", titre:"Numéro du DPE dans l'annonce", items:["Annonce › Modifier : nouveau champ « N° du DPE » (13 caractères, ex. 2413A1234567B), demandé à chaque dépôt d'annonce. Le bouton « 🔎 Lire le n° sur mon DPE » le retrouve tout seul dans le DPE importé du logement.","Le numéro est ajouté au texte de l'annonce et à l'annonce PDF, avec un bouton « Copier le n° DPE ». S'il manque ou n'a pas 13 caractères, l'annonce le signale.","La classe DPE de l'annonce reprend par défaut celle du profil du logement."]},
   {v:"1.8.4", date:"2026-11-15", titre:"Visale parmi les pièces du locataire", items:["Dans la fiche du locataire, « Documents du locataire » › Type de pièce : nouveau choix « Visale (attestation / visa) » pour ranger son visa ou son attestation Visale avec ses autres papiers."]},
   {v:"1.8.3", date:"2026-11-15", titre:"Bilan : cash flow par mois, au total et par bien", items:["Bilan : glisse le grand cadre « Cash flow » vers la gauche pour voir le cash flow par mois (moyenne de l'année ÷ 12, crédit compris, encaissé + prévu), avec le détail de chaque bien.","Par bien : glisse un bien vers la gauche pour voir ce qu'il rapporte par mois, tout déduit, et combien il rapporterait sans le crédit (une fois remboursé).","Les chiffres sont avant impôt sur le revenu et prélèvements sociaux : ils ne sont pas saisis dans l'appli.","Biens et Compta : les boutons des biens (Studio, T2…) prennent la couleur de chaque bien, comme sur l'accueil, et sont séparés des onglets par un trait : on les repère tout de suite.","Bilan › Par bien : chaque bien a aussi son étiquette et un trait de sa couleur."]},
   {v:"1.8.2", date:"2026-11-13", titre:"Profil du logement : réponses proposées en lisant tes documents", items:["Dans « 🏠 Profil du logement », le bouton « 🔎 Lire mes diagnostics et mon ERP pour répondre » lit les documents déjà importés pour ce logement : année de construction, constat plomb, repérage amiante, diagnostics électricité et gaz, copropriété, plan d'exposition au bruit de l'ERP, permis de louer, Anah. Il propose les réponses, surlignées en jaune avec la raison. Tu vérifies, puis tu enregistres. Ce qu'il ne trouve pas reste à choisir à la main."]},
@@ -1844,7 +1845,7 @@ const HELP = {
     "Un document signé (état des lieux, inventaire) est verrouillé. « Déverrouiller (exceptionnel) » le rouvre, mais la première modification efface les signatures.",
     "Dans « Envoyer au locataire », « Ranger dans sa fiche » garde une copie du PDF dans Documents du locataire."]},
   "rent":{t:"Location", p:"Du candidat au départ du locataire, sans serveur : tout passe par ton e-mail.", l:[
-    "1. Annonce : remplis les infos du bien, ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
+    "1. Annonce : remplis les infos du bien (dont le n° du DPE, que « 🔎 Lire le n° sur mon DPE » retrouve dans ton DPE importé), ajoute tes photos, crée le PDF à envoyer par Mail ou Messages, ou copie le texte pour un site d'annonces. Onglet « Mon texte » : écris ou importe (Word, .txt) ton propre texte ; il est utilisé tel quel, sans blocs ajoutés.",
     "2. Candidats : envoie le lien du 1er formulaire (infos de base) à chaque personne intéressée. Quand son e-mail arrive, copie le texte et colle-le avec « Coller une candidature ou un dossier reçu » : la fiche se remplit. Tu peux aussi créer une fiche à la main.",
     "Tous mes candidats : Location › Candidats › « 👥 Tous mes candidats sur une page » montre tous les candidats de tous les logements (cartes ou tableau), avec filtres, recherche et tri (prochaine visite, étape, revenus…).",
     "Réception connectée sur un autre appareil : elle ne marche que sur un appareil à la fois (celui qui a la clé). Pour passer de l'iPhone à l'iPad : sur l'iPhone, Réglages de la réception › « 📲 Transférer sur un autre appareil » (paquet + code) ; sur l'iPad, « 📥 Reprendre la réception d'un autre appareil » ; puis sur l'iPhone « couper ici ». N'active pas une deuxième fois sur l'iPad : les candidats ayant le lien de l'iPhone n'arriveraient pas sur l'iPad.",
@@ -5538,7 +5539,7 @@ const nf1 = n => (Math.round(n * 10) / 10).toString().replace(".", ",");
 
 function annDefaults(bien){
   const b = S.biens.find(x => x.id === bien) || {}, t = live(S.locataires).filter(x => x.bien === bien).sort((a, c) => (c.debut || "").localeCompare(a.debut || ""))[0] || {};
-  return {titre:"", type:(b.bail === "vide" ? "Appartement" : "Appartement meublé"), surf:"", loc:"", loyer:b.loyer || t.loyer || "", charges:t.charges || "", depot:b.loyer || t.depot || "", dispo:"", dpe:"", ges:"", equip:"", mail:(S.cfg && S.cfg.candMail) || "", tel:"", pub:{}, photos:[], perso:"", statut:"brouillon"};
+  return {titre:"", type:(b.bail === "vide" ? "Appartement" : "Appartement meublé"), surf:"", loc:"", loyer:b.loyer || t.loyer || "", charges:t.charges || "", depot:b.loyer || t.depot || "", dispo:"", dpe:(b.desc && b.desc.dpe) || "", ges:"", dpenum:(b.desc && b.desc.dpenum) || "", equip:"", mail:(S.cfg && S.cfg.candMail) || "", tel:"", pub:{}, photos:[], perso:"", statut:"brouillon"};
 }
 function annOf(bien){ return Object.assign(annDefaults(bien), annGet(bien) || {}); }
 function loyerCC(bien){ const a = annOf(bien); return (Number(a.loyer) || 0) + (Number(a.charges) || 0); }
@@ -5567,7 +5568,7 @@ function annGen(bien){
   L.push(Number(a.charges) ? "Loyer : " + eur(a.loyer) + " + " + eur(a.charges) + " de charges, soit " + eur(cc) + " par mois charges comprises." : "Loyer : " + eur(a.loyer) + " par mois.");
   L.push("Dépôt de garantie : " + eur(a.depot) + ".");
   if (a.dispo) L.push("Disponible à partir du " + frDate(a.dispo) + ".");
-  L.push("Performance énergétique (DPE) : classe " + (a.dpe || "à compléter") + (a.ges ? " · GES : classe " + a.ges : "") + ".");
+  L.push("Performance énergétique (DPE) : classe " + (a.dpe || "à compléter") + (a.ges ? " · GES : classe " + a.ges : "") + "." + (a.dpenum ? " N° DPE : " + a.dpenum + "." : ""));
   L.push("");
   L.push("Pour candidater, écrivez-moi" + (a.mail ? " à " + a.mail : "") + (a.tel ? " ou appelez le " + a.tel : "") + " en indiquant : votre nom, un numéro de téléphone, votre situation professionnelle, vos revenus mensuels, le nombre d'occupants, votre date d'emménagement souhaitée et, si vous en avez un, votre garant. Les pièces justificatives vous seront demandées ensuite.");
   return L.join("\n");
@@ -5578,11 +5579,29 @@ function annReply(bien){
     link ? "Pour proposer votre candidature, remplissez ce court formulaire (2 minutes, depuis votre téléphone) :\n" + link : "Pour proposer votre candidature, indiquez-moi : votre nom, un numéro de téléphone, votre situation professionnelle, vos revenus mensuels, le nombre d'occupants, la date d'emménagement souhaitée et, si vous en avez un, votre garant.",
     "", "Je reviens vers vous rapidement pour organiser une visite.", "", "Cordialement," + (qui ? "\n" + qui : "")].join("\n");
 }
+/* Numéro du DPE (ADEME) : 13 caractères, ex. 2413A1234567B (année, département, lettre, 7 chiffres, lettre) */
+const DPE_NUM_RE = /^\d{4}[A-Z]\d{7}[A-Z]$/;
+function dpeNumFind(t){
+  t = String(t || "").replace(/\s+/g, " ");
+  const m = /(?:n[°o]\s*(?:ADEME|DPE)?|num[ée]ro\s*(?:ADEME|DPE)?|ADEME)\s*:?\s*(\d{4}\s?[A-Z]\s?\d{7}\s?[A-Z])\b/i.exec(t) || /\b(\d{4}[A-Z]\d{7}[A-Z])\b/.exec(t);
+  const num = m ? m[1].replace(/\s/g, "").toUpperCase() : "", near = m ? t.slice(m.index, m.index + 200) : "";
+  const dt = re => { const x = re.exec(near); return x ? x[3] + "-" + x[2] + "-" + x[1] : ""; };
+  return {num, etabli:dt(/[ée]tabli le\s*:?\s*(\d{2})\/(\d{2})\/(\d{4})/i), fin:dt(/valable jusqu.au\s*:?\s*(\d{2})\/(\d{2})\/(\d{4})/i)};
+}
+async function dpeNumRead(bien){
+  const D = fileDocs(bien, "autre").filter(d => d.sub === "dpe" || d.sub === "diag"), seen = new Set();
+  D.sort((a, b) => (a.sub === "dpe" ? 0 : 1) - (b.sub === "dpe" ? 0 : 1) || (b.date || "").localeCompare(a.date || ""));
+  for (const d of D){ const fid = d.parent || d.id; if (seen.has(fid)) continue; seen.add(fid);
+    try { const r = await flGet(fid); if (!r || !r.buf) continue; const f = dpeNumFind(/^text\//.test(r.type || "") ? new TextDecoder().decode(r.buf) : await profDocText(r, d.pages ? d.pages[1] : 40)); if (f.num) return f; } catch(e){} }
+  return null;
+}
 function annChecks(bien){
   const a = annOf(bien), w = [];
   if (!a.loyer) w.push("Indique le loyer.");
   if (!a.surf) w.push("Indique la surface (obligatoire dans l'annonce).");
   if (!a.dpe) w.push("La classe énergie (DPE) doit figurer dans l'annonce.");
+  if (!a.dpenum) w.push("Indique le numéro du DPE (13 caractères, en haut à droite du DPE, ex. 2413A1234567B) : il est demandé à la publication de l'annonce.");
+  else if (!DPE_NUM_RE.test(a.dpenum)) w.push("Le numéro du DPE ne semble pas complet : il fait 13 caractères (ex. 2413A1234567B). Vérifie-le sur ton DPE.");
   if (a.dpe === "G") w.push("Un logement classé G ne peut plus être loué en résidence principale.");
   if (!a.mail && !cnxOn()) w.push("Indique l'e-mail où recevoir les candidatures.");
   if (!a.loc) w.push("Indique le quartier ou la ville (évite l'adresse exacte dans l'annonce).");
@@ -5603,7 +5622,7 @@ function viewAnnonce(bien){
   return `<div class="card"><div class="top"><h2>Annonce · ${esc(bienName(bien))}</h2><span class="chip ${a.statut === "publiee" ? "ok" : a.statut === "louee" ? "" : "warn"}">${lbl}</span></div>
     ${w.length ? `<div class="info" style="background:var(--warn-soft)">${w.map(x => "• " + esc(x)).join("<br>")}</div>` : ""}
     <label class="f" style="margin-top:8px">${a.perso && a.perso.trim() ? "Ton texte (utilisé tel quel)" : "Texte prêt à publier"}<textarea id="an-txt" readonly style="min-height:240px">${esc(txt)}</textarea></label>
-    <div class="btns"><button class="btn" data-act="an-edit">Modifier l'annonce</button><button class="btn ghost" data-act="an-copy">Copier le texte</button><button class="btn ghost sm" data-act="an-copyx" data-v="t">Copier le titre</button><button class="btn ghost sm" data-act="an-copyx" data-v="p">Copier le prix</button><button class="btn ghost" data-act="an-share">Partager</button></div>
+    <div class="btns"><button class="btn" data-act="an-edit">Modifier l'annonce</button><button class="btn ghost" data-act="an-copy">Copier le texte</button><button class="btn ghost sm" data-act="an-copyx" data-v="t">Copier le titre</button><button class="btn ghost sm" data-act="an-copyx" data-v="p">Copier le prix</button>${annOf(bien).dpenum ? `<button class="btn ghost sm" data-act="an-copyx" data-v="d">Copier le n° DPE</button>` : ""}<button class="btn ghost" data-act="an-share">Partager</button></div>
     <div class="btns"><button class="btn" style="flex:1" data-act="an-pdf">Créer le PDF de l'annonce</button></div>
     <div class="small muted">Le PDF reprend le texte et tes photos : envoie-le par Mail ou Messages. Pour les sites d'annonces, ajoute aussi les photos sur le site. Vérifie les mentions obligatoires sur le site choisi et, si ta commune est en zone d'encadrement des loyers, le loyer de référence.</div></div>
     <div class="card"><div class="top"><h2>Photos de l'annonce</h2><span class="small muted">${(a.photos || []).length} / ${ANN_MAX_PH}</span></div>
@@ -5676,6 +5695,7 @@ function sheetAnnonce(){
     <div class="tl">${dxF("an-loyer", "Loyer hors charges", a.loyer, 'inputmode="decimal"')}${dxF("an-chg", "Charges", a.charges, 'inputmode="decimal"')}</div>
     <div class="tl">${dxF("an-depot", "Dépôt de garantie", a.depot, 'inputmode="decimal"')}${dxF("an-dispo", "Disponible le", a.dispo, 'type="date"')}</div>
     <div class="tl">${dxS("an-dpe", "DPE (énergie)", [["", "—"]].concat("ABCDEFG".split("").map(x => [x, x])), a.dpe)}${dxS("an-ges", "GES", [["", "—"]].concat("ABCDEFG".split("").map(x => [x, x])), a.ges)}</div>
+    <div>${dxF("an-dpenum", "N° du DPE (13 caractères, en haut à droite du DPE)", a.dpenum, 'autocapitalize="characters" autocomplete="off" placeholder="ex. 2413A1234567B"')}<div class="btns" style="margin-top:6px"><button class="btn sm ghost" data-act="an-dpe-read">🔎 Lire le n° sur mon DPE</button></div></div>
     <label class="f">Équipements, points forts<textarea id="an-equip" style="min-height:90px">${esc(a.equip)}</textarea></label>
     ${dxF("an-mail", "E-mail pour les candidatures", a.mail, 'type="email" autocapitalize="off"')}${dxF("an-tel", "Téléphone (facultatif)", a.tel, 'type="tel"')}</div>
     <div class="btns"><button class="btn" style="flex:1" data-act="an-save">Enregistrer</button><button class="btn ghost" data-act="sheetclose">Annuler</button></div>`);
@@ -5809,11 +5829,14 @@ document.addEventListener("click", async ev => {
     case "an-gen": { const cur = $("#an-perso").value.trim(); $("#an-perso").value = (cur ? cur + "\n\n" : "") + annGen(V.lsel); toast("Texte généré inséré : adapte-le"); break; }
     case "an-clear": $("#an-perso").value = ""; toast("Texte effacé : le texte généré sera utilisé"); break;
     case "an-save": { const num = i => { const x = parseNum($("#" + i).value); return x == null ? "" : x; }, cur = annOf(V.lsel);
-      S.annonces = S.annonces || {}; S.annonces[V.lsel] = Object.assign(cur, {titre:dxV("an-titre"), type:dxV("an-type") || "Appartement", surf:dxV("an-surf"), loc:dxV("an-loc"), loyer:num("an-loyer"), charges:num("an-chg"), depot:num("an-depot"), dispo:dxV("an-dispo"), dpe:$("#an-dpe").value, ges:$("#an-ges").value, equip:$("#an-equip").value.trim(), perso:$("#an-perso").value.trim(), mail:dxV("an-mail"), tel:dxV("an-tel"), upd:Date.now()});
+      S.annonces = S.annonces || {}; S.annonces[V.lsel] = Object.assign(cur, {titre:dxV("an-titre"), type:dxV("an-type") || "Appartement", surf:dxV("an-surf"), loc:dxV("an-loc"), loyer:num("an-loyer"), charges:num("an-chg"), depot:num("an-depot"), dispo:dxV("an-dispo"), dpe:$("#an-dpe").value, ges:$("#an-ges").value, dpenum:(dxV("an-dpenum") || "").replace(/\s/g, "").toUpperCase(), equip:$("#an-equip").value.trim(), perso:$("#an-perso").value.trim(), mail:dxV("an-mail"), tel:dxV("an-tel"), upd:Date.now()});
       S.cfg = S.cfg || {bailleur:"", adr:{}}; if (S.annonces[V.lsel].mail) S.cfg.candMail = S.annonces[V.lsel].mail;
       persist(); closeSheet(); render(); break; }
-    case "an-copyx": { const a = annOf(V.lsel), cc = (Number(a.loyer) || 0) + (Number(a.charges) || 0), t = v === "p" ? String(Math.round(cc)) : (a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : ""))).trim();
-      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast((v === "p" ? "Prix" : "Titre") + " copié : " + t)).catch(() => toast(t)); break; }
+    case "an-dpe-read": { toast("Lecture de ton DPE…"); dpeNumRead(V.lsel).then(f => { const i = $("#an-dpenum");
+        if (!f) return toast("Numéro introuvable : importe ton DPE dans Biens › Documents (ligne DPE), ou recopie le numéro en haut à droite du DPE");
+        if (i) i.value = f.num; toast("N° DPE trouvé : " + f.num + (f.fin ? " · valable jusqu'au " + frDate(f.fin) : "") + ". Enregistre pour le garder."); }).catch(e => toast("Lecture impossible : " + (e && e.message || e))); break; }
+    case "an-copyx": { const a = annOf(V.lsel), cc = (Number(a.loyer) || 0) + (Number(a.charges) || 0), t = v === "d" ? String(a.dpenum || "") : v === "p" ? String(Math.round(cc)) : (a.titre || (a.type + (a.surf ? " " + a.surf + " m²" : "") + (a.loc ? " – " + a.loc : ""))).trim();
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast((v === "d" ? "N° DPE" : v === "p" ? "Prix" : "Titre") + " copié : " + t)).catch(() => toast(t)); break; }
     case "an-rep-copy": { const t = annReply(V.lsel); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Réponse copiée")).catch(() => { const x = $("#an-rep"); if (x){ x.select(); } toast("Sélectionnée : copie-la"); }); break; }
     case "an-copy": { const t = annText(V.lsel); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Texte copié")).catch(() => { const e = $("#an-txt"); if (e){ e.removeAttribute("readonly"); e.select(); } toast("Sélectionné : copie-le"); }); break; }
     case "an-share": { const t = annText(V.lsel); try { if (navigator.share) await navigator.share({title:"Annonce " + bienName(V.lsel), text:t}); else toast("Utilise « Copier le texte »"); } catch(e){} break; }
@@ -5916,6 +5939,7 @@ async function annoncePdf(bien){
   facts.forEach(([l, v], i) => { const x = M + i * cw; d.text(x, d.y, l.toUpperCase(), {size:7.5, bold:true, color:"#8A9690"});
     if (l === "DPE" && DPE_COL[v]){ d.rect(x, d.y - 24, 22, 18, DPE_COL[v]); d.text(x + 11, d.y - 19, v, {size:12, bold:true, center:true, color:"#FFFFFF"}); if (a.ges) d.text(x + 30, d.y - 19, "GES " + a.ges, {size:9.5, color:"#3C4A45"}); }
     else d.text(x, d.y - 17, String(v).slice(0, 26), {size:11, bold:true}); }); d.y -= 38;
+  if (a.dpenum){ d.text(M, d.y, "N° DPE : " + a.dpenum, {size:9.5, color:"#3C4A45"}); d.y -= 16; }
   const own = a.perso && a.perso.trim();
   /* Hauteur du texte estimée d'avance : la photo principale prend la place qui reste, pour que le texte tienne sur la 1re page */
   const nLines = str => { let n = 1, line = ""; for (const w of String(str).split(" ")){ const t = line ? line + " " + w : w; if (pdfW(t, 11) > W){ n++; line = w; } else line = t; } return n; };
